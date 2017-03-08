@@ -4,6 +4,8 @@ import static hr.hrg.hipstersql.QueryUtil.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.HashMap;
+import java.util.Map;
 
 // do not run this code :) it will not work :D
 
@@ -11,8 +13,10 @@ public class Showcase {
 
 	public static void main(String[] args) throws Exception{
 		Long id = 1L;
-		String password = "1";
-		String name = "1";
+		String password = "pwd";
+		String name = "John";
+		String gender = "M";
+		Integer age = 100;
 		Query query;
 		PreparedStatement pStatement=null;
 		Connection conn=null;
@@ -32,7 +36,7 @@ public class Showcase {
 
 		
 		
-		//  ******************** examples
+		//  ******************** QueryUtil
 		
 		// creating new query is not very complicated
 		query =    new Query("select * from users where id=",id);
@@ -44,10 +48,50 @@ public class Showcase {
 		somemethod(q("select * from users where id=",id));
 
 		
+		//  ******************** HipsterSql
+		
+		// we create a map for this example, but you might have it already by reading data from somewhere
+		Map<Object,Object> data = new HashMap<>();
+		data.put("name", name);
+		data.put("gender", gender);
+		data.put("age", gender);
+		// to pass a function call, just pass a new query object instead of the value
+		data.put("password", q("PASSWORD(",password,")") );
 		
 		
+		// buildInsert helps with generating insert queries
+
+		hip.buildInsert("user", data);
+		
+		// varargs version if you want to inline the parameters and not create map with data
+		hip.buildInsertVar("user", 
+				"name", name,
+				"gender", gender,
+				"age", gender,
+				// to pass a function call, just pass a new query object instead of the value
+				"password", q("PASSWORD(",password,")")
+			);
+		// resulting prepared statement 
+		// INSERT INTO user(name,gender,age,password VALUES(?,?,?,PASSWORD(?))
+
 		
 		
+		// buildUpdate helps with generating update queries very similar to buildInsert.
+		// The second parameter is filter to limit updates scope
+		
+		// we can reuse the map from last example
+		hip.buildUpdate("user", q("id=",id) ,data);
+		
+		// varargs version if you want to inline the parameters and not create map with data
+		hip.buildUpdateVar("user", q("id=",id),  
+				"name", name,
+				"gender", gender,
+				"age", gender,
+				// to pass a function call, just pass a new query object instead of the value
+				"password", q("PASSWORD(",password,")")
+			);
+		// resulting prepared statement 
+		// UPDATE user SET name=?,gender=?,age=?,password=PASSWORD(?) WHERE id = ?
 		
 	}
 	

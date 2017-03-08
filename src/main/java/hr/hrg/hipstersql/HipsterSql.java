@@ -44,8 +44,8 @@ public class HipsterSql {
 
 	
 	protected final Connection connection;	
-	protected Pattern tableNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$",Pattern.CASE_INSENSITIVE);
-	protected Pattern columnNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$",Pattern.CASE_INSENSITIVE);
+	protected Pattern tableNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$");
+	protected Pattern columnNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$");
 	protected Set<String> allowdSqlOperators = new HashSet<>();  
 	
 	private static boolean yodaPresent = false;
@@ -138,22 +138,22 @@ public class HipsterSql {
 	
 	/** generate query string for table name and quote if needed. Throws Exception if table name is invalid*/
 	public String q_table(String name){
-		name = name.trim();
-		if(!validateColumnName(name)) throw new RuntimeException("Invalid table name "+name);
+		name = name.trim().toLowerCase();
+		if(!validateTableName(name)) throw new RuntimeException("Invalid table name "+name);
 		return name;
 	}
 
 	/** generate query string for table name and quote if needed. Throws Exception if table name is invalid*/
 	public String q_column(String name){
-		name = name.trim();
-		if(!validateColumnName(name)) throw new RuntimeException("Invalid table name "+name);
+		name = name.trim().toLowerCase();
+		if(!validateColumnName(name)) throw new RuntimeException("Invalid column name "+name);
 		return name;
 	}
 
 	/** chack query string for query operator. Throws Exception if table name is invalid*/
 	public String q_op(String name){
-		name = name.trim();
-		if(!validateColumnName(name)) throw new RuntimeException("Invalid table name "+name);
+		name = name.trim().toLowerCase();
+		if(!validateColumnName(name)) throw new RuntimeException("Invalid operator "+name);
 		return name;
 	}
 	
@@ -171,7 +171,7 @@ public class HipsterSql {
 		Object p1 = params.get(1);
 		if(count == 2) {
 			if(p1 == null) return new Query("IS NULL");
-			return new Query(q_column((String) p0),"=",p1);
+			return new Query(q_column((String) p0)+" = ",p1);
 		}
 
 		if(count == 3) {
@@ -184,7 +184,7 @@ public class HipsterSql {
 					return new Query("IS NOT NULL");
 				}
 			}
-			return new Query(q_column((String) p0),q_op(operator),p2);
+			return new Query(q_column((String) p0)+" "+q_op(operator)+" ",p2);
 		}
 		
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
@@ -200,7 +200,7 @@ public class HipsterSql {
 		Object p1 = params[1];
 		if(count == 2) {
 			if(p1 == null) return new Query("IS NULL");
-			return new Query(q_column((String) p0),"=",p1);
+			return new Query(q_column((String) p0)+" = ",p1);
 		}
 
 		if(count == 3) {
@@ -213,7 +213,7 @@ public class HipsterSql {
 					return new Query("IS NOT NULL");
 				}
 			}
-			return new Query(q_column((String) p0),q_op(operator),p2);
+			return new Query(q_column((String) p0)+" "+q_op(operator)+" ",p2);
 		}
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
 	}
@@ -229,9 +229,9 @@ public class HipsterSql {
 		for(Entry<?, ?> entry:values.entrySet()) {
 			if(i >0) {
 				firstPart.append(",");
-				valuesPart.appendValue(entry.getValue());
-			}else {
 				valuesPart.append(",",entry.getValue());
+			}else {
+				valuesPart.appendValue(entry.getValue());
 			}
 			firstPart.append(q_column((String) entry.getKey()));
 			i++;
@@ -243,20 +243,20 @@ public class HipsterSql {
 
 	/** build insert Query from vararg paramteters that are pairs (column,value) . Although method accepts objects 
 	 * keys must be strings or ClassCastException will be thrown. */
-	public Query buildInsertFromArgs(String tableName, Object ...values){
+	public Query buildInsertVar(String tableName, Object ...values){
 		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
 
 		Query valuesPart = new Query(" VALUES(");
 		
 		for(int i=1; i<values.length; i+=2){
-			if(i >0) {
+			System.out.println(values[i-1]+"="+values[i]);
+			if(i >1) {
 				firstPart.append(",");
-				valuesPart.appendValue(values[i]);
-			}else {
 				valuesPart.append(",",values[i]);
+			}else {
+				valuesPart.appendValue(values[i]);
 			}
 			firstPart.append(q_column((String) values[i-1]));
-			i++;
 		}
 		valuesPart.append(")");
 
@@ -273,9 +273,9 @@ public class HipsterSql {
 		int i=0;
 		for(Entry<?, ?> entry:values.entrySet()) {
 			if(i >0){
-				query.append(q_column((String) entry.getKey())+"=", entry.getValue());
-			}else {
 				query.append(","+q_column((String) entry.getKey())+"=", entry.getValue());
+			}else {
+				query.append(q_column((String) entry.getKey())+"=", entry.getValue());
 			}
 			i++;
 		}
@@ -287,18 +287,17 @@ public class HipsterSql {
 	
 	/** build update Query from map of key->value. Although the map is not declared as Map<String,Object> 
 	 * keys must be strings or ClassCastException will be thrown. */
-	public Query buildUpdate(String tableName, Object filter, Object ...values){
+	public Query buildUpdateVar(String tableName, Object filter, Object ...values){
 		Query filterQuery = checkFilter(filter);
 
 		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
 
 		for(int i=1; i<values.length; i+=2){
-			if(i >0){
-				query.append(q_column((String) values[i-1])+"=", values[i]);
-			}else {
+			if(i >1){
 				query.append(","+q_column((String) values[i-1])+"=", values[i]);
+			}else {
+				query.append(q_column((String) values[i-1])+"=", values[i]);
 			}
-			i++;
 		}
 
 		if(filterQuery != null) query.append(" WHERE ", filterQuery);

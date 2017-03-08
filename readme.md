@@ -58,11 +58,56 @@ Some utility methods are not suitable to be static as the result might differ sl
 on database you are connected to (slight syntax changes are possible). Also you might want to
 override some methods in case of specific needs (a feature not covered or even a bug not fixed yet).
 
+For both examples we will prepare a map with data. We create a map for the two examples, 
+but you might have it already by reading data from somewhere
+
 ```java
-
-
-
+Map<Object,Object> data = new HashMap<>();
+data.put("name", name);
+data.put("gender", gender);
+data.put("age", gender);
+// to pass a function call, just pass a new query object instead of the value
+data.put("password", q("PASSWORD(",password,")") );
 ```
+
+## HipsterSql.buildInsert and buildInsertVar 
+buildInsert helps with generating insert queries
+
+```java
+hip.buildInsert("user", data);
+
+// varargs version if you want to inline the parameters and not create map with data
+hip.buildInsertVar("user", 
+		"name", name,
+		"gender", gender,
+		"age", gender,
+		// to pass a function call, just pass a new query object instead of the value
+		"password", q("PASSWORD(",password,")")
+	);
+// resulting prepared statement 
+// INSERT INTO user(name,gender,age,password VALUES(?,?,?,PASSWORD(?))
+```
+
+## HipsterSql.buildUpdate and buildUpdateVar
+buildUpdate helps with generating update queries very similar to buildInsert.
+The second parameter is filter to limit updates scope
+
+```java
+// we can reuse the map from last example
+hip.buildUpdate("user", q("id=",id) ,data);
+
+// varargs version if you want to inline the parameters and not create map with data
+hip.buildUpdateVar("user", q("id=",id),  
+		"name", name,
+		"gender", gender,
+		"age", gender,
+		// to pass a function call, just pass a new query object instead of the value
+		"password", q("PASSWORD(",password,")")
+	);
+// resulting prepared statement 
+// UPDATE user SET name=?,gender=?,age=?,password=PASSWORD(?) WHERE id = ?
+```
+
 
 
 ## License
