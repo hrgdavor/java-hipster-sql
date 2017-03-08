@@ -19,7 +19,8 @@ Add maven dependency or download from [maven central](http://repo1.maven.org/mav
 Maybe you just want to write the query in the code in a way that is readable and easy to maintain.
 
 ```java
-// something like this could easily become sql injection problem if name comes from user
+// I prefer to have, the variables that are part of the query, inline with sql code, 
+// but something like this could easily become sql injection problem if name variable comes from user input
 String queryStr = "select * from users where name LIKE'"+name+"%'";
 
 // in our metohds query parts are passed as arguments (variable number of arguments)

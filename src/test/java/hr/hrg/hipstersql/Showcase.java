@@ -18,7 +18,8 @@ public class Showcase {
 		Connection conn=null;
 		HipsterSql hip = null;
 		
-		// something like this could easily become sql injection problem if name comes from user
+		// I prefer to have, the variables that are part of the query, inline with sql code, 
+		// but something like this could easily become sql injection problem if name variable comes from user input
 		String queryStr = "select * from users where name LIKE'"+name+"%'";
 
 		// in our metohds query parts are passed as arguments (variable number of arguments)
