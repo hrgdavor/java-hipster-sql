@@ -22,8 +22,7 @@ public class Showcase {
 		// but something like this could easily become sql injection problem if name variable comes from user input
 		String queryStr = "select * from users where name LIKE'"+name+"%'";
 
-		// in our metohds query parts are passed as arguments (variable number of arguments),  
-		// and prepared statments are generated in the background when the query is executed
+		// in our metohds query parts are passed as arguments and prepared statments are used in the background 
 		// the only difference from the unsafe query string above is that "+" plus operator is replaced by "," comma
 		q("select * from users where name LIKE '",name,"%'");
 
