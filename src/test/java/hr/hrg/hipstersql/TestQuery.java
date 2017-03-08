@@ -1,13 +1,10 @@
 package hr.hrg.hipstersql;
 
-import static org.testng.Assert.assertEquals;
-
-import java.util.List;
+import static hr.hrg.hipstersql.QueryUtil.*;
+import static org.testng.Assert.*;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import static hr.hrg.hipstersql.QueryUtil.*;
-import static hr.hrg.hipstersql.Query.*;
 
 @Test
 public class TestQuery {
