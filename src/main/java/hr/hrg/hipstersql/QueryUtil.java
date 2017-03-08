@@ -13,11 +13,6 @@ public class QueryUtil {
 		return new Query(q);
 	}
 	
-	/** Static method name to build query inline, without using new operator */
-	public static Query query(Object ... q) {
-		return new Query(q);
-	}
-
 	@SafeVarargs
 	public static <T> List<T> toList(T ... arr){
 		return Arrays.asList(arr);

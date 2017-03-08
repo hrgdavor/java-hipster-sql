@@ -10,8 +10,12 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -33,19 +37,25 @@ import hr.hrg.hipstersql.setter.SqlDateSetter;
 import hr.hrg.hipstersql.setter.StringSetter;
 
 public class HipsterSql {
+	
+	public static final String ALL_ROWS = "ALL_ROWS";
+	
 	static Logger log = LoggerFactory.getLogger(HipsterSql.class);
 
+	
 	protected final Connection connection;	
-
+	protected Pattern tableNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$",Pattern.CASE_INSENSITIVE);
+	protected Pattern columnNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$",Pattern.CASE_INSENSITIVE);
+	protected Set<String> allowdSqlOperators = new HashSet<>();  
+	
 	private static boolean yodaPresent = false;
 	static {
 		try {
 			Class.forName("org.joda.time.DateTime");
 			yodaPresent = true;
 		} catch (ClassNotFoundException e) {
-			log.warn("Joda DateTime not present, will ommit yoda DateTime support");
+			log.warn("Joda DateTime classes not present, yoda DateTime support will be skipped");
 		}
-		
 	}
 
 	protected Query lastQuery;
@@ -56,8 +66,9 @@ public class HipsterSql {
 	protected String columQuote1 = "\"";
 	protected String columQuote2 = "\"";
 
-	public HipsterSql(Connection connection) {
-		this.connection = connection;	
+	public HipsterSql(Connection connection){
+		this.connection = connection;
+		this.intAllowdOperators();
 
 		addStatementSetter(Boolean.class, new BooleanSetter());
 		addStatementSetter(Integer.class, new IntegerSetter());
@@ -74,6 +85,15 @@ public class HipsterSql {
 			addStatementSetter(DateTime.class, new DateTimeSetter());
 			addStatementSetter(LocalTime.class, new LocalTimeSetter());
 			addStatementSetter(LocalDate.class, new LocalDateSetter());
+		}
+	}
+
+	protected void intAllowdOperators() {
+		addAllowdOperator("=","!=","<>","<",">",">=","<=","NOT","LIKE","ILIKE","IN");
+	}
+	protected void addAllowdOperator(String ...operators ){
+		for(String operator: operators){
+			allowdSqlOperators.add(operator.toUpperCase());
 		}
 	}
 
@@ -103,8 +123,199 @@ public class HipsterSql {
 		return "id";
 	}
 
+	
+	public boolean validateTableName(String name){
+		return tableNamePattern.matcher(name).matches();		
+	}
+	
+	public boolean validateColumnName(String name){
+		return columnNamePattern.matcher(name).matches();
+	}
+	
+	public boolean validateOperatorName(String name){
+		return allowdSqlOperators.contains(name.toUpperCase());
+	}
+	
+	/** generate query string for table name and quote if needed. Throws Exception if table name is invalid*/
+	public String q_table(String name){
+		name = name.trim();
+		if(!validateColumnName(name)) throw new RuntimeException("Invalid table name "+name);
+		return name;
+	}
+
+	/** generate query string for table name and quote if needed. Throws Exception if table name is invalid*/
+	public String q_column(String name){
+		name = name.trim();
+		if(!validateColumnName(name)) throw new RuntimeException("Invalid table name "+name);
+		return name;
+	}
+
+	/** chack query string for query operator. Throws Exception if table name is invalid*/
+	public String q_op(String name){
+		name = name.trim();
+		if(!validateColumnName(name)) throw new RuntimeException("Invalid table name "+name);
+		return name;
+	}
+	
 	// ********************** UTILITY QUERY Functions **************************
-    /** Get first value as int from first row and first column. <br/>
+
+	public Query buildFilter(List<?> params){
+		int count = params.size();
+		if(count == 0) return new Query();
+
+		if(count == 1 && params.get(1) instanceof List) return buildFilter( (List<?>) params.get(0));
+		
+		Object p0 = params.get(0);
+		if(count == 1 && p0 instanceof List) return buildFilter( (List<?>) p0);
+		
+		Object p1 = params.get(1);
+		if(count == 2) {
+			if(p1 == null) return new Query("IS NULL");
+			return new Query(q_column((String) p0),"=",p1);
+		}
+
+		if(count == 3) {
+			String operator = (String) p1;
+			Object p2 = params.get(2);
+			if(p2 == null) {
+				if("=".equals(operator)) {
+					return new Query("IS NULL");
+				}else if("!=".equals(operator) || "<>".equals(operator)) {					
+					return new Query("IS NOT NULL");
+				}
+			}
+			return new Query(q_column((String) p0),q_op(operator),p2);
+		}
+		
+		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
+	}
+	
+	public Query buildFilter(Object ...params){		
+		int count = params.length;
+		if(count == 0) return new Query();
+		
+		Object p0 = params[0];
+		if(count == 1 && p0 instanceof List) return buildFilter( (List<?>) p0);
+		
+		Object p1 = params[1];
+		if(count == 2) {
+			if(p1 == null) return new Query("IS NULL");
+			return new Query(q_column((String) p0),"=",p1);
+		}
+
+		if(count == 3) {
+			String operator = (String) p1;
+			Object p2 = params[2];
+			if(p2 == null) {
+				if("=".equals(operator)) {
+					return new Query("IS NULL");
+				}else if("!=".equals(operator) || "<>".equals(operator)) {					
+					return new Query("IS NOT NULL");
+				}
+			}
+			return new Query(q_column((String) p0),q_op(operator),p2);
+		}
+		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
+	}
+
+	/** build insert Query from map of key->value. Although the map is not declared as Map<String,Object> 
+	 * keys must be strings or ClassCastException will be thrown. */
+	public Query buildInsert(String tableName, Map<?,?> values) {
+		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
+
+		Query valuesPart = new Query(" VALUES(");
+		
+		int i=0;
+		for(Entry<?, ?> entry:values.entrySet()) {
+			if(i >0) {
+				firstPart.append(",");
+				valuesPart.appendValue(entry.getValue());
+			}else {
+				valuesPart.append(",",entry.getValue());
+			}
+			firstPart.append(q_column((String) entry.getKey()));
+			i++;
+		}
+		valuesPart.append(")");
+		
+		return new Query(firstPart, valuesPart);		
+	}
+
+	/** build insert Query from vararg paramteters that are pairs (column,value) . Although method accepts objects 
+	 * keys must be strings or ClassCastException will be thrown. */
+	public Query buildInsertFromArgs(String tableName, Object ...values){
+		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
+
+		Query valuesPart = new Query(" VALUES(");
+		
+		for(int i=1; i<values.length; i+=2){
+			if(i >0) {
+				firstPart.append(",");
+				valuesPart.appendValue(values[i]);
+			}else {
+				valuesPart.append(",",values[i]);
+			}
+			firstPart.append(q_column((String) values[i-1]));
+			i++;
+		}
+		valuesPart.append(")");
+
+		return new Query(firstPart, valuesPart);		
+	}
+
+	/** build update Query from map of key->value. Although the map is not declared as Map<String,Object> 
+	 * keys must be strings or ClassCastException will be thrown. */
+	public Query buildUpdate(String tableName, Object filter, Map<?,?> values){
+		Query filterQuery = checkFilter(filter);
+
+		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
+
+		int i=0;
+		for(Entry<?, ?> entry:values.entrySet()) {
+			if(i >0){
+				query.append(q_column((String) entry.getKey())+"=", entry.getValue());
+			}else {
+				query.append(","+q_column((String) entry.getKey())+"=", entry.getValue());
+			}
+			i++;
+		}
+
+		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+
+		return query;		
+	}
+	
+	/** build update Query from map of key->value. Although the map is not declared as Map<String,Object> 
+	 * keys must be strings or ClassCastException will be thrown. */
+	public Query buildUpdate(String tableName, Object filter, Object ...values){
+		Query filterQuery = checkFilter(filter);
+
+		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
+
+		for(int i=1; i<values.length; i+=2){
+			if(i >0){
+				query.append(q_column((String) values[i-1])+"=", values[i]);
+			}else {
+				query.append(","+q_column((String) values[i-1])+"=", values[i]);
+			}
+			i++;
+		}
+
+		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+
+		return query;		
+	}
+
+	protected Query checkFilter(Object filter) {
+		if(ALL_ROWS.equals(filter)) return null;// ok, in this case use the empty query to avoid any filtering
+		
+		if(filter == null || !(filter instanceof Query) || ((Query)filter).isEmpty()){				
+			throw new RuntimeException("Non empty filter query must be supplied to limit the number of rows affected to avoid accidental full table updates. To force update without filter use HipsterSql.ALL_ROWS");
+		}
+		return (Query) filter;
+	}
+
+	/** Get first value as int from first row and first column. <br/>
      * Useful for counting and other queries that return single int value.<br/>*/
     public int one(Object ...sql){
         Result result = new Result(this, sql).query();

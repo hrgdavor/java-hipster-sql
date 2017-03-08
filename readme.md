@@ -42,17 +42,28 @@ import static hr.hrg.hipstersql.QueryUtil.*; // "import static" utility methods 
 import hr.hrg.hipstersql.Query;
 
 // creating new query is not very complicated
-query = new Query("select * from users where id=",id);
-
-// but shorthand "q" and "query" static methods  
-query = q("select * from users where id=",id);
-
-// arguably can maybe make code a bit more readable, depending on personal style/preference
+query =    new Query("select * from users where id=",id);
 somemethod(new Query("select * from users where id=",id));
-somemethod(query("select * from users where id=",id));
+
+// arguably can maybe make code a bit more readable, by using QueryUtil.q static method 
+// (depends on personal style/preference)
+query =    q("select * from users where id=",id);
 somemethod(q("select * from users where id=",id));
 
+
 ```
+
+# HipsterSql utility methods
+Some utility methods are not suitable to be static as the result might differ slightly based
+on database you are connected to (slight syntax changes are possible). Also you might want to
+override some methods in case of specific needs (a feature not covered or even a bug not fixed yet).
+
+```java
+
+
+
+```
+
 
 ## License
 
