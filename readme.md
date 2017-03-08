@@ -33,12 +33,12 @@ pStatement.setString(1, name+"%");
 
 ```
 
-# examples
-First a showcase of how queries look in code and usage of static methods in [QueryUtil.java](src/main/java/hr/hrg/hipstersql/QueryUtil.java)
+# QueryUtil
+Choose your style how queries will look in code with static methods from [QueryUtil.java](src/main/java/hr/hrg/hipstersql/QueryUtil.java)
 
 ```java
 
-import static hr.hrg.hipstersql.QueryUtil.*; // import utility methods from QueryUtil
+import static hr.hrg.hipstersql.QueryUtil.*; // "import static" utility methods from QueryUtil
 import hr.hrg.hipstersql.Query;
 
 // creating new query is not very complicated
