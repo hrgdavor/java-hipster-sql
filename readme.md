@@ -76,7 +76,7 @@ buildInsert helps with generating insert queries
 ```java
 hip.buildInsert("user", data);
 
-// varargs version if you want to inline the parameters and not create map with data
+// varargs version if you want to inline the parameters and not create a map with data
 hip.buildInsertVar("user", 
 		"name", name,
 		"gender", gender,
@@ -96,7 +96,7 @@ The second parameter is filter to limit updates scope
 // we can reuse the map from last example
 hip.buildUpdate("user", q("id=",id) ,data);
 
-// varargs version if you want to inline the parameters and not create map with data
+// varargs version if you want to inline the parameters and not create a map with data
 hip.buildUpdateVar("user", q("id=",id),  
 		"name", name,
 		"gender", gender,
@@ -108,7 +108,28 @@ hip.buildUpdateVar("user", q("id=",id),
 // UPDATE user SET name=?,gender=?,age=?,password=PASSWORD(?) WHERE id = ?
 ```
 
+## HipsterSql.buildFilter
+buildFilter can be useful as basis for you to allow users to supply filter for queries in a controllable fashion
 
+```java
+// with only 2 parameters "=" operator is assumed 
+query = hip.buildFilter("id",id);
+// resulting prepared statement
+// id = ?
+
+// when handling null, this function becomes even more useful as it changes "id = null" to "id IS NULL"
+query = hip.buildFilter("id",null);
+// resulting prepared statement
+// id IS NULL
+prepare = hip.prepare(query);
+
+// similar behavior is also with "!=" and "<>" operator and null value
+query = hip.buildFilter("id","!=",null);
+assertEquals(hip.prepare(query).getQueryString(), "id IS NOT NULL");
+query = hip.buildFilter("id","<>",null);
+// both resulting in same prepared statement
+// id IS NOT NULL
+```
 
 ## License
 

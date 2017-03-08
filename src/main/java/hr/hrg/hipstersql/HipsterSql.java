@@ -170,7 +170,7 @@ public class HipsterSql {
 		
 		Object p1 = params.get(1);
 		if(count == 2) {
-			if(p1 == null) return new Query("IS NULL");
+			if(p1 == null) return new Query(q_column((String) p0)+"IS NULL");
 			return new Query(q_column((String) p0)+" = ",p1);
 		}
 
@@ -179,9 +179,9 @@ public class HipsterSql {
 			Object p2 = params.get(2);
 			if(p2 == null) {
 				if("=".equals(operator)) {
-					return new Query("IS NULL");
+					return new Query(q_column((String) p0)+" IS NULL");
 				}else if("!=".equals(operator) || "<>".equals(operator)) {					
-					return new Query("IS NOT NULL");
+					return new Query(q_column((String) p0)+" IS NOT NULL");
 				}
 			}
 			return new Query(q_column((String) p0)+" "+q_op(operator)+" ",p2);
@@ -199,7 +199,7 @@ public class HipsterSql {
 		
 		Object p1 = params[1];
 		if(count == 2) {
-			if(p1 == null) return new Query("IS NULL");
+			if(p1 == null) return new Query(q_column((String) p0)+" IS NULL");
 			return new Query(q_column((String) p0)+" = ",p1);
 		}
 
@@ -208,9 +208,9 @@ public class HipsterSql {
 			Object p2 = params[2];
 			if(p2 == null) {
 				if("=".equals(operator)) {
-					return new Query("IS NULL");
+					return new Query(q_column((String) p0)+" IS NULL");
 				}else if("!=".equals(operator) || "<>".equals(operator)) {					
-					return new Query("IS NOT NULL");
+					return new Query(q_column((String) p0)+" IS NOT NULL");
 				}
 			}
 			return new Query(q_column((String) p0)+" "+q_op(operator)+" ",p2);
