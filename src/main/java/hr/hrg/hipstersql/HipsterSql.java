@@ -326,14 +326,24 @@ public class HipsterSql {
     }
 
     /** Get first value as long from first row and first column. <br/>
-     * Useful for counting and other queries that return single int value.<br/>*/
+     */
     public long oneLong(Object ...sql){
+    	Result result = new Result(this, sql).query();
+    	List<Object> row = result.fetchRow();
+    	result.close();
+    	if(row == null) return 0;
+    	Number number = (Number)row.get(0);
+    	return number == null ? 0:number.longValue();
+    }
+    
+    /** Get first value as long from first row and first column. <br/>
+     */
+    public String oneString(Object ...sql){
         Result result = new Result(this, sql).query();
         List<Object> row = result.fetchRow();
         result.close();
-        if(row == null) return 0;
-        Number number = (Number)row.get(0);
-        return number == null ? 0:number.longValue();
+        if(row == null) return null;
+        return row.get(0).toString();
     }
     
     /** Get first value from first row and first column. <br/>
