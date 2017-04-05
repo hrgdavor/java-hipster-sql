@@ -4,9 +4,9 @@
 	<groupId>hr.hrg</groupId>
 	<artifactId>java-hipster-sql</artifactId>
 	<version>0.1.0</version>
-	<name>Java watcher library</name>
+	<name>Java hipster SQL library</name>
 	<description>
-		Utility for watching file changes using Java 7 WatchService.
+		
 	</description>
 	<url>http://github.com/hrgdavor/java-hipster-sql</url>
 	

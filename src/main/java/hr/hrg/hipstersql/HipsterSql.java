@@ -246,7 +246,7 @@ public class HipsterSql {
 	public Query buildInsertVar(String tableName, Object ...values){
 		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
 
-		Query valuesPart = new Query(" VALUES(");
+		Query valuesPart = new Query(")VALUES(");
 		
 		for(int i=1; i<values.length; i+=2){
 			System.out.println(values[i-1]+"="+values[i]);
