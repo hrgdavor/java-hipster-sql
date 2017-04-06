@@ -1,5 +1,6 @@
 package hr.hrg.hipstersql;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class PreparedQuery {
@@ -11,6 +12,12 @@ public class PreparedQuery {
 		this.params = params;
 	}
 
+	@SuppressWarnings("unchecked")
+	public PreparedQuery(String query, Object ...params) {
+		this.query = query;
+		this.params = Arrays.asList(params);
+	}
+	
 	public String getQueryString() {
 		return query;
 	}
