@@ -13,15 +13,36 @@ public class QueryUtil {
 		return new Query(q);
 	}
 	
+	/** Short method name to build PreparedQuery inline */
+	public static PreparedQuery pq(String query, List<Object> params) {
+		return new PreparedQuery(query, params);
+	}
+	
+	/** Short method name to build PreparedQuery inline */
+	public static PreparedQuery pq(String query, Object ...params) {
+		return new PreparedQuery(query, params);
+	}
+	
 	@SafeVarargs
 	public static <T> List<T> toList(T ... arr){
 		return Arrays.asList(arr);
 	}
 
 	@SafeVarargs
+	public static List<Object> toObjectList(Object ... arr){
+		return Arrays.asList(arr);
+	}
+	
+	@SafeVarargs
 	public static <T> T[] toArray(T ... arr){
 		return arr;
 	}
+
+	@SafeVarargs
+	public static Object[] toObjectArray(Object ... arr){
+		return arr;
+	}
+
 
 	public static Map<Object,Object> toMap(Object ... arr) {
 		HashMap<Object, Object> map = new HashMap<>();
@@ -48,6 +69,14 @@ public class QueryUtil {
 		return implode(prefix,queries, glue, null);
 	}
 	
+	/** 
+	 * 
+	 * @param prefix
+	 * @param queries
+	 * @param glue
+	 * @param suffix
+	 * @return
+	 */
 	public static final Query implode(String prefix, List<Query> queries, String glue, String suffix){
 		Query query = new Query();
 
@@ -95,4 +124,64 @@ public class QueryUtil {
 		if(suffix != null) query.append(suffix);
 		return query;
 	}	
+
+    @SuppressWarnings("unchecked")
+    /**
+     * 
+     * @param map map that is being updated
+     * @param row current row used to fill the map
+     */
+	public static void addRowToTree(Map<Object,Object> map, List<Object> row){
+    	Map<Object, Object> current = map;
+    	
+    	int limit = row.size()-2;
+    	int index = 0;
+    	Object key = null;
+
+    	while(index < limit){
+    		key = row.get(index);
+        	
+    		Map<Object,Object> in  = (Map<Object, Object>) current.get(key);
+        	if(in == null){
+        		in = new HashMap<Object, Object>();
+        		current.put(key, in);
+        	}
+        	current = in;
+        	
+        	index ++;
+    	}
+       	current.put(row.get(index), row.get(index+1));
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+
+    /**
+     * 
+     * @param map
+     * @param row
+     * @param index
+     * @param columns
+     */
+	protected static void addRowToTree(Map map, Map row, String ...columns){
+    	Map<Object, Object> current = map;
+        
+    	int limit = columns.length-2;
+    	int index = 0;
+    	Object key = null;
+
+    	while(index < limit){
+    		key = row.get(columns[index]);
+        	
+    		Map<Object,Object> in  = (Map<Object, Object>) current.get(key);
+        	if(in == null){
+        		in = new HashMap<Object, Object>();
+        		current.put(key, in);
+        	}
+        	current = in;
+        	
+    		index ++;
+    	}
+       	current.put(row.get(columns[index]), row.get(columns[index+1]));
+    }
+
 }

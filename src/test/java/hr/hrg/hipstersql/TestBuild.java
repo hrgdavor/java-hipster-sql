@@ -1,5 +1,6 @@
 package hr.hrg.hipstersql;
 
+
 import static hr.hrg.hipstersql.QueryUtil.*;
 import static org.testng.Assert.*;
 
@@ -11,7 +12,7 @@ import org.testng.annotations.Test;
 @Test
 public class TestBuild {
 
-	HipsterSql hip = new HipsterSql(null);
+	HipsterSql hip = new HipsterSql();
 
 	@Test
 	public void testBuild() {

@@ -43,7 +43,6 @@ public class HipsterSql {
 	static Logger log = LoggerFactory.getLogger(HipsterSql.class);
 
 	
-	protected final Connection connection;	
 	protected Pattern tableNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$");
 	protected Pattern columnNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$");
 	protected Set<String> allowdSqlOperators = new HashSet<>();  
@@ -58,16 +57,12 @@ public class HipsterSql {
 		}
 	}
 
-	protected Query lastQuery;
-    protected PreparedQuery lastPrepared;
-    
     protected HashMap<Class<? extends Object>, PreparedSetter<? extends Object>> setters = new HashMap<>(); 
 
 	protected String columQuote1 = "\"";
 	protected String columQuote2 = "\"";
 
-	public HipsterSql(Connection connection){
-		this.connection = connection;
+	public HipsterSql(){
 		this.intAllowdOperators();
 
 		addStatementSetter(Boolean.class, new BooleanSetter());
@@ -101,20 +96,8 @@ public class HipsterSql {
 		setters.put(clazz, setter);
 	}
 	
-	public Connection getConnection() {
-		return connection;
-	}
-	
 	public static boolean isYodaPresent() {
 		return yodaPresent;
-	}
-
-	public Query getLastQuery() {
-		return lastQuery;
-	}
-	
-	public PreparedQuery getLastPrepared() {
-		return lastPrepared;
 	}
 	
 	/** Override this method to provide primary column for a table. One useful thing with this
@@ -263,10 +246,17 @@ public class HipsterSql {
 		return new Query(firstPart, valuesPart);		
 	}
 
-	/** build update Query from map of key->value. Although the map is not declared as Map<String,Object> 
-	 * keys must be strings or ClassCastException will be thrown. */
+	/** Build update Query from map of column->value. Although the map is not declared as Map<String,Object> 
+	 * keys must be strings or ClassCastException will be thrown. 
+	 * 
+	 * @param tableName
+	 * @param filter filter to define which rows to update (be careful not to update the whole table) see: {@link #checkFilterDefined(Object)}
+	 * @param values column->value pairs to generate instead of writing manually<br> 
+	 * <code>new Query("UPDATE [tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
+	 * @return generated query object
+	 */
 	public Query buildUpdate(String tableName, Object filter, Map<?,?> values){
-		Query filterQuery = checkFilter(filter);
+		Query filterQuery = checkFilterDefined(filter);
 
 		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
 
@@ -285,10 +275,16 @@ public class HipsterSql {
 		return query;		
 	}
 	
-	/** build update Query from map of key->value. Although the map is not declared as Map<String,Object> 
-	 * keys must be strings or ClassCastException will be thrown. */
+	/** build update Query from  column->value pairs supplied as varargs. Although the map is not declared as Map<String,Object> 
+	 * keys must be strings or ClassCastException will be thrown. 
+	 * @param tableName
+	 * @param filter filter to define which rows to update (be careful not to update the whole table) see: {@link #checkFilterDefined(Object)}
+	 * @param values column-value pairs to generate instead of writing manually<br> 
+	 * <code>new Query("UPDATE [tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
+	 * @return generated query object
+	 * */
 	public Query buildUpdateVar(String tableName, Object filter, Object ...values){
-		Query filterQuery = checkFilter(filter);
+		Query filterQuery = checkFilterDefined(filter);
 
 		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
 
@@ -305,7 +301,14 @@ public class HipsterSql {
 		return query;		
 	}
 
-	protected Query checkFilter(Object filter) {
+	/** Check if the object is either {@link #ALL_ROWS} or a non-empty query. You can also use new Query("1=1"). <br>
+	 * Helps to sometimes catch unintended whole table update when used by {@link #buildUpdate(String, Object, Map)} or {@link #buildUpdateVar(String, Object, Object...)}
+	 * 
+	 * @param filter
+	 * @return the same filter provided s parameter to allow inline use
+	 * @throws RuntimeException if filter is null or empty query
+	 */
+	public Query checkFilterDefined(Object filter) {
 		if(ALL_ROWS.equals(filter)) return null;// ok, in this case use the empty query to avoid any filtering
 		
 		if(filter == null || !(filter instanceof Query) || ((Query)filter).isEmpty()){				
@@ -314,162 +317,6 @@ public class HipsterSql {
 		return (Query) filter;
 	}
 
-	/** Get first value as int from first row and first column. <br/>
-     * Useful for counting and other queries that return single int value.<br/>*/
-    public int one(Object ...sql){
-        Result result = new Result(this, sql).query();
-        List<Object> row = result.fetchRow();
-        result.close();
-        if(row == null) return 0;
-        Number number = (Number)row.get(0);
-        return number == null ? 0:number.intValue();
-    }
-
-    /** Get first value as long from first row and first column. <br/>
-     */
-    public long oneLong(Object ...sql){
-    	Result result = new Result(this, sql).query();
-    	List<Object> row = result.fetchRow();
-    	result.close();
-    	if(row == null) return 0;
-    	Number number = (Number)row.get(0);
-    	return number == null ? 0:number.longValue();
-    }
-    
-    /** Get first value as long from first row and first column. <br/>
-     */
-    public String oneString(Object ...sql){
-        Result result = new Result(this, sql).query();
-        List<Object> row = result.fetchRow();
-        result.close();
-        if(row == null) return null;
-        return row.get(0).toString();
-    }
-    
-    /** Get first value from first row and first column. <br/>
-     * Useful for counting and other queries that return single value.<br/>*/
-    public Object oneObj(Object ...sql){
-        Result result = new Result(this, sql).query();
-        List<Object> row = result.fetchRow();
-        result.close();
-        if(row == null) return null;
-        return row.get(0);
-    }
-
-    /**
-     * Get single row. 
-     */
-    public Map<Object, Object> row(Object ...sql){
-        Result res = new Result(this, sql).query();
-        Map<Object, Object> row = res.fetchAssoc();
-        res.close();
-        return row;
-    }
-
-    /** return result as rows, but react on Thread.interrupt */
-    public List<Map<Object, Object>> rowsInterruptible(Object ...sql) throws InterruptedException{
-        List<Map<Object, Object>> rows = new ArrayList<>();
-        Result res = new Result(this, sql).query();
-        Map<Object, Object> row;
-        while((row = res.fetchAssoc()) != null){
-        	if(Thread.interrupted()) throw new InterruptedException("Iterrupted while reading rows "+res.query);
-            rows.add(row);
-        }
-        res.close();
-        return rows;    	
-    }
-
-    public List<Map<Object, Object>> rowsLimit(int offset, int limit, Object ...sql){
-    	return rows(new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
-    }
-
-    public List<Map<Object, Object>> rows(Object ...sql){
-        List<Map<Object, Object>> rows = new ArrayList<>();
-        Result res = new Result(this, sql).query();
-        Map<Object, Object> row;
-        while((row = res.fetchAssoc()) != null){
-            rows.add(row);
-        }
-        res.close();
-        return rows;
-    }
-
-    public List<Object> column(Object ...sql){
-        List<Object> column = new ArrayList<Object>();
-        Result res = new Result(this, sql).query();
-        List<Object> row;
-        while((row = res.fetchRow()) != null){
-            column.add(row.get(0));
-        }
-        res.close();
-        return column;
-    }
-
-    @SuppressWarnings("unchecked")
-	protected void addToMap(Map<Object,Object> map, List<Object> row, int index){
-        Object key = row.get(index);
-        index ++;
-        if(row.size() <= index){
-        	map.put(key, row.get(index));
-        }else {
-        	Map<Object,Object> in  = (Map<Object, Object>) map.get(key);
-        	if(in == null){
-        		in = new HashMap<Object, Object>();
-        		map.put(key, in);
-        	}
-        	addToMap(in, row, index);
-        }
-    }
-
-    public Map<Object,Object> map(Object ...sql){
-        Map<Object, Object> map = new HashMap<>();
-        Result res = new Result(this, sql).query();
-        List<Object> row;
-        while((row = res.fetchRow()) != null){
-            addToMap(map, row, 0);
-        }
-        res.close();
-        return map;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void addToMap(Map map, Map row, int index, String ...columns){
-        Object key = row.get(columns[index]);
-        index ++;
-        if(columns.length <= index){
-        	map.put(key, row);
-        }else {
-        	Map<Object,Object> in  = (Map<Object, Object>) map.get(key);
-        	if(in == null){
-        		in = new HashMap<Object, Object>();
-        		map.put(key, in);
-        	}
-        	addToMap(in, row, index, columns);
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-	public Map<Object, Map<Object, Object>> mapObject(Query select, String ...columns) {
-        Map<Object, Map<Object, Object>> map = new HashMap<Object,Map<Object,Object>>();
-        Result res = new Result(this, select).query();
-        Map row;
-        while((row = res.fetchAssoc()) != null){
-            addToMap(map, row, 0, columns);
-        }
-        res.close();
-        return map;
-
-	}
-
-    /** Execute update and return number of affected rows */
-    public int update(Object sql){
-        return new Result(this, sql).updateAndClose();
-    }
-
-    public Object insert(Query sql){
-        return oneObj(sql);
-    }	
-	
 	public PreparedQuery prepare(Object ... queryParts){
 		StringBuilder b = new StringBuilder();
 		List<Object> params = new ArrayList<>();		
@@ -497,8 +344,18 @@ public class HipsterSql {
 		
 	}
 
+	/** Set a value into the prepared statement <br>
+	 * <br>
+	 * Override if using {@link PreparedValue} or defining {@link PreparedSetter} is not sufficient to provide functionality.  
+	 * 
+	 * @param hipConnection connection that produced the PreparedStatement
+	 * @param ps the statement
+	 * @param i index in the statement
+	 * @param value value to set
+	 * @throws SQLException
+	 */
 	@SuppressWarnings({ "unchecked"})
-	public <C> void prepSet(PreparedStatement ps, int i, C value) throws SQLException {
+	public <C> void prepSet(HipsterConnection hipConnection,PreparedStatement ps, int i, C value) throws SQLException {
 		if(value == null){
 			ps.setNull(i, Types.OTHER);
 			return;
@@ -511,13 +368,25 @@ public class HipsterSql {
 		PreparedSetter<C> setter = (PreparedSetter<C>) setters.get(value.getClass());
 		
 		if(setter == null){
-			throw new RuntimeException("Setter not defined for type "+value.getClass()+" in prepared statement: "+lastPrepared.getQueryString()+" on index "+i+" using value "+value);
+			throw new RuntimeException("Setter not defined for type "+value.getClass()+" in prepared statement: "+hipConnection.getLastPrepared().getQueryString()+" on index "+i+" using value "+value);
 		}
 		
 		setter.set(ps, i, (C)value);
 
 	}
-	
+
+	/** HipsterSql returns DateTime LocalDate and LocalTime from yoda-time library if it is present in the classpath.<br>
+	 * Otherwise returns java.sql(Date,Time,TimeStamp).<br>
+	 * <br>
+	 * Override to customise for yourself.
+	 * 
+	 * @param rs ResultSet
+	 * @param index for value
+	 * @param sqlType for the value
+	 * @param column name
+	 * @return extracted Object presenting the time from database
+	 * @throws SQLException
+	 */
 	private Object handleRsGetTime(ResultSet rs, int index, int sqlType, String column) throws SQLException {
 		if(yodaPresent) {			
 			switch (sqlType) {
@@ -535,12 +404,12 @@ public class HipsterSql {
 		return null;
 	}
 
-	private Object handleRsGetOther(ResultSet rs, int index, int sqlType, String column) throws SQLException {
-        log.warn("unhandled sql type "+sqlType+", at index "+index+", column: "+column+" query: "+lastQuery);
+	private Object handleRsGetOther(HipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
+        log.warn("unhandled sql type "+sqlType+", at index "+index+", column: "+column+" query: "+hipcConnection.getLastQuery());
         return rs.getString(index);
 	}
 
-	Object handleRsGet(ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	Object handleRsGet(HipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
     	
         switch (sqlType) {
             case Types.INTEGER: return Integer.valueOf(rs.getInt(index));
@@ -555,9 +424,11 @@ public class HipsterSql {
             
             case Types.CHAR: ;
             case Types.VARCHAR: return rs.getString(index);
-            default: return handleRsGetOther(rs, index, sqlType, column);
+            default: return handleRsGetOther(hipcConnection, rs, index, sqlType, column);
         }
     }
+
+	/* **************************************     UTILITIES FOR PRINTING QUERY TO STRING FOR LOGG AND DEBUG **************************/
 	
 	public static String escape(String str){
 		return str.replace("'", "''").replace("\\", "\\\\");

@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 @Test
 public class TestQuery {
-	HipsterSql hip = new HipsterSql(null);
+	HipsterSql hip = new HipsterSql();
 
 	static Query q1 = q(" and user_id=",1);
 	static Query q2 = q(" and is_deleted=",0);
