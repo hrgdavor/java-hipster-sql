@@ -1,9 +1,8 @@
 package hr.hrg.hipstersql;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-public class PreparedQuery {
+public class PreparedQuery implements QueryPart{
 	private String query;
 	private List<Object> params;
 	
@@ -46,6 +45,10 @@ public class PreparedQuery {
 		}
 		
 		return b.toString();
+	}
+
+	public boolean isEmpty() {
+		return query.isEmpty();
 	}
 	
 }

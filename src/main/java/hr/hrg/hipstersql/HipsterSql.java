@@ -206,7 +206,7 @@ public class HipsterSql {
 	public Query buildInsert(String tableName, Map<?,?> values) {
 		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
 
-		Query valuesPart = new Query(" VALUES(");
+		Query valuesPart = new Query(")VALUES(");
 		
 		int i=0;
 		for(Entry<?, ?> entry:values.entrySet()) {
@@ -317,7 +317,16 @@ public class HipsterSql {
 		return (Query) filter;
 	}
 
+	/** Convert {@link Query} object into a {@link PreparedQuery}
+	 * 
+	 * @param queryParts
+	 * @return PreparedQuery that is ready for execution
+	 */
 	public PreparedQuery prepare(Object ... queryParts){
+		if(queryParts.length == 1 && queryParts[0] instanceof PreparedQuery){
+			return (PreparedQuery) queryParts[0];
+		}
+		
 		StringBuilder b = new StringBuilder();
 		List<Object> params = new ArrayList<>();		
 
@@ -332,11 +341,18 @@ public class HipsterSql {
 		int count = flat.size();
 		
 		for(int i=0; i<count; i++){
-			if(i%2 == 0){
-				b.append(flat.get(i));
+			Object obj = flat.get(i);
+			if(obj instanceof QueryLiteral){
+				b.append(((QueryLiteral)obj).getText());
+			}else if(obj instanceof PreparedQuery){
+				PreparedQuery prepared = (PreparedQuery) obj;
+				b.append(prepared.getQueryString());
+				params.addAll(prepared.getParams());
+			}else if(i%2 == 0){
+				b.append(obj);
 			}else {
 				b.append('?');
-				params.add(flat.get(i));
+				params.add(obj);
 			}
 		}
 

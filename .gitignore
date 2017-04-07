@@ -1,4 +1,5 @@
 .settings/
 target/
+test-output/
 .classpath
 .readme.md.html

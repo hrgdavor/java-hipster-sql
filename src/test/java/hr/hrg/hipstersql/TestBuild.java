@@ -38,8 +38,8 @@ public class TestBuild {
 		query = hip.buildInsert("user", data);
 		
 		prepare = hip.prepare(query);
-		assertEquals(prepare.getQueryString(), "INSERT INTO user(name,gender,age,password VALUES(?,?,?,PASSWORD(?))");
-		assertEquals(prepare.toString(), "INSERT INTO user(name,gender,age,password VALUES('John','M',100,PASSWORD('pwd'))");
+		assertEquals(prepare.getQueryString(), "INSERT INTO user(name,gender,age,password)VALUES(?,?,?,PASSWORD(?))");
+		assertEquals(prepare.toString(), "INSERT INTO user(name,gender,age,password)VALUES('John','M',100,PASSWORD('pwd'))");
 		
 		// varargs version if you want to inline the parameters and not create map with data
 		query = hip.buildInsertVar("user", 
@@ -51,8 +51,8 @@ public class TestBuild {
 			);
 
 		prepare = hip.prepare(query);
-		assertEquals(prepare.getQueryString(), "INSERT INTO user(name,gender,age,password VALUES(?,?,?,PASSWORD(?))");
-		assertEquals(prepare.toString(), "INSERT INTO user(name,gender,age,password VALUES('John','M',100,PASSWORD('pwd'))");
+		assertEquals(prepare.getQueryString(), "INSERT INTO user(name,gender,age,password)VALUES(?,?,?,PASSWORD(?))");
+		assertEquals(prepare.toString(), "INSERT INTO user(name,gender,age,password)VALUES('John','M',100,PASSWORD('pwd'))");
 
 		
 		

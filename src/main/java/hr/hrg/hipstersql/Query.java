@@ -3,8 +3,13 @@ package hr.hrg.hipstersql;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Query {
+public class Query implements QueryPart{
 
+	/**
+	 * Used mainly when appending to a query that ends with a query literal part
+	 */
+	public static final QueryPart EMPTY_QUERY_PART = new QueryLiteral("");
+	
 	List<Object> parts;
 	
 	@SuppressWarnings("unchecked")
@@ -45,7 +50,13 @@ public class Query {
 			if(part instanceof Query){
 				flattenInto(leftSide, ((Query)part).getParts());
 				evenOdd = 1;// will be changed to 2 at the end of the loop
-			
+			}else if(part instanceof QueryPart){
+				if(countLeft%2 == 1){
+					leftSide.add(Query.EMPTY_QUERY_PART);
+					countLeft = leftSide.size();
+				}
+				leftSide.add(part);// just leave the part as is, because we do not know how to flatten it
+				evenOdd = 1;// will be changed to 2 at the end of the loop
 			}else if( evenOdd % 2 == 0 ){// right: sql code from the rightSide list  
 
 				if(countLeft%2 == 1 && countLeft >0){// left: even: sql code we need to concat
@@ -60,6 +71,7 @@ public class Query {
 
 				if(countLeft%2 == 0){// last element is also variable
 					// this should not happen, and to fix, we add empty sql string to be between the variables
+					
 					leftSide.add("");
 				}
 				leftSide.add(rightSide.get(i));
@@ -83,12 +95,14 @@ public class Query {
 		int countLeft = parts.size();
 		int offset = 0;
 		
-		if(countLeft %2 == 1 && !(rightSide[0] instanceof Query) && !(parts.get(countLeft-1) instanceof Query)){
-			Object last = parts.get(countLeft-1);
-			if(last == null) last = "null";
-			parts.set(countLeft-1, last.toString()+rightSide[0]);				
-			
-			offset++;
+		if(countLeft %2 == 1){
+			if(rightSide[0] instanceof String && parts.get(countLeft-1) instanceof String){
+				Object last = parts.get(countLeft-1);
+				if(last == null) last = "null";
+				parts.set(countLeft-1, last.toString()+rightSide[0]);				
+				
+				offset++;
+			}
 		}
 		// current parts empty - add all
 		// even number of entries - add all because next part is query string like the beginning of new query
@@ -101,41 +115,41 @@ public class Query {
 		return this;
 	}
 
-	public void append2(Object ... rightSide){
-		int countRight = rightSide.length;
-		int countLeft;
-		int evenOdd = 0;
-		Object part;
-		
-		for(int i=0; i<countRight; i++){
-			countLeft = parts.size();
-			part = rightSide[i];
-
-			if(part instanceof Query){
-				parts.add(part);
-				evenOdd = 1;// will be changed to 2 at the end of the loop
-			
-			}else if( evenOdd % 2 == 0 ){// right: sql code from the rightSide list  
-
-				if(countLeft%2 == 1 && countLeft >0){// left: even: sql code we need to concat
-					Object last = parts.get(countLeft-1);
-					if(last == null) last = "null";
-					parts.set(countLeft-1, last.toString()+rightSide[i]);				
-				}else{// left: odd: variable, so it is ok just add the sql to the list
-					//this also is done when left side is empty
-					parts.add(rightSide[i]);
-				}
-			}else{// right: odd: variable
-
-				if(countLeft%2 == 0){// last element is also variable
-					// this should not happen, and to fix, we add empty sql string to be between the variables
-					parts.add("");
-				}
-				parts.add(rightSide[i]);
-			}
-			evenOdd++;
-		}
-	}
+//	public void append2(Object ... rightSide){
+//		int countRight = rightSide.length;
+//		int countLeft;
+//		int evenOdd = 0;
+//		Object part;
+//		
+//		for(int i=0; i<countRight; i++){
+//			countLeft = parts.size();
+//			part = rightSide[i];
+//
+//			if(part instanceof Query){
+//				parts.add(part);
+//				evenOdd = 1;// will be changed to 2 at the end of the loop
+//			
+//			}else if( evenOdd % 2 == 0 ){// right: sql code from the rightSide list  
+//
+//				if(countLeft%2 == 1 && countLeft >0){// left: even: sql code we need to concat
+//					Object last = parts.get(countLeft-1);
+//					if(last == null) last = "null";
+//					parts.set(countLeft-1, last.toString()+rightSide[i]);				
+//				}else{// left: odd: variable, so it is ok just add the sql to the list
+//					//this also is done when left side is empty
+//					parts.add(rightSide[i]);
+//				}
+//			}else{// right: odd: variable
+//
+//				if(countLeft%2 == 0){// last element is also variable
+//					// this should not happen, and to fix, we add empty sql string to be between the variables
+//					parts.add("");
+//				}
+//				parts.add(rightSide[i]);
+//			}
+//			evenOdd++;
+//		}
+//	}
 	
 	public List<Object> getParts() {
 		return parts;
@@ -145,7 +159,7 @@ public class Query {
 		if(parts.isEmpty()) return true;
 		if(parts.size() == 1){
 			Object part = parts.get(0);
-			if(part instanceof Query && ((Query)part).isEmpty()) return true;
+			if(part instanceof QueryPart && ((QueryPart)part).isEmpty()) return true;
 			if(part != null && part.toString().isEmpty()) return true;
 		}
 		return false;
