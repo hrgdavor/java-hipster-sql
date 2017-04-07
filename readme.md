@@ -21,18 +21,22 @@ Maybe you just want to write the query in the code in a way that is readable and
 ```java
 // I prefer to have, the variables that are part of the query, inline with sql code, 
 // but something like this could easily become sql injection problem if name variable comes from user input
+// ** Mainstream style
 queryStr = "select * from users where name LIKE '"+name+"' and height > "+height+" order by name";
 
 // in our metohds query parts are passed as arguments and prepared statments are used in the background 
 // the only difference from the unsafe query string above is that "+" plus operator is replaced by "," comma
+// ** Hipster style
 query = new Query("select * from users where name LIKE ",name," and height > ",height," order by name");
 
 // Sure, using a simple prepared statement for something like this is not so bad, but it gets complicated quickly
+// ** Mainstream style
 pStatement = conn.prepareStatement("select * from users where name LIKE ?  and height > ? order by name");
 pStatement.setString(1, name);
 pStatement.setInt(2, height);
 
 // but if you like the prepared statement syntax, you can also use varargs with PreparedQuery
+// ** Hipster style
 pQeury = new PreparedQuery("select * from users where name LIKE ?  and height > ? order by name", name, height);
 
 
