@@ -15,4 +15,9 @@ public final class QueryLiteral implements QueryPart{
 	public boolean isEmpty() {
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return text;
+	}
 }

@@ -3,17 +3,15 @@ package hr.hrg.hipstersql;
 import static hr.hrg.hipstersql.QueryUtil.*;
 import static org.testng.Assert.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 @Test
 public class TestMap {
 	
 	
+	@SuppressWarnings("rawtypes")
 	public void testMapFromList(){
 		Map<Object, Object> map = new HashMap<>();
 		QueryUtil.addRowToTree(map, toObjectList(1,2,"a"));
@@ -29,6 +27,7 @@ public class TestMap {
 		assertEquals(map2.get(4),"c");	
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void testMapFromAssoc(){
 		String[] columns = toArray("c1","c2","c3");
 

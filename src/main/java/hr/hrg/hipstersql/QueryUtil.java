@@ -1,50 +1,55 @@
 package hr.hrg.hipstersql;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class QueryUtil {
-
-	/** Short method name to build query inline */
-	public static Query q(Object ... q) {
-		return new Query(q);
-	}
-	
-	/** Short method name to build PreparedQuery inline */
-	public static PreparedQuery pq(String query, List<Object> params) {
-		return new PreparedQuery(query, params);
-	}
-	
-	/** Short method name to build PreparedQuery inline */
-	public static PreparedQuery pq(String query, Object ...params) {
-		return new PreparedQuery(query, params);
-	}
 	
 	@SafeVarargs
-	public static <T> List<T> toList(T ... arr){
+	/** Convert varargs to List
+	 * 
+	 * @param arr
+	 * @return
+	 */
+	public static final <T> List<T> toList(T ... arr){
 		return Arrays.asList(arr);
 	}
 
 	@SafeVarargs
-	public static List<Object> toObjectList(Object ... arr){
+	/**Convert varargs to List<Object>
+	 * 
+	 * @param arr
+	 * @return
+	 */
+	public static final List<Object> toObjectList(Object ... arr){
 		return Arrays.asList(arr);
 	}
 	
 	@SafeVarargs
-	public static <T> T[] toArray(T ... arr){
+	/** Shortcut for new T[]{...}
+	 * 
+	 * @param arr
+	 * @return
+	 */
+	public static final <T> T[] toArray(T ... arr){
 		return arr;
 	}
 
 	@SafeVarargs
-	public static Object[] toObjectArray(Object ... arr){
+	/** Shortcut for new Object[]{...}
+	 * 
+	 * @param arr
+	 * @return
+	 */
+	public static final Object[] toObjectArray(Object ... arr){
 		return arr;
 	}
 
-
-	public static Map<Object,Object> toMap(Object ... arr) {
+	/** Convert varargs to Map <Object,Object>
+	 * 
+	 * @param arr
+	 * @return
+	 */
+	public static final Map<Object,Object> toMap(Object ... arr) {
 		HashMap<Object, Object> map = new HashMap<>();
 		for(int i=1; i<arr.length; i++){
 			map.put(arr[i-1], arr[i]);
@@ -53,31 +58,49 @@ public class QueryUtil {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static Query qIn(Object ...values){
+	/** Generate query for "IN" operator : " IN(v1,v2,..)"
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static final Query queryIn(Object ...values){
 		
 		if(values.length == 0 && values[0] instanceof List)
-			return implodeValues(" IN(", (List<Object>) values[0], ",", ") ");
+			return joinValues(" IN(", (List<Object>) values[0], ",", ") ");
 		
-		return implodeValues(" IN(", toList(values), ",", ") ");
+		return joinValues(" IN(", toList(values), ",", ") ");
 	}
 
-	public static final Query implode(List<Query> queries, String glue){		
-		return implode(null,queries, glue, null);
+	/** Join multiple queries with glue/delimiter between.
+	 * 
+	 * @param queries
+	 * @param glue
+	 * @return new joined query or an empty Query if [queries] is empty
+	 */
+	public static final Query join(List<Query> queries, String glue){		
+		return join(null,queries, glue, null);
 	}
 	
-	public static final Query implode(String prefix, List<Query> queries, String glue){
-		return implode(prefix,queries, glue, null);
+	/** Join multiple queries with glue/delimiter between. Also add a prefix if [queries] is not empty.
+	 * 
+	 * @param prefix
+	 * @param queries
+	 * @param glue
+	 * @return new joined query or an empty Query if [queries] is empty
+	 */
+	public static final Query join(String prefix, List<Query> queries, String glue){
+		return join(prefix,queries, glue, null);
 	}
 	
-	/** 
+	/** Join multiple queries with glue/delimiter between. Also add a prefix and suffix if [queries] is not empty.
 	 * 
 	 * @param prefix
 	 * @param queries
 	 * @param glue
 	 * @param suffix
-	 * @return
+	 * @return new joined query or an empty Query if [queries] is empty
 	 */
-	public static final Query implode(String prefix, List<Query> queries, String glue, String suffix){
+	public static final Query join(String prefix, List<Query> queries, String glue, String suffix){
 		Query query = new Query();
 
 		// remove empty queries
@@ -98,16 +121,37 @@ public class QueryUtil {
 		if(suffix != null) query.append(suffix);
 		return query;
 	}
-
-	public static final Query implodeValues(List<? extends Object> queries, String glue){		
-		return implodeValues(null,queries, glue, null);
+	
+	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
+	 * 
+	 * @param values
+	 * @param glue
+	 * @return new joined query or an empty Query if [values] is empty
+	 */
+	public static final Query joinValues(List<? extends Object> values, String glue){		
+		return joinValues(null,values, glue, null);
 	}
 	
-	public static final Query implodeValues(String prefix, List<? extends Object> queries, String glue){
-		return implodeValues(prefix,queries, glue, null);
+	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
+	 * 
+	 * @param prefix
+	 * @param values
+	 * @param glue
+	 * @return new joined query or an empty Query if [values] is empty
+	 */
+	public static final Query joinValues(String prefix, List<? extends Object> values, String glue){
+		return joinValues(prefix,values, glue, null);
 	}
 	
-	public static final Query implodeValues(String prefix, List<? extends Object> values, String glue, String suffix){
+	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
+	 * 
+	 * @param prefix
+	 * @param values
+	 * @param glue
+	 * @param suffix
+	 * @return new joined query or an empty Query if [values] is empty
+	 */
+	public static final Query joinValues(String prefix, List<? extends Object> values, String glue, String suffix){
 		Query query = new Query();
 		
 		if(values.size() == 0) return query;
@@ -126,7 +170,8 @@ public class QueryUtil {
 	}	
 
     @SuppressWarnings("unchecked")
-    /**
+    /** Utility that fills a java.util.Map based tree of values based on the supplied data List.<br>
+     * It creates a new Map base tree level inside for each object in the list except for the last one(that one is added as is). 
      * 
      * @param map map that is being updated
      * @param row current row used to fill the map
@@ -155,12 +200,11 @@ public class QueryUtil {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
 
-    /**
+    /** Utility that fills a java.util.Map based tree of values based on the supplied data and columns to be used
      * 
-     * @param map
-     * @param row
-     * @param index
-     * @param columns
+     * @param map to fill
+     * @param row data
+     * @param columns to use
      */
 	protected static void addRowToTree(Map map, Map row, String ...columns){
     	Map<Object, Object> current = map;

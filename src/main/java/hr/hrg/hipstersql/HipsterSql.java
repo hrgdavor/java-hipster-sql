@@ -1,6 +1,5 @@
 package hr.hrg.hipstersql;
 
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -328,36 +327,43 @@ public class HipsterSql {
 		}
 		
 		StringBuilder b = new StringBuilder();
-		List<Object> params = new ArrayList<>();		
+		List<Object> params = new ArrayList<>();
 
-		Query query;
-		if(queryParts.length == 1 && queryParts[0] instanceof Query){
-			query = (Query) queryParts[0];
-		}else{
-			query = new Query(queryParts);
-		}
+		prepareInto(b, params, queryParts);
 		
-		List<Object> flat = query.getFlatten();
-		int count = flat.size();
+		return new PreparedQuery(b.toString(), params); 
+	}
+	
+	public void prepareInto(StringBuilder b, List<Object> params, Object ... queryParts){
+		
+		int count = queryParts.length;
+		int evenOdd = 0;
 		
 		for(int i=0; i<count; i++){
-			Object obj = flat.get(i);
+			Object obj = queryParts[i];
+		
 			if(obj instanceof QueryLiteral){
 				b.append(((QueryLiteral)obj).getText());
+				evenOdd = 1;// will be changed to 2 at the end of the loop
+			
+			}else if(obj instanceof Query){
+				prepareInto(b, params, ((Query)obj).getParts().toArray());
+				evenOdd = 1;// will be changed to 2 at the end of the loop				
+			
 			}else if(obj instanceof PreparedQuery){
 				PreparedQuery prepared = (PreparedQuery) obj;
 				b.append(prepared.getQueryString());
 				params.addAll(prepared.getParams());
-			}else if(i%2 == 0){
+			
+			}else if(evenOdd %2 == 0){
 				b.append(obj);
+			
 			}else {
 				b.append('?');
 				params.add(obj);
 			}
+			evenOdd++;
 		}
-
-		return new PreparedQuery(b.toString(), params);
-		
 	}
 
 	/** Set a value into the prepared statement <br>

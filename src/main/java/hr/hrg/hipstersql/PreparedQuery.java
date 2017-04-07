@@ -11,7 +11,6 @@ public class PreparedQuery implements QueryPart{
 		this.params = params;
 	}
 
-	@SuppressWarnings("unchecked")
 	public PreparedQuery(String query, Object ...params) {
 		this.query = query;
 		this.params = Arrays.asList(params);

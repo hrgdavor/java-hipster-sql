@@ -1,6 +1,8 @@
 package hr.hrg.hipstersql;
 
 import static hr.hrg.hipstersql.QueryUtil.*;
+import static hr.hrg.hipstersql.QueryUtilShort.*;
+
 import static org.testng.Assert.*;
 
 import org.testng.annotations.DataProvider;
@@ -32,10 +34,6 @@ public class TestQuery {
 						"select * from users WHERE 1=1 and user_id=? ORDER BY name",
 						"select * from users WHERE 1=1",q1," ORDER BY name"),
 
-				//flatten same query
-				qp("select * from users WHERE 1=1 and user_id=1 ORDER BY name",
-						"select * from users WHERE 1=1 and user_id=? ORDER BY name",
-						q("select * from users WHERE 1=1",q1," ORDER BY name").getFlattenQuery()),
 				// create empty query and append
 				qp("select * from users WHERE 1=1 and user_id=1 ORDER BY name",
 						"select * from users WHERE 1=1 and user_id=? ORDER BY name",
@@ -87,22 +85,22 @@ public class TestQuery {
 	public Object[][] implodeData(){
 		return new Object[][]{
 			toArray("id=1",
-					implode( toList(q("id=",1)) , " AND ")),
+					join( toList(q("id=",1)) , " AND ")),
 
 			toArray("id=1 AND date>NOW()",
-					implode( toList(q("id=",1),q("date>",q("NOW()"))) , " AND ")),
+					join( toList(q("id=",1),q("date>",q("NOW()"))) , " AND ")),
 
 			toArray("id=1 AND date>'2016-01-01'",
-					implode( toList(q("id=",1),q("date>","2016-01-01")) , " AND ")),
+					join( toList(q("id=",1),q("date>","2016-01-01")) , " AND ")),
 
 			toArray("WHERE id=1 AND date>'2016-01-01'",
-					implode( "WHERE ", toList(q("id=",1),q("date>","2016-01-01")) , " AND ")),
+					join( "WHERE ", toList(q("id=",1),q("date>","2016-01-01")) , " AND ")),
 
 			toArray("",
-					implode( toList(q()) , " AND ")),
+					join( toList(q()) , " AND ")),
 
 			toArray("",
-					implode( "WHERE ", toList(q()) , " AND ")),
+					join( "WHERE ", toList(q()) , " AND ")),
 		};
 	}
 
@@ -116,10 +114,10 @@ public class TestQuery {
 	public Object[][] implodeData2(){
 		return new Object[][]{
 			toArray("1,2",
-					implodeValues( toList(1,2) , ",")),
+					joinValues( toList(1,2) , ",")),
 			
 			toArray(" IN(1,2,3) ",
-					implodeValues(" IN(", toList(1,2,3) , ",", ") ")),
+					joinValues(" IN(", toList(1,2,3) , ",", ") ")),
 			
 			toArray(" IN(1,2,3,4) ",
 					qIn(1,2,3,4)),

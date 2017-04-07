@@ -1,13 +1,12 @@
 package hr.hrg.hipstersql;
 
 
-import static hr.hrg.hipstersql.QueryUtil.*;
+import static hr.hrg.hipstersql.QueryUtilShort.*;
 import static org.testng.Assert.*;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 @Test
 public class TestBuild {

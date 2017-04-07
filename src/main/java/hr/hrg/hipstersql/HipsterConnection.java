@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Short lived throw away instance that can be used per thread and discarded. */
+/** Short lived throw away instance that can be used per thread(sql connection) and discarded. */
 public class HipsterConnection {
 	
 	protected HipsterSql hipster;
