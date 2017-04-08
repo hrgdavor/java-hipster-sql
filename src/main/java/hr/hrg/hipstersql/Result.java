@@ -14,14 +14,14 @@ import java.util.Map;
  */
 class Result implements AutoCloseable{
 
-	private final HipsterConnection hipConnection;
+	private final HipsterConnectionImpl hipConnection;
 	private final HipsterSql hipster;
 	protected String query;
     protected ResultSet rs;
     protected PreparedStatement ps;
     private ResultSetMetaData metaData;
 
-    public Result(HipsterConnection hipConnection, Object ... queryParts ){
+    public Result(HipsterConnectionImpl hipConnection, Object ... queryParts ){
     	this.hipConnection = hipConnection;
     	this.hipster = hipConnection.getHipster();
 
@@ -67,13 +67,11 @@ class Result implements AutoCloseable{
         return new RuntimeException("Problem executing query \n"+this.hipConnection.lastQuery+", error: "+e.getMessage(), e);
     }
 
-    public int updateAndClose(){
+    public int update(){
         try{
-            int ret = ps.executeUpdate();
-            close();
-            return ret;
+            return ps.executeUpdate();
         }catch (Exception e){
-            close(); 
+            close();
             throw queryError(e);
         }
     }
