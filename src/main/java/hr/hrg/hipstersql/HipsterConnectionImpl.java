@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Short lived throw away instance that can be used per thread(sql connection) and discarded. */
+/** Short lived throw away instance that can be used per thread(sql connection) and discarded. 
+ * You should not share instance between threads, although the worst that can happen is wrong query reported
+ * in case of error, because lastQuery and lastPrepared are instance variables.
+ * */
 public class HipsterConnectionImpl implements HipsterConnection {
 	
 	protected HipsterSql hipster;
