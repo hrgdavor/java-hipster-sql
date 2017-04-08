@@ -1,6 +1,6 @@
 #Introduction
 
-Utility for watching working with JDBC. When ORM feels too heavy, and pure JDBC annoying.
+Utility for working with JDBC. When ORM feels too heavy, and pure JDBC is annoying you.
 
 
 #Usage
