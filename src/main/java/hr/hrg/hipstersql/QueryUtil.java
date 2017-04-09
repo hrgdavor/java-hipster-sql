@@ -7,8 +7,8 @@ public class QueryUtil {
 	@SafeVarargs
 	/** Convert varargs to List
 	 * 
-	 * @param arr
-	 * @return
+	 * @param arr elements
+	 * @return List
 	 */
 	public static final <T> List<T> toList(T ... arr){
 		return Arrays.asList(arr);
@@ -17,8 +17,8 @@ public class QueryUtil {
 	@SafeVarargs
 	/**Convert varargs to List<Object>
 	 * 
-	 * @param arr
-	 * @return
+	 * @param arr elements
+	 * @return List
 	 */
 	public static final List<Object> toObjectList(Object ... arr){
 		return Arrays.asList(arr);
@@ -27,8 +27,8 @@ public class QueryUtil {
 	@SafeVarargs
 	/** Shortcut for new T[]{...}
 	 * 
-	 * @param arr
-	 * @return
+	 * @param arr elements
+	 * @return array
 	 */
 	public static final <T> T[] toArray(T ... arr){
 		return arr;
@@ -37,17 +37,17 @@ public class QueryUtil {
 	@SafeVarargs
 	/** Shortcut for new Object[]{...}
 	 * 
-	 * @param arr
-	 * @return
+	 * @param arr elements
+	 * @return Object[]
 	 */
 	public static final Object[] toObjectArray(Object ... arr){
 		return arr;
 	}
 
-	/** Convert varargs to Map <Object,Object>
+	/** Convert varargs to Map &lt;Object,Object&gt;
 	 * 
-	 * @param arr
-	 * @return
+	 * @param arr key value pairs
+	 * @return Map key:value
 	 */
 	public static final Map<Object,Object> toMap(Object ... arr) {
 		HashMap<Object, Object> map = new HashMap<>();
@@ -56,12 +56,24 @@ public class QueryUtil {
 		}
 		return map;
 	}
+
+	@SafeVarargs
+	/** add varargs to List
+	 * 
+	 * @param arr
+	 * @return
+	 */
+	public static final <T> List<T> addToList(List<T> list,T ... arr){
+		for(T t:arr) list.add(t);
+		return list;
+	}
+	
 	
 	@SuppressWarnings("unchecked")
 	/** Generate query for "IN" operator : " IN(v1,v2,..)"
 	 * 
-	 * @param values
-	 * @return
+	 * @param values for IN(...)
+	 * @return Query object
 	 */
 	public static final Query queryIn(Object ...values){
 		

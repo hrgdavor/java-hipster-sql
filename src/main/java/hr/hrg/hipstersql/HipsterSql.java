@@ -200,7 +200,7 @@ public class HipsterSql {
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
 	}
 
-	/** build insert Query from map of key->value. Although the map is not declared as Map<String,Object> 
+	/** build insert Query from map of key:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. */
 	public Query buildInsert(String tableName, Map<?,?> values) {
 		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
@@ -245,12 +245,12 @@ public class HipsterSql {
 		return new Query(firstPart, valuesPart);		
 	}
 
-	/** Build update Query from map of column->value. Although the map is not declared as Map<String,Object> 
+	/** Build update Query from map of column:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
 	 * @param tableName
 	 * @param filter filter to define which rows to update (be careful not to update the whole table) see: {@link #checkFilterDefined(Object)}
-	 * @param values column->value pairs to generate instead of writing manually<br> 
+	 * @param values column:value pairs to generate instead of writing manually<br> 
 	 * <code>new Query("UPDATE [tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
 	 * @return generated query object
 	 */
@@ -274,7 +274,7 @@ public class HipsterSql {
 		return query;		
 	}
 	
-	/** build update Query from  column->value pairs supplied as varargs. Although the map is not declared as Map<String,Object> 
+	/** build update Query from  column:value pairs supplied as varargs. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * @param tableName
 	 * @param filter filter to define which rows to update (be careful not to update the whole table) see: {@link #checkFilterDefined(Object)}
@@ -327,11 +327,11 @@ public class HipsterSql {
 		}
 		
 		StringBuilder b = new StringBuilder();
-		List<Object> params = new ArrayList<>();
+		ArrayList<Object> params = new ArrayList<>();
 
 		prepareInto(b, params, queryParts);
 		
-		return new PreparedQuery(b.toString(), params); 
+		return new PreparedQuery(b, params); 
 	}
 	
 	public void prepareInto(StringBuilder b, List<Object> params, Object ... queryParts){
@@ -352,7 +352,7 @@ public class HipsterSql {
 			
 			}else if(obj instanceof PreparedQuery){
 				PreparedQuery prepared = (PreparedQuery) obj;
-				b.append(prepared.getQueryString());
+				b.append(prepared.getQueryStringBuilder());
 				params.addAll(prepared.getParams());
 			
 			}else if(evenOdd %2 == 0){
