@@ -57,6 +57,18 @@ public class QueryUtil {
 		return map;
 	}
 
+	/** Convert varargs to Map &lt;Object,Object&gt;
+	 * 
+	 * @param arr key value pairs
+	 * @return Map key:value
+	 */
+	public static final Map<Object,Object> addToMap(Map<? super Object,? super Object> map, Object ... arr) {
+		for(int i=1; i<arr.length; i++){
+			map.put(arr[i-1], arr[i]);
+		}
+		return map;
+	}	
+	
 	@SafeVarargs
 	/** add varargs to List
 	 * 
