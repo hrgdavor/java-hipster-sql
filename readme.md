@@ -1,9 +1,9 @@
-#Introduction
+# Java Hipster SQL 
 
 Utility for working with JDBC. When ORM feels too heavy, and pure JDBC is annoying you.
 
 
-#Usage
+ # Usage
 
 Add maven dependency or download from [maven central](http://repo1.maven.org/maven2/hr/hrg/java-hipster-sql/)
 
