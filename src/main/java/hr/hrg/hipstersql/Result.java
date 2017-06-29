@@ -13,7 +13,7 @@ import java.util.Map;
  * @author hrg
  */
 class Result implements AutoCloseable{
-
+	
 	private final HipsterConnectionImpl hipConnection;
 	private final HipsterSql hipster;
 	protected String query;
@@ -76,6 +76,51 @@ class Result implements AutoCloseable{
         }
     }
     
+    public Long fetchLong(){
+    	try{
+    		if(!rs.next()) return null;
+    		return rs.getLong(1);
+    	}catch (Exception e){
+    		close(); throw queryError(e);
+    	}
+    }
+    
+    public Double fetchDouble(){
+    	try{
+    		if(!rs.next()) return null;
+    		return rs.getDouble(1);
+    	}catch (Exception e){
+    		close(); throw queryError(e);
+    	}
+    }
+    
+    public Integer fetchInteger(){
+    	try{
+    		if(!rs.next()) return null;
+    		return rs.getInt(1);
+    	}catch (Exception e){
+    		close(); throw queryError(e);
+    	}
+    }
+    
+    public Float fetchFloat(){
+    	try{
+    		if(!rs.next()) return null;
+    		return rs.getFloat(1);
+    	}catch (Exception e){
+    		close(); throw queryError(e);
+    	}
+    }
+    
+    public String fetchString(){
+        try{
+            if(!rs.next()) return null;
+            return rs.getString(1);
+        }catch (Exception e){
+            close(); throw queryError(e);
+        }
+    }
+
     /**
      * 
      * @return list of values returned by the current {@link ResultSet}

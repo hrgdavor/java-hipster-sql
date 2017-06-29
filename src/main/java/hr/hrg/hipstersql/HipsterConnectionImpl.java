@@ -147,9 +147,6 @@ public class HipsterConnectionImpl implements HipsterConnection {
     	return rows(new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
     }
 
-    /* (non-Javadoc)
-	 * @see hr.hrg.hipstersql.HipsterConnection#rows(java.lang.Object)
-	 */
     @Override
 	public List<Map<Object, Object>> rows(Object ...sql){
         List<Map<Object, Object>> rows = new ArrayList<>();
@@ -165,12 +162,9 @@ public class HipsterConnectionImpl implements HipsterConnection {
         return rows;
     }
 
-    /* (non-Javadoc)
-	 * @see hr.hrg.hipstersql.HipsterConnection#column(java.lang.Object)
-	 */
     @Override
 	public List<Object> column(Object ...sql){
-        List<Object> column = new ArrayList<Object>();
+        List<Object> column = new ArrayList<>();
         try(Result res = new Result(this, sql);){
         	res.query();
 
@@ -182,6 +176,76 @@ public class HipsterConnectionImpl implements HipsterConnection {
         return column;
     }	
 
+    @Override
+    public List<Double> columnDouble(Object... sql) {
+    	List<Double> column = new ArrayList<>();
+    	Double val;
+    	try(Result res = new Result(this, sql);){
+    		res.query();
+    		
+    		while((val = res.fetchDouble()) != null){
+    			column.add(val);
+    		}
+    	}
+    	return column;
+    }
+    
+    @Override
+    public List<Integer> columnInteger(Object... sql) {
+    	List<Integer> column = new ArrayList<>();
+    	Integer val;
+    	try(Result res = new Result(this, sql);){
+    		res.query();
+    		
+    		while((val = res.fetchInteger()) != null){
+    			column.add(val);
+    		}
+    	}
+    	return column;
+    }
+    
+    @Override
+    public List<Long> columnLong(Object... sql) {
+    	List<Long> column = new ArrayList<>();
+    	Long val;
+    	try(Result res = new Result(this, sql);){
+    		res.query();
+    		
+    		while((val = res.fetchLong()) != null){
+    			column.add(val);
+    		}
+    	}
+    	return column;
+    }
+    
+    @Override
+    public List<String> columnString(Object... sql) {
+    	List<String> column = new ArrayList<>();
+    	String val;
+    	try(Result res = new Result(this, sql);){
+    		res.query();
+    		
+    		while((val = res.fetchString()) != null){
+    			column.add(val);
+    		}
+    	}
+    	return column;
+    }
+    
+    @Override
+    public List<Float> columnFloat(Object... sql) {
+        List<Float> column = new ArrayList<>();
+        Float val;
+        try(Result res = new Result(this, sql);){
+        	res.query();
+
+	        while((val = res.fetchFloat()) != null){
+	            column.add(val);
+	        }
+        }
+        return column;
+    }
+    
 
     /* (non-Javadoc)
 	 * @see hr.hrg.hipstersql.HipsterConnection#treeWithValue(java.lang.Object)

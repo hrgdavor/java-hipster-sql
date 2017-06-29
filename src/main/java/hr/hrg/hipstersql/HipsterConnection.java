@@ -75,6 +75,16 @@ public interface HipsterConnection {
 
 	List<Object> column(Object... sql);
 
+	List<Long> columnLong(Object... sql);
+
+	List<Integer> columnInteger(Object... sql);
+
+	List<String> columnString(Object... sql);
+
+	List<Float> columnFloat(Object... sql);
+
+	List<Double> columnDouble(Object... sql);
+
 	Map<Object, Object> treeWithValue(Object... sql);
 
 	Map<Object, Map<Object, Object>> treeWithRow(Query sql, String... columns);
