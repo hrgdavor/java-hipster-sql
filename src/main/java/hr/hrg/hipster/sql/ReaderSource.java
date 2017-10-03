@@ -4,6 +4,8 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import javax.persistence.*;
+
 public class ReaderSource {
 
 	protected Map<Class<? extends Object>, IReadMeta<?,ResultColumnMeta>> registered = new ConcurrentHashMap<>(); 
@@ -86,6 +88,11 @@ public class ReaderSource {
 	private ResultColumnMeta makeColumnMeta(Class<?> clazz, Method method, String methodName, String name, String tableName, int ordinal) {
 		String columnName = name;
 		Class<?> returnType = method.getReturnType();
+		
+		Column columnAnnotation = method.getAnnotation(Column.class);
+		if(columnAnnotation != null){
+			columnName = columnAnnotation.name();
+		}
 		
 		Class<?>[] typeParams = extractGenericArguments(method);
 
