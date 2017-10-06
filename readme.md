@@ -38,15 +38,23 @@ public interface User{
 }	
 
 ```
-		
-or use javax.persistence to name a method how ever we like 
+
+even use javax.persistence to name your method how ever you like _(and have correct name in SQL)_ 
 
 ```java
 	@Column(name="user_id")
 	public Long getId(); 
 
 ```
-then just supply the interface class to query methods, and omit "SELECT {columns}" (it will be added automatically based on the analysis of the interface)
+
+All you need to do then then is:
+
+  - supply the interface class to query methods
+  - start query with `"from {tableName}"`
+  - add any extra filters or `order by` statements 
+
+`"SELECT {columns}"` will be prepended automatically based on the analysis of your interface
+
 ```java
 List<User> users = hip.entities(User.class,"from user_table WHERE age > ", 23);		
 for(User user:users){
