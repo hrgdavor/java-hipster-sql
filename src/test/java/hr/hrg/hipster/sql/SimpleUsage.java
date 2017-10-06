@@ -14,24 +14,24 @@ public class SimpleUsage {
 		initData(conn);
 		
 		// global definitions and data handling (can be Singleton)
-        HipsterSql hipSql = new HipsterSql();
-        
-        // SQL connection specific (not thread safe, use instance per Thread)
-        HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
+		HipsterSql hipSql = new HipsterSql();
+		
+		// SQL connection specific (not thread safe, use instance per Thread)
+		HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
 
-        // "SELECT {column names}" will be added, and column names calculated by analysing the interface
-        List<User> users = hip.entities(User.class,"from user_table");		
-        for(User user:users){
-    		System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());        	
-        }
+		// "SELECT {column names}" will be added, and column names calculated by analysing the interface
+		List<User> users = hip.entities(User.class,"from user_table");		
+		for(User user:users){
+			System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());        	
+		}
 
-        System.out.println();
-        
-        String filterText = "%world%";
-        users = hip.entities(User.class,"from user_table WHERE name like ", filterText);		
-        for(User user:users){
-    		System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());        	
-        }
+		System.out.println();
+		
+		String filterText = "%world%";
+		users = hip.entities(User.class,"from user_table WHERE name like ", filterText);		
+		for(User user:users){
+			System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());        	
+		}
 	}
 
 	public static void initData(Connection conn) throws Exception{
