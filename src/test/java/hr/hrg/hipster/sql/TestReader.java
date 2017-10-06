@@ -1,10 +1,10 @@
 package hr.hrg.hipster.sql;
 
-import org.testng.annotations.*;
-
 import static org.testng.Assert.*;
 
 import java.sql.*;
+
+import org.testng.annotations.*;
 
 @Test
 public class TestReader {

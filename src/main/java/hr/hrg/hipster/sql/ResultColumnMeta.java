@@ -44,6 +44,7 @@ public class ResultColumnMeta implements IColumnMeta {
 		return entity;
 	}
 
+	@Override
 	public Class<?> getType() {
 		return type;
 	}
@@ -52,6 +53,7 @@ public class ResultColumnMeta implements IColumnMeta {
 		return getterName;
 	}
 
+	@Override
 	public String getColumnName() {
 		return columnName;
 	}

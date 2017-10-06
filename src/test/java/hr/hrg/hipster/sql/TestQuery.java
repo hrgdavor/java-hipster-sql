@@ -72,9 +72,6 @@ public class TestQuery {
 
 	@Test(dataProvider="queries")
 	public void testPrepared(String queryString, String preparedStr, Object[]p){
-		if(preparedStr == "select * from users WHERE 1=1 and user_id=? ORDER BY name"){
-			System.out.println("breakpoint");
-		}
 		PreparedQuery prepare = hip.prepare(p);
 		assertEquals(prepare.getQueryString(), preparedStr);
 		assertEquals(prepare.toString(), queryString);

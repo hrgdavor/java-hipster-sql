@@ -104,4 +104,7 @@ public interface IHipsterConnection {
 	<T,E extends IColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object ...sql);
 
 
+	<T> List<T> column(Class<T> reader, Object ...sql);
+	<T> List<T> column(IResultGetter<T> reader, Object ...sql);
+
 }

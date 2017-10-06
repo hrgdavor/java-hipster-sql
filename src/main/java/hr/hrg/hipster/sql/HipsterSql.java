@@ -13,9 +13,7 @@ import org.slf4j.*;
 public class HipsterSql {
 	
 	public static final String ALL_ROWS = "ALL_ROWS";
-	
-	static Logger log = LoggerFactory.getLogger(HipsterSql.class);
-
+	static Logger log = HipsterSqlUtil.isSlf4jApiPresent() ? LoggerFactory.getLogger(HipsterSql.class) : null;
 	
 	protected Pattern tableNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$");
 	protected Pattern columnNamePattern = Pattern.compile("^[a-z_][a-z0-9_]+$");
@@ -48,6 +46,14 @@ public class HipsterSql {
 	
 	public ReaderSource getReaderSource() {
 		return readerSource;
+	}
+	
+	public PreparedSetterSource getSetterSource() {
+		return setterSource;
+	}
+	
+	public ResultGetterSource getResultGetterSource() {
+		return readerSource.getResultGetterSource();
 	}
 
 	/** Override this method to provide primary column for a table. One useful thing with this
@@ -204,7 +210,6 @@ public class HipsterSql {
 		Query valuesPart = new Query(")VALUES(");
 		
 		for(int i=1; i<values.length; i+=2){
-			System.out.println(values[i-1]+"="+values[i]);
 			if(i >1) {
 				firstPart.append(",");
 				valuesPart.append(",",values[i]);
@@ -402,7 +407,7 @@ public class HipsterSql {
 	}
 
 	private Object handleRsGetOther(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
-        log.warn("unhandled sql type "+sqlType+", at index "+index+", column: "+column+" query: "+hipcConnection.getLastQuery());
+        if(log != null && log.isWarnEnabled()) log.warn("unhandled sql type "+sqlType+", at index "+index+", column: "+column+" query: "+hipcConnection.getLastQuery());
         return rs.getString(index);
 	}
 

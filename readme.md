@@ -7,13 +7,60 @@ Utility for working with JDBC. When ORM feels too heavy, and pure JDBC is annoyi
 
 Add maven dependency or download from [maven central](http://repo1.maven.org/maven2/hr/hrg/java-hipster-sql/)
 
-```
+```xml
 <dependency>
 	<groupId>hr.hrg</groupId>
 	<artifactId>java-hipster-sql</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 </dependency>
 ```
+
+# Simple usage
+
+When you have a table you want to read from
+
+```sql
+CREATE TABLE user_table(
+	user_id INT, 
+	name VARCHAR, 
+	age int
+	);
+```
+
+and you want to use java methods to read data _(I hate what my code looks like when reading from ResultSet)_
+
+```java
+// to be able to read rows, interface must be defined (for column names and types)
+public interface User{
+	public Long getUser_id(); 
+	public String getName();
+	public int getAge();
+}	
+
+```
+		
+we could use javax.persistence to name a method how ever we like 
+
+```java
+	@Column(name="user_id")
+	public Long getId(); 
+
+```
+then we just supply the interface class to query methods, and ommit "SELECT {columns}" (it will be added automatically based on the analysis of the interface)
+```java
+List<User> users = hip.entities(User.class,"from user_table WHERE age > ", 23);		
+for(User user:users){
+	System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());        	
+}
+```
+You may notice that the query does not need to select from a single table,
+it could also be a complex query with multiple joins, you just
+need to make sure that all the columns that you need are present in the defined interface
+
+For a full example that includes initialisation, connection to database, table creation etc. look at full code for
+simple example [SimpleUsage.java](src/test/java/hr/hrg/hipster/sql/SimpleUsage.java) 
+
+
 
 # SQL injection and prepared statements
 Maybe you just want to write the query in the code in a way that is readable and easy to maintain.
@@ -43,7 +90,7 @@ pQeury = new PreparedQuery("select * from users where name LIKE ?  and height > 
 ```
 
 # QueryUtil
-Choose your style how queries will look in code with static methods from [QueryUtil.java](src/main/java/hr/hrg/hipstersql/QueryUtil.java)
+Choose your style how queries will look in code with static methods from [QueryUtil.java](src/main/java/hr/hrg/hipster/sql/QueryUtil.java)
 
 ```java
 

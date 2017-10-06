@@ -1,10 +1,7 @@
 package hr.hrg.hipster.sql;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Short lived throw away instance that can be used per thread(sql connection) and discarded. 
  * You should not share instance between threads, although the worst that can happen is wrong query reported
@@ -194,7 +191,32 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     	return ret;
     }
-        
+
+	@Override
+	@SuppressWarnings("unchecked")
+    public <T> List<T> column(Class<T> clazz, Object... sql) {
+    	return column((IResultGetter<T>)hipster.getResultGetterSource().getForRequired(clazz), sql);
+    }
+
+    @Override
+    public <T> List<T> column(IResultGetter<T> reader, Object... sql) {
+    	
+    	List<T> ret = new ArrayList<>();
+    	
+    	try(Result res = new Result(this);){
+        	res.executeQuery(sql);
+        	while(res.next()){
+        		try {
+					ret.add(reader.get(res.getResultSet(), 1));
+				} catch (SQLException e) {
+					throw new HipsterSqlException(this, "reading column", e);
+				}
+        	}
+        }
+
+    	return ret;
+    }
+    
     @Override
     public <T> List<T> entitiesLimit(Class<T> clazz, int offset, int limit, Object... sql) {
     	return entitiesLimit(hipster.getReaderSource().getOrCreate(clazz), offset, limit, sql);    
