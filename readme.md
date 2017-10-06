@@ -39,14 +39,14 @@ public interface User{
 
 ```
 		
-we could use javax.persistence to name a method how ever we like 
+or use javax.persistence to name a method how ever we like 
 
 ```java
 	@Column(name="user_id")
 	public Long getId(); 
 
 ```
-then we just supply the interface class to query methods, and ommit "SELECT {columns}" (it will be added automatically based on the analysis of the interface)
+then just supply the interface class to query methods, and omit "SELECT {columns}" (it will be added automatically based on the analysis of the interface)
 ```java
 List<User> users = hip.entities(User.class,"from user_table WHERE age > ", 23);		
 for(User user:users){
