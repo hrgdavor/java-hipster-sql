@@ -3,8 +3,6 @@ package hr.hrg.hipster.sql;
 import java.sql.*;
 import java.util.*;
 
-import hr.hrg.hipster.sql.*;
-
 public class SimpleUsage {
 
 	public static void main(String[] args) throws Exception{
@@ -40,19 +38,25 @@ public class SimpleUsage {
 		
 		Statement statement = conn.createStatement();
 		statement.execute("CREATE TABLE user_table(user_id INT, name VARCHAR, age int)");
-		statement.execute("INSERT INTO user_table VALUES(1, 'Hello',11), (2, 'small,world',22), (3, 'big,world',33), (4, 'huge,world',44)");
+		statement.execute("INSERT INTO user_table VALUES"+
+				"(1, 'Hello',11),"+
+				"(2, 'small,world',22),"+
+				"(3, 'big,world',33),"+
+				"(4, 'huge,world',44)");
 		
 	}
 	
 	public interface User{
 		
 		// @Column(name="user_id")
-		// we are not using javax.persistence in this example, so we must name the method properly to get correct column name in SQL
+		// we are not using javax.persistence in this example, 
+		// so we must name the method properly to get correct column name in SQL
 		public Long getUser_id(); 
 		
 		public String getName();
 		
 		public int getAge();
 	}	
+	
 	
 }
