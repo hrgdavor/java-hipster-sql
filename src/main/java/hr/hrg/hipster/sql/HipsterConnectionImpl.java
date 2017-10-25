@@ -207,7 +207,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     	if(newSql[0] instanceof String){
     		String first = ((String) newSql[0]).toLowerCase();
     		if(first.startsWith("from ") || first.startsWith(" from ")){
-    			newSql[0] = " SELECT "+columnNames+" "+sql[0];
+    			newSql[0] = " SELECT "+columnNames+" "+newSql[0];
     			return newSql;
     		}
     	}
