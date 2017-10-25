@@ -107,4 +107,8 @@ public interface IHipsterConnection {
 	<T> List<T> column(Class<T> reader, Object ...sql);
 	<T> List<T> column(IResultGetter<T> reader, Object ...sql);
 
+	public <T> void rowsVisit(Object sql, T visitor);
+	
+	<T> void rowsVisitFwd(Object sql, IResultVisitor<T> visitor, T fwd);
+	
 }

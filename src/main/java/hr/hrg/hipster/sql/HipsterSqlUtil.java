@@ -61,6 +61,7 @@ public class HipsterSqlUtil {
 	public static String entityNamesPrefix(Class<?> clazz){
 		return clazz.getName().replaceAll("\\$", "_.");
 	}
+
 	public static String[] entityNamesPrefixArray(Class<?> clazz){
 		String[] ret = new String[2];
 		

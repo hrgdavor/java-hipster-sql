@@ -7,6 +7,11 @@ public interface IColumnMeta extends IQueryLiteral{
 	 * @return column name in database
 	 */
 	public String getColumnName();
+
+	/** 
+	 * @return column sql when part of a custom sql statement
+	 */
+	public String getColumnSql();
 	
 	/** 
 	 * @return name in Enum and the name of the field in the Entity class

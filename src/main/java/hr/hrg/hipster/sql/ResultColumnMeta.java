@@ -12,6 +12,7 @@ public class ResultColumnMeta implements IColumnMeta {
 	private List<Class<?>> typeParams;
 	private String tableName;
 	private int ordinal;
+	private String columnSql;
 	
 	public ResultColumnMeta(
 			Class<?> entity, 
@@ -19,6 +20,7 @@ public class ResultColumnMeta implements IColumnMeta {
 			String getterName, 
 			String name,
 			String columnName,
+			String columnSql,
 			String tableName,
 			boolean primitive,
 			int ordinal,
@@ -29,6 +31,7 @@ public class ResultColumnMeta implements IColumnMeta {
 		this.type = type;
 		this.getterName = getterName;
 		this.columnName = columnName;
+		this.columnSql = columnSql;
 		this.tableName = tableName;
 		this.primitive = primitive;
 		this.ordinal = ordinal;
@@ -97,4 +100,8 @@ public class ResultColumnMeta implements IColumnMeta {
 		return tableName;
 	}
 
+	@Override
+	public String getColumnSql() {
+		return columnSql;
+	}
 }

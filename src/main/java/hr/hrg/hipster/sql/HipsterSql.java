@@ -23,16 +23,21 @@ public class HipsterSql {
 	protected String columQuote2 = "\"";
 
 	private PreparedSetterSource setterSource;
+	private ResultGetterSource getterSource;
+	
 	private ReaderSource readerSource;
+	private VisitorSource visitorSource;
 
-	public HipsterSql(PreparedSetterSource setterSource, ReaderSource readerSource){
+	public HipsterSql(PreparedSetterSource setterSource, ResultGetterSource getterSource){
 		this.setterSource = setterSource;
-		this.readerSource = readerSource;
+		this.getterSource = getterSource;
+		this.readerSource = new ReaderSource(getterSource);
+		this.visitorSource = new VisitorSource(getterSource);
 		this.intAllowdOperators();
 	}
 
 	public HipsterSql() {
-		this(new PreparedSetterSource(), new ReaderSource(new ResultGetterSource()));
+		this(new PreparedSetterSource(), new ResultGetterSource());
 	}
 
 	protected void intAllowdOperators() {
@@ -56,6 +61,14 @@ public class HipsterSql {
 		return readerSource.getResultGetterSource();
 	}
 
+	public ResultGetterSource getGetterSource() {
+		return getterSource;
+	}
+	
+	public VisitorSource getVisitorSource() {
+		return visitorSource;
+	}
+	
 	/** Override this method to provide primary column for a table. One useful thing with this
 	 * is for generating insert statement in postgres that return newly inserted id. (using "RETURNING" keyword).
 	 * @param tableName table name

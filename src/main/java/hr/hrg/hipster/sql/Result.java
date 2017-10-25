@@ -14,6 +14,7 @@ public class Result implements AutoCloseable{
     protected ResultSet rs;
     protected PreparedStatement ps;
     private ResultSetMetaData metaData;
+	private int fetchSize;
 
     public Result(IHipsterConnection conn){
     	this.hipConnection = (HipsterConnectionImpl) conn;
@@ -56,6 +57,7 @@ public class Result implements AutoCloseable{
 
 		try {
 			ps = hipConnection.getConnection().prepareStatement(p.getQueryString());
+			ps.setFetchSize(this.fetchSize);
 		} catch (SQLException e) {
 			throw new RuntimeException("Error preparing statement: "+this.hipConnection.lastPrepared.getQueryString()+" ERR: "+e.getMessage(), e);
 		}
@@ -213,5 +215,13 @@ public class Result implements AutoCloseable{
 		} catch (SQLException e) {
 			throw new HipsterSqlException(hipConnection, "error getting next result", e);
 		}
+	}
+	
+	public int getFetchSize() {
+		return fetchSize;
+	}
+	
+	public void setFetchSize(int fetchSize) {
+		this.fetchSize = fetchSize;
 	}
 }

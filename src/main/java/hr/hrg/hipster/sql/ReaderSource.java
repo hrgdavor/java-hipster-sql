@@ -102,20 +102,30 @@ public class ReaderSource {
 
 	private ResultColumnMeta makeColumnMeta(Class<?> clazz, Method method, String methodName, String name, String tableName, int ordinal) {
 		String columnName = name;
+		String columnSql = "";
 		Class<?> returnType = method.getReturnType();
 		
 		if(HipsterSqlUtil.isPersistenceApiPresent()){
 			Column columnAnnotation = method.getAnnotation(Column.class);
 			if(columnAnnotation != null){
-				columnName = columnAnnotation.name();
+				if(!columnAnnotation.name().isEmpty())  columnName = columnAnnotation.name();
+				if(!columnAnnotation.table().isEmpty()) tableName = columnAnnotation.table();
 			}			
 		}
+
+		HipsterColumn columnAnnotation = method.getAnnotation(HipsterColumn.class);
+		if(columnAnnotation != null){
+			if(!columnAnnotation.name().isEmpty()) columnName = columnAnnotation.name();
+			columnSql = columnAnnotation.sql();
+			if(!columnAnnotation.table().isEmpty()) tableName = columnAnnotation.table();
+		}			
+		
 		
 		Class<?>[] typeParams = extractGenericArguments(method);
 
 		IResultGetter<?> getter = resultGetterSource.getForRequired(returnType, typeParams);
 		
-		return new ResultColumnMeta(clazz, returnType, methodName, methodName, columnName, tableName, returnType.isPrimitive(), ordinal, getter, ImmutableList.safe(typeParams)); 
+		return new ResultColumnMeta(clazz, returnType, methodName, methodName, columnName, columnSql, tableName, returnType.isPrimitive(), ordinal, getter, ImmutableList.safe(typeParams)); 
 	}
 	
 	public static Class<?>[] extractGenericArguments(Method method){
