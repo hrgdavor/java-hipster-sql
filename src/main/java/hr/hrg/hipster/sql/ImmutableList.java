@@ -1,16 +1,10 @@
 package hr.hrg.hipster.sql;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 
-public class ImmutableList<T> implements Iterable<T>, List<T>{
+public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
 	private final T[] items;
 
 	

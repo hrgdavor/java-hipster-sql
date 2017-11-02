@@ -97,13 +97,20 @@ public class VisitorSource {
 		
 		Parameter[] parameters = method.getParameters();
 		
-		List<ResultColumnMeta> columnsList = new ArrayList<ResultColumnMeta>();
+		List<ResultColumnMeta> columnsList = new ArrayList<>();
+		List<IResultGetter<?>> gettersList = new ArrayList<>();
 		String tableName = "";
 		for (int i = 0; i < parameters.length; i++) {
-			columnsList.add(makeColumnMeta(clazz, parameters[i], tableName, i));
+			Class<?> returnType = parameters[i].getType();
+			Class<?>[] typeParams = extractGenericArguments(parameters[i].getParameterizedType());
+			IResultGetter<?> getter = resultGetterSource.getForRequired(returnType, typeParams);
+
+			gettersList.add(getter);
+			columnsList.add(makeColumnMeta(clazz, parameters[i], tableName, i, returnType, typeParams));
 		}
 		
 		final ResultColumnMeta[] columns = columnsList.toArray(new ResultColumnMeta[columnsList.size()]); 
+		final IResultGetter<?>[] getters = gettersList.toArray(new IResultGetter<?>[gettersList.size()]); 
 		StringBuffer buff = new StringBuffer();
 
 		for(int i=0; i<columns.length; i++){
@@ -132,7 +139,7 @@ public class VisitorSource {
 			public void visitResult(ResultSet rs, T fwd) throws SQLException {
 				Object[] args = new Object[columns.length];
 				for(int i=0; i<columns.length; i++){
-					args[i] = columns[i].getGetter().get(rs, i+1); 
+					args[i] = getters[i].get(rs, i+1); 
 				}
 
 				try {
@@ -158,13 +165,13 @@ public class VisitorSource {
 		return null;
 	}
 
-	private ResultColumnMeta makeColumnMeta(Class<?> clazz, Parameter parameter, String tableName, int ordinal) {
+	private ResultColumnMeta makeColumnMeta(Class<?> clazz, Parameter parameter, String tableName, int ordinal, Class<?> returnType, Class<?>[] typeParams) {
 		String columnName = parameter.getName();
 		String columnSql = "";
-		Class<?> returnType = parameter.getType();
 
+		Column columnAnnotation = null;
 		if(HipsterSqlUtil.isPersistenceApiPresent()){
-			Column columnAnnotation = parameter.getAnnotation(Column.class);
+			columnAnnotation = parameter.getAnnotation(Column.class);
 			if(columnAnnotation != null){
 				if(!columnAnnotation.name().isEmpty())  columnName = columnAnnotation.name();
 				if(!columnAnnotation.table().isEmpty()) tableName = columnAnnotation.table();
@@ -178,10 +185,7 @@ public class VisitorSource {
 			if(!hipsterColumn.table().isEmpty()) tableName = hipsterColumn.table();
 		}			
 		
-		Class<?>[] typeParams = extractGenericArguments(parameter.getParameterizedType());
-		IResultGetter<?> getter = resultGetterSource.getForRequired(returnType, typeParams);
-
-		return new ResultColumnMeta(clazz, returnType, parameter.getName(), parameter.getName(), columnName, columnSql, tableName, returnType.isPrimitive(), ordinal, getter, ImmutableList.safe(typeParams)); 
+		return new ResultColumnMeta(clazz, returnType, parameter.getName(), parameter.getName(), columnName, columnSql, tableName, returnType.isPrimitive(), ordinal, ImmutableList.safe(typeParams)); 
 	}
 
 	

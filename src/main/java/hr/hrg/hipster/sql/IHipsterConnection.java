@@ -61,8 +61,6 @@ public interface IHipsterConnection {
 	 */
 	Map<Object, Object> row(Object... sql);
 
-	List<Map<Object, Object>> rowsLimit(int offset, int limit, Object... sql);
-
 	List<Map<Object, Object>> rows(Object... sql);
 
 	<T> T entity(Class<T> clazz, Object... sql);
@@ -94,7 +92,7 @@ public interface IHipsterConnection {
 	 * @param sql varags query
 	 * @return number of affected rows
 	 */
-	int update(Object sql);
+	int update(Object ...sql);
 
 	Object insert(Query sql);
 

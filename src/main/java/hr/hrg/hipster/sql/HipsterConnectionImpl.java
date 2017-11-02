@@ -118,14 +118,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
         }        
     }
 
-    /* (non-Javadoc)
-	 * @see hr.hrg.hipster.sql.HipsterConnection#rowsLimit(int, int, java.lang.Object)
-	 */
-    @Override
-	public List<Map<Object, Object>> rowsLimit(int offset, int limit, Object ...sql){
-    	return rows(new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
-    }
-
     @Override
 	public List<Map<Object, Object>> rows(Object ...sql){
         List<Map<Object, Object>> rows = new ArrayList<>();
@@ -413,7 +405,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#update(java.lang.Object)
 	 */
     @Override
-	public int update(Object sql){
+	public int update(Object ...sql){
     	try(Result res = new Result(this);){    		
     		return res.update(sql);
     	}

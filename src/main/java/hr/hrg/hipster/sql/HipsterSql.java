@@ -443,6 +443,14 @@ public class HipsterSql {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see hr.hrg.hipster.sql.HipsterConnection#rowsLimit(int, int, java.lang.Object)
+	 */
+	public Query withLimit(int offset, int limit, Object ...sql){
+    	return new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset));
+    }
+
+	
 	/* **************************************     UTILITIES FOR PRINTING QUERY TO STRING FOR LOGG AND DEBUG **************************/
 	
 	public static String escape(String str){

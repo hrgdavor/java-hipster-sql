@@ -7,7 +7,6 @@ public class ResultColumnMeta implements IColumnMeta {
 	protected Class<?> type;
 	protected String getterName;
 	protected String columnName;
-	protected IResultGetter<?> getter;
 	private boolean primitive;
 	private List<Class<?>> typeParams;
 	private String tableName;
@@ -24,7 +23,6 @@ public class ResultColumnMeta implements IColumnMeta {
 			String tableName,
 			boolean primitive,
 			int ordinal,
-			IResultGetter<?> getter,
 			List<Class<?>> typeParams) {
 		super();
 		this.entity = entity;
@@ -35,7 +33,6 @@ public class ResultColumnMeta implements IColumnMeta {
 		this.tableName = tableName;
 		this.primitive = primitive;
 		this.ordinal = ordinal;
-		this.getter = getter;
 		if(typeParams instanceof IResultGetter){
 			this.typeParams = typeParams;
 		}else{			
@@ -59,10 +56,6 @@ public class ResultColumnMeta implements IColumnMeta {
 	@Override
 	public String getColumnName() {
 		return columnName;
-	}
-
-	public IResultGetter<?> getGetter() {
-		return getter;
 	}
 
 	@Override
@@ -103,5 +96,10 @@ public class ResultColumnMeta implements IColumnMeta {
 	@Override
 	public String getColumnSql() {
 		return columnSql;
+	}
+	
+	@Override
+	public String toString() {
+		return columnName;
 	}
 }

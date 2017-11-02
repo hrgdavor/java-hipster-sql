@@ -19,6 +19,11 @@ public interface IColumnMeta extends IQueryLiteral{
 	public String name();
 	
 	/** 
+	 * @return name in Enum and the name of the field in the Entity class
+	 */
+	public String getGetterName();
+	
+	/** 
 	 * @return type of the field
 	 */
 	public Class<?> getType();
