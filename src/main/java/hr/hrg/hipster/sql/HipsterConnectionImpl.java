@@ -137,11 +137,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     @SuppressWarnings("unchecked")
     public <T> void rowsVisit(Object sql, T visitor) {
 		Class<? extends Object> clazz = visitor.getClass();
-		IResultVisitor<T> handler = (IResultVisitor<T>) hipster.getVisitorSource().getFor(clazz);
+		IResultFwdVisitor<T> handler = (IResultFwdVisitor<T>) hipster.getVisitorSource().getFor(clazz);
 		if(handler == null){
 			Class<?>[] interfaces = clazz.getInterfaces();
 			if(interfaces.length == 1){
-				handler = (IResultVisitor<T>) hipster.getVisitorSource().getOrCreate(interfaces[0]);
+				handler = (IResultFwdVisitor<T>) hipster.getVisitorSource().getOrCreate(interfaces[0]);
 				// register the implementation to the same handler so next time it is found on first try
 				if(handler != null) hipster.getVisitorSource().registerFor(handler, clazz);
 			}
@@ -152,9 +152,41 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
     
     @Override
-    public <T> void rowsVisitFwd(Object sql, IResultVisitor<T> visitor, T fwd) {
+    public <T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd) {
     	
     	Object[] sqlArr = prepEntityQuery(visitor.getColumnNamesStr(), sql);
+    	
+    	boolean autoCommit = false;
+    	try {
+    		// postgres does not use cursor if autoCommit is on
+    		autoCommit = sqlConnection.getAutoCommit();
+    		sqlConnection.setAutoCommit(false);
+    	} catch (SQLException e) {
+    		throw new HipsterSqlException(this, "autoCommit", e);
+    	}
+    	
+    	try(Result res = new Result(this);){
+    		res.setFetchSize(512);
+    		
+    		res.executeQuery(sqlArr);
+    		
+    		Map<Object, Object> row;
+    		while(res.next()){
+    			visitor.visitResult(res.getResultSet(), fwd);
+    		}
+    	}catch (Exception e) {
+    		throw new HipsterSqlException(this, "visit failed", e);
+    	}finally {
+    		try{
+    			sqlConnection.setAutoCommit(autoCommit);
+    		} catch (SQLException e) {
+    			throw new HipsterSqlException(this, "autoCommit", e);
+    		}
+    	}
+    }
+
+    @Override
+    public void rowsVisitResult(Object sql, IResultSetVisitor visitor) {
 
         boolean autoCommit = false;
         try {
@@ -168,11 +200,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
         try(Result res = new Result(this);){
         	res.setFetchSize(512);
 
-        	res.executeQuery(sqlArr);
+        	res.executeQuery(sql);
 
 	        Map<Object, Object> row;
 	        while(res.next()){
-	            visitor.visitResult(res.getResultSet(), fwd);
+	            visitor.visitResult(res.getResultSet());
 	        }
         }catch (Exception e) {
         	throw new HipsterSqlException(this, "visit failed", e);

@@ -2,7 +2,7 @@ package hr.hrg.hipster.sql;
 
 import java.sql.*;
 
-public interface IResultVisitor<T> {
+public interface IResultFwdVisitor<T> {
 	
 	public String getColumnNamesStr();
 	

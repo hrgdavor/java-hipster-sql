@@ -107,6 +107,8 @@ public interface IHipsterConnection {
 
 	public <T> void rowsVisit(Object sql, T visitor);
 	
-	<T> void rowsVisitFwd(Object sql, IResultVisitor<T> visitor, T fwd);
+	<T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd);
+
+	void rowsVisitResult(Object sql, IResultSetVisitor visitor);
 	
 }
