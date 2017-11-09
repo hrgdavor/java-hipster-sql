@@ -154,7 +154,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     @Override
     public <T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd) {
     	
-    	Object[] sqlArr = prepEntityQuery(visitor.getColumnNamesStr(), sql);
+    	Object[] sqlArr = prepEntityQuery(visitor.getColumnNamesStr(), null, sql);
     	
     	boolean autoCommit = false;
     	try {
@@ -217,7 +217,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 		}
     }
 
-    public Object[] prepEntityQuery(String columnNames, Object... sql) {
+    public Object[] prepEntityQuery(String columnNames, String tableName, Object... sql) {
 
     	if(columnNames == null || columnNames.isEmpty()) return sql; // no need to inject column names
     	
@@ -234,6 +234,10 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     			newSql[0] = " SELECT "+columnNames+" "+newSql[0];
     			return newSql;
     		}
+    		if(tableName != null && ( first.startsWith("where ") || first.startsWith(" where "))){
+    			newSql[0] = " SELECT "+columnNames+" FROM "+tableName+" "+newSql[0];
+    			return newSql;
+    		}
     	}
     	return sql;
     }
@@ -245,7 +249,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     @Override
     public <T,E extends IColumnMeta> T entity(IReadMeta<T, E> reader, Object... sql) {
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), sql);
+    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTableName(), sql);
     	
     	try(Result res = new Result(this);){
         	res.executeQuery(sql);
@@ -261,7 +265,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     @Override
     public <T,E extends IColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object... sql) {
     	
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), sql);
+    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTableName(), sql);
 
     	List<T> ret = new ArrayList<>();
     	T entity = null;
@@ -308,7 +312,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     @Override
     public <T,E extends IColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object... sql){
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), sql); 
+    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTableName(), sql); 
     	return entities(reader,new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
     }
 
