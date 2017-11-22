@@ -95,6 +95,7 @@ public interface IHipsterConnection {
 	int update(Object ...sql);
 
 	Object insert(Query sql);
+	<T> T insert(Class<T> primaryColumnType, Query sql);
 
 	<T,E extends IColumnMeta> T entity(IReadMeta<T, E> reader, Object ...sql);
 	
@@ -110,5 +111,6 @@ public interface IHipsterConnection {
 	<T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd);
 
 	void rowsVisitResult(Object sql, IResultSetVisitor visitor);
+
 	
 }

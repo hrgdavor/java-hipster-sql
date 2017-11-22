@@ -26,7 +26,7 @@ public class Result implements AutoCloseable{
      * @return self (builder pattern)
      */
     public Result executeQuery(Object ...queryParts){
-    	prepareQuery(queryParts);
+    	prepareQuery(false, queryParts);
     	return execute();
     }
 
@@ -34,7 +34,7 @@ public class Result implements AutoCloseable{
     	return executeQuery(new PreparedQuery(query, params));
     }
 
-    private void prepareQuery(Object ...queryParts){
+    private void prepareQuery(boolean returnGeneratedKeys, Object ...queryParts){
     	Query query = null;
     	PreparedQuery prepared = null;
     	
@@ -49,14 +49,17 @@ public class Result implements AutoCloseable{
     
 		if(prepared == null) prepared = hipster.prepare(query);
 		
-		prepareForExecution(prepared);
+		prepareForExecution(prepared, returnGeneratedKeys);
     }
 
-    private void prepareForExecution(PreparedQuery p){
+    private void prepareForExecution(PreparedQuery p, boolean returnGeneratedKeys){
         this.hipConnection.lastPrepared = p;
 
 		try {
-			ps = hipConnection.getConnection().prepareStatement(p.getQueryString());
+			if(returnGeneratedKeys)
+				ps = hipConnection.getConnection().prepareStatement(p.getQueryString(), Statement.RETURN_GENERATED_KEYS);
+			else
+				ps = hipConnection.getConnection().prepareStatement(p.getQueryString());
 			ps.setFetchSize(this.fetchSize);
 		} catch (SQLException e) {
 			throw new RuntimeException("Error preparing statement: "+this.hipConnection.lastPrepared.getQueryString()+" ERR: "+e.getMessage(), e);
@@ -81,14 +84,26 @@ public class Result implements AutoCloseable{
             close(); throw queryError(e);
         }
 	}
-    
+
+	public Result executeUpdate(Object ...queryParts){
+    	prepareQuery(true, queryParts);
+    	try{
+            ps.executeUpdate();
+            rs = ps.getGeneratedKeys();
+            metaData = rs.getMetaData();
+            return this;
+        }catch (Exception e){
+            close(); throw queryError(e);
+        }
+	}
+	
     private RuntimeException queryError(Exception e) {
         return new HipsterSqlException(hipConnection, "Problem executing query "+e.getMessage(), e);
     }
 
     public int update(Object ...queryParts){
         try{
-        	prepareQuery(queryParts);
+        	prepareQuery(true, queryParts);
         	return ps.executeUpdate();
         }catch (Exception e){
             close();

@@ -170,7 +170,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     		
     		res.executeQuery(sqlArr);
     		
-    		Map<Object, Object> row;
     		while(res.next()){
     			visitor.visitResult(res.getResultSet(), fwd);
     		}
@@ -202,7 +201,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
         	res.executeQuery(sql);
 
-	        Map<Object, Object> row;
 	        while(res.next()){
 	            visitor.visitResult(res.getResultSet());
 	        }
@@ -451,8 +449,30 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#insert(hr.hrg.hipster.sql.Query)
 	 */
     @Override
-	public Object insert(Query sql){
-        return oneObj(sql);
+    public Object insert(Query sql){
+    	try(Result res = new Result(this);){
+    		res.executeUpdate(sql);
+    		return res.fetchLong();
+    	}
+    }
+    
+    @SuppressWarnings("unchecked")
+	@Override
+	public <T> T insert(Class<T> primaryColumnType, Query sql){
+    	
+    	IResultGetter<?> resultGetter = hipster.getResultGetterSource().getForRequired(primaryColumnType);
+        
+    	try(Result res = new Result(this);){
+        	res.executeUpdate(sql);
+        	
+        	if(res.next())
+        		return (T) resultGetter.get(res.getResultSet(), 1);
+        	else
+        		return null;
+        	
+        } catch (SQLException e) {
+        	throw new HipsterSqlException(this, "Problem inserting and retreiving id("+primaryColumnType.getName()+")", e);
+        }
     }
 
 	public String lastQueryInfo() {
