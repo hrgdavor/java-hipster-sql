@@ -27,6 +27,11 @@ public interface IColumnMeta extends IQueryLiteral{
 	 * @return type of the field
 	 */
 	public Class<?> getType();
+
+	/** 
+	 * @return boxed type of the field if the field is primitive
+	 */
+	public Class<?> getPrimitiveType();
 	
 	/** 
 	 * @return if the value is primitive type (int,long...etc) in the implemented entity class.

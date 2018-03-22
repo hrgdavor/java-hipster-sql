@@ -13,6 +13,8 @@ public class VisitorSource {
 
 	private ResultGetterSource resultGetterSource;
 
+	private int ordinalIndex;
+
 	public VisitorSource(ResultGetterSource resultGetterSource){
 		this.resultGetterSource = resultGetterSource;
 	}
@@ -97,7 +99,7 @@ public class VisitorSource {
 		
 		Parameter[] parameters = method.getParameters();
 		
-		List<ResultColumnMeta> columnsList = new ArrayList<>();
+		List<IColumnMeta> columnsList = new ArrayList<>();
 		List<IResultGetter<?>> gettersList = new ArrayList<>();
 		String tableName = "";
 		for (int i = 0; i < parameters.length; i++) {
@@ -109,7 +111,7 @@ public class VisitorSource {
 			columnsList.add(makeColumnMeta(clazz, parameters[i], tableName, i, returnType, typeParams));
 		}
 		
-		final ResultColumnMeta[] columns = columnsList.toArray(new ResultColumnMeta[columnsList.size()]); 
+		final IColumnMeta[] columns = columnsList.toArray(new IColumnMeta[columnsList.size()]); 
 		final IResultGetter<?>[] getters = gettersList.toArray(new IResultGetter<?>[gettersList.size()]); 
 		StringBuffer buff = new StringBuffer();
 
@@ -123,7 +125,7 @@ public class VisitorSource {
 			if(columnTable != null && !columnTable.isEmpty()){
 				buff.append('"').append(columnTable).append('"').append(".");
 			}
-			buff.append('"').append(columns[i].columnName).append('"');
+			buff.append('"').append(columns[i].getColumnName()).append('"');
 		}
 		
 		final String columnNamesStr = buff.toString();
@@ -165,7 +167,7 @@ public class VisitorSource {
 		return null;
 	}
 
-	private ResultColumnMeta makeColumnMeta(Class<?> clazz, Parameter parameter, String tableName, int ordinal, Class<?> returnType, Class<?>[] typeParams) {
+	private IColumnMeta makeColumnMeta(Class<?> clazz, Parameter parameter, String tableName, int ordinal, Class<?> returnType, Class<?>[] typeParams) {
 		String columnName = parameter.getName();
 		String columnSql = "";
 
@@ -184,8 +186,10 @@ public class VisitorSource {
 			columnSql = hipsterColumn.sql();
 			if(!hipsterColumn.table().isEmpty()) tableName = hipsterColumn.table();
 		}			
-		
-		return new ResultColumnMeta(clazz, returnType, parameter.getName(), parameter.getName(), columnName, columnSql, tableName, returnType.isPrimitive(), ordinal, ImmutableList.safe(typeParams)); 
+
+		Class<?> returnTypePrimitive = returnType;
+		returnType = HipsterSqlUtil.wrap(returnType);
+		return new BaseColumnMeta(ordinalIndex++, parameter.getName(), columnName, parameter.getName(),clazz, returnType, returnTypePrimitive, tableName, columnSql, typeParams); 
 	}
 
 	

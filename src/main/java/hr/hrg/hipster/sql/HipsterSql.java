@@ -9,6 +9,8 @@ import java.util.regex.*;
 import org.joda.time.*;
 import org.slf4j.*;
 
+import hr.hrg.hipster.dao.IEntityMeta;
+
 
 public class HipsterSql {
 	
@@ -335,9 +337,16 @@ public class HipsterSql {
 			Object obj = queryParts[i];
 		
 			if(obj instanceof IQueryLiteral){
-				b.append(((IQueryLiteral)obj).getQueryText());
+				IQueryLiteral queryLiteral = (IQueryLiteral)obj;
+				if(queryLiteral.isIdentifier()) b.append(columQuote1);
+				b.append(queryLiteral.getQueryText());
+				if(queryLiteral.isIdentifier()) b.append(columQuote2);
 				evenOdd = 1;// will be changed to 2 at the end of the loop
 				
+			}else if(obj instanceof IColumnMeta){
+				b.append('"').append(((IColumnMeta)obj).getColumnName()).append('"');
+				evenOdd = 1;// will be changed to 2 at the end of the loop
+
 			}else if(obj instanceof Query){
 				prepareInto(b, params, ((Query)obj).getParts().toArray());
 				evenOdd = 1;// will be changed to 2 at the end of the loop				

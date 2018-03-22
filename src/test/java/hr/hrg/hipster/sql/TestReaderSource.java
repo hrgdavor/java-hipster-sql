@@ -1,9 +1,10 @@
 package hr.hrg.hipster.sql;
 
-import org.testng.annotations.*;
 import static org.testng.Assert.*;
 
-import java.util.*;
+import java.util.List;
+
+import org.testng.annotations.Test;
 
 @Test
 public class TestReaderSource {
@@ -25,7 +26,7 @@ public class TestReaderSource {
 	public void test() {
 		ReaderSource readerSource = new ReaderSource(new ResultGetterSource());
 		
-		IReadMeta<ITestBasicTypes,ResultColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
+		IReadMeta<ITestBasicTypes,IColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
 		
 		assertNotNull(reader);
 		assertEquals(reader.getEntityClass(), ITestBasicTypes.class, "entity class");

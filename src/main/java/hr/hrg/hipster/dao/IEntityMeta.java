@@ -5,8 +5,6 @@ import hr.hrg.hipster.sql.*;
 
 public interface IEntityMeta<T,ID,E extends IColumnMeta> extends IReadMeta<T,E>{
 
-	Class<E> getEntityEnum();
-
 	String getEntityName();
 	
 	boolean containsColumn(String columnName);
@@ -20,4 +18,6 @@ public interface IEntityMeta<T,ID,E extends IColumnMeta> extends IReadMeta<T,E>{
 	ID entityGetPrimary(T instance);
 
 	IUpdatable<E> mutableCopy(Object v);
+	
+	int ordinal();
 }

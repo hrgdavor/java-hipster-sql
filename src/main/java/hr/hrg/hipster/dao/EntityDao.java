@@ -58,4 +58,78 @@ public class EntityDao <T, ID>{
 	public List<T> allByCriteria(Object ...queryParts){
 		return conn.entities(meta, new Query(selectQuery).append(queryParts));		
 	}
+
+	public Query q(Object... sql) {
+		return new Query(sql);
+	}
+	
+	/** Get first value from first row and first column. <br>
+	 * Useful for counting and other queries that return single value.<br>
+	 * 
+	 * @param sql varargs query
+	 * @return single result Object
+	 */
+	Object oneObj(IColumnMeta column, Object... sql) {
+		return conn.oneObj(
+				"SELECT ", column,
+				" FROM "+meta.getTableName(), 
+				q(sql));
+		
+	}
+
+	/** 
+	 * Get first value as long from first row and first column. <br>
+	 * @param sql varargs query
+	 * @return single result String
+	 */
+	public String oneString(IColumnMeta column, Object... sql) {
+		return conn.oneString(
+				"SELECT ", column,
+				" FROM "+meta.getTableName(), 
+				q(sql));
+		
+	}
+
+	/**
+	 *  Get first value as int from first row and first column. <br>
+	 * Useful for counting and other queries that return single int value.<br>
+	 * @param sql varargs query
+	 * @return single result int
+	 */
+	int one(IColumnMeta column, Object... sql) {
+		return conn.one(
+				"SELECT ", column,
+				" FROM "+meta.getTableName(), 
+				q(sql));
+		
+	}
+
+
+	/**
+	 *  Get first value as long from first row and first column. <br>
+	 * @param sql varargs query
+	 * @return single result long
+	 */
+	long oneLong(IColumnMeta column, Object... sql) {
+		return conn.oneLong(
+				"SELECT ", column,
+				" FROM "+meta.getTableName(), 
+				q(sql));
+		
+	}
+	
+	/**
+	 *  Get first value as double from first row and first column. <br>
+	 * @param sql varargs query
+	 * @return single result double
+	 */
+	double oneDouble(IColumnMeta column, Object... sql) {
+		return conn.oneDouble(
+				"SELECT ", column,
+				" FROM "+meta.getTableName(), 
+				q(sql));
+		
+	}
+
+
 }
