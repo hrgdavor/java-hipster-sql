@@ -96,9 +96,13 @@ public class Query implements IQueryPart{
 		for(int i=0; i<count; i++){
 			queryPart = parts.get(i);
 			
-			if(queryPart instanceof QueryLiteral){
-				b.append(((QueryLiteral)queryPart).getQueryText());
-				evenOdd = 1;// will be changed to 2 at the end of the loop			
+			if(queryPart instanceof IQueryLiteral){
+				IQueryLiteral queryLiteral = (IQueryLiteral) queryPart;
+				if(queryLiteral.isIdentifier()) b.append('"');
+				b.append(queryLiteral.getQueryText());
+				if(queryLiteral.isIdentifier()) b.append('"');
+				evenOdd = 1;// will be changed to 2 at the end of the loop
+				
 			}else if(queryPart instanceof Query){
 				this.build(b, ((Query)queryPart).getParts());
 				evenOdd = 1;

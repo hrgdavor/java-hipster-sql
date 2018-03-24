@@ -344,7 +344,7 @@ public class HipsterSql {
 				evenOdd = 1;// will be changed to 2 at the end of the loop
 				
 			}else if(obj instanceof IColumnMeta){
-				b.append('"').append(((IColumnMeta)obj).getColumnName()).append('"');
+				b.append(columQuote1).append(((IColumnMeta)obj).getColumnName()).append(columQuote2);
 				evenOdd = 1;// will be changed to 2 at the end of the loop
 
 			}else if(obj instanceof Query){
@@ -387,6 +387,7 @@ public class HipsterSql {
 
 		if(value instanceof IPreparedValue) {
 			((IPreparedValue)value).set(ps, i);
+			return;
 		}
 
 		IPreparedSetter<C> setter = (IPreparedSetter<C>) setterSource.getFor(value.getClass());
