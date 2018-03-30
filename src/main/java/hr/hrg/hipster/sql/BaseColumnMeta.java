@@ -35,7 +35,7 @@ public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Co
 		this.tableName = _tableName;
 		this.columnSql = _columnSql;
 		this.typeParams = ImmutableList.safe(typeParams);
-		this.hashCode = _tableName.hashCode() * 31 + _name.hashCode();
+		this.hashCode = _entity.hashCode() * 31 + ordinal;
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Co
 		if(obj == null) return false;
 		if(obj instanceof IColumnMeta) {
 			IColumnMeta meta = (IColumnMeta) obj;
-			return meta.name().equals(name) && meta.getTableName().equals(tableName);
+			return meta.ordinal() == ordinal && meta.getEntity() == entity;
 		}
 		return false;
 	}
