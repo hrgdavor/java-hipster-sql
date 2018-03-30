@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.lang.model.element.*;
 
+import com.fasterxml.jackson.annotation.*;
+
 public class HipsterSqlUtil {
 
 	private static final Map<Class<?>, Class<?>> PRIMITIVES_TO_WRAPPERS = new HashMap<>();
@@ -27,6 +29,7 @@ public class HipsterSqlUtil {
 	}
 	  
 	private static boolean yodaPresent = false;
+	private static boolean jacksonPresent = false;
 	private static boolean persistenceApiPresent = false;
 	
 	// might be going too far with allowing to skip even slf4j, but hey, it is just for those that really want to
@@ -54,6 +57,15 @@ public class HipsterSqlUtil {
 		try {
 			Class.forName("org.slf4j.LoggerFactory");
 			slf4jApiPresent = true;
+		} catch (ClassNotFoundException e) {
+			// org.slf4j classes not present, org.slf4j support will be disabled
+		}
+	}
+
+	static {
+		try {
+			Class.forName("com.fasterxml.jackson.annotation.LoggerFactory.JsonIgnore");
+			jacksonPresent = true;
 		} catch (ClassNotFoundException e) {
 			// org.slf4j classes not present, org.slf4j support will be disabled
 		}
@@ -106,6 +118,10 @@ public class HipsterSqlUtil {
 	
 	public static boolean isSlf4jApiPresent() {
 		return slf4jApiPresent;
+	}
+	
+	public static boolean isJacksonPresent() {
+		return jacksonPresent;
 	}
 	
 	public static String join(String delim, Object ...objects){
