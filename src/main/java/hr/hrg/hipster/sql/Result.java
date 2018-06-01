@@ -31,7 +31,7 @@ public class Result implements AutoCloseable{
     }
 
     public Result executePrepared(String query, Object ...params){
-    	return executeQuery(new PreparedQuery(query, params));
+    	return executeQuery(new PreparedQuery(hipster.getTypeSource(),query, params));
     }
 
     private void prepareQuery(boolean returnGeneratedKeys, Object ...queryParts){
@@ -190,7 +190,7 @@ public class Result implements AutoCloseable{
         }
     }
     
-    public <T,E extends IColumnMeta> T fetchEntity(IReadMeta<T, E> reader){
+    public <T,E extends BaseColumnMeta> T fetchEntity(IReadMeta<T, E> reader){
         try{
             if(!rs.next()) return null;
             return reader.fromResultSet(rs);

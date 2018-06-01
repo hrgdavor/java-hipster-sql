@@ -2,7 +2,7 @@ package hr.hrg.hipster.dao;
 
 import hr.hrg.hipster.sql.*;
 
-public interface IUpdatable<E extends IColumnMeta> extends IEnumGetter<E>{
+public interface IUpdatable<E extends BaseColumnMeta> extends IEnumGetter<E>{
 	/**
 	 * Utility Object that represents null value in array, so it can be recognised during a loop.<br>
 	 * 

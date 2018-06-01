@@ -3,7 +3,7 @@ package hr.hrg.hipster.dao.change;
 import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
 
-public class EntityEvent<T, ID, E extends IColumnMeta>{
+public class EntityEvent<T, ID, E extends BaseColumnMeta>{
 
 	public enum Type{
 		BEFORE_ADD,	   AFTER_ADD,

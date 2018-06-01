@@ -10,14 +10,14 @@ public class EntitySource {
 	protected Map<Class<? extends Object>, IEntityMeta<?,?,?>> registered = new ConcurrentHashMap<>(); 
 	protected Map<String, IEntityMeta<?,?,?>> named = new ConcurrentHashMap<>();
 
-	private ResultGetterSource resultGetterSource;
+	private TypeSource typeSource;
 	private int entityIndex = 0;
 
 	public EntitySource() {
 	}
 	
-	public EntitySource(ResultGetterSource resultGetterSource) {
-		this.resultGetterSource = resultGetterSource;
+	public EntitySource(TypeSource resultGetterSource) {
+		this.typeSource = resultGetterSource;
 	}
 	
 	protected <T> void registerFor(IEntityMeta<T, ?,?> meta){
@@ -30,8 +30,8 @@ public class EntitySource {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> IEntityMeta<T, ?,? extends IColumnMeta> getFor( Class<T> clazz){
-		IEntityMeta<T, ?, ?> ret = (IEntityMeta<T, ?,? extends IColumnMeta>) registered.get(clazz);
+	public <T> IEntityMeta<T, ?,? extends BaseColumnMeta> getFor( Class<T> clazz){
+		IEntityMeta<T, ?, ?> ret = (IEntityMeta<T, ?,? extends BaseColumnMeta>) registered.get(clazz);
 		if(ret == null){
 			ret = (IEntityMeta<T, ?, ?>) loadHandlerFromClass(HipsterSqlUtil.entityNamesPrefix(clazz)+"Meta");
 			if(ret != null) registerFor(ret, clazz);
@@ -39,7 +39,7 @@ public class EntitySource {
 		return ret;
 	}
 	
-	public <T> IEntityMeta<T, ?,? extends IColumnMeta> getForRequired( Class<T> clazz){
+	public <T> IEntityMeta<T, ?,? extends BaseColumnMeta> getForRequired( Class<T> clazz){
 		IEntityMeta<T, ?, ?> ret = getFor(clazz);
 		
 		if(ret == null) throw new RuntimeException("Meta not found for "+clazz.getName());
@@ -47,11 +47,11 @@ public class EntitySource {
 		return ret;
 	}
 
-	public IEntityMeta<?, ?,? extends IColumnMeta> getFor(String name){
+	public IEntityMeta<?, ?,? extends BaseColumnMeta> getFor(String name){
 		return named.get(name);
 	}
 
-	public IEntityMeta<?, ?,? extends IColumnMeta> getForRequired(String name){
+	public IEntityMeta<?, ?,? extends BaseColumnMeta> getForRequired(String name){
 		IEntityMeta<?, ?, ?> ret = named.get(name);
 		
 		if(ret == null) throw new RuntimeException("Meta not found for "+name);
@@ -60,7 +60,7 @@ public class EntitySource {
 	}
 
 	public IEntityMeta<?,?,?> loadHandlerFromClass(String cName) {
-		if(resultGetterSource == null) return null;
+		if(typeSource == null) return null;
 		try {
 			Class<?> meta = Class.forName(cName);
 			// found if no exception, now we just need to construct new instance
@@ -76,7 +76,7 @@ public class EntitySource {
 	}
 
 	protected IEntityMeta<?, ?, ?> newInstance(Class<?> meta)	throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-		return (IEntityMeta<?, ?, ?>) meta.getConstructor(new Class<?>[]{ResultGetterSource.class, int.class}).newInstance(resultGetterSource, entityIndex++);
+		return (IEntityMeta<?, ?, ?>) meta.getConstructor(new Class<?>[]{TypeSource.class, int.class}).newInstance(typeSource, entityIndex++);
 	}
 
 	@SafeVarargs

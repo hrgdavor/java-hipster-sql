@@ -3,7 +3,7 @@ package hr.hrg.hipster.dao;
 import hr.hrg.hipster.sql.*;
 
 
-public interface IEntityMeta<T,ID,E extends IColumnMeta> extends IReadMeta<T,E>{
+public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,E>{
 
 	String getEntityName();
 	
@@ -20,4 +20,8 @@ public interface IEntityMeta<T,ID,E extends IColumnMeta> extends IReadMeta<T,E>{
 	IUpdatable<E> mutableCopy(Object v);
 	
 	int ordinal();
+
+	ICustomType<?> getTypeHandler(E column);
+
+	ICustomType<?> getTypeHandler(int ordinal);
 }

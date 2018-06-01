@@ -97,14 +97,14 @@ public interface IHipsterConnection {
 	Object insert(Query sql);
 	<T> T insert(Class<T> primaryColumnType, Query sql);
 
-	<T,E extends IColumnMeta> T entity(IReadMeta<T, E> reader, Object ...sql);
+	<T,E extends BaseColumnMeta> T entity(IReadMeta<T, E> reader, Object ...sql);
 	
-	<T,E extends IColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object ...sql);
-	<T,E extends IColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object ...sql);
+	<T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object ...sql);
+	<T,E extends BaseColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object ...sql);
 
 
 	<T> List<T> column(Class<T> reader, Object ...sql);
-	<T> List<T> column(IResultGetter<T> reader, Object ...sql);
+	<T> List<T> column(ICustomType<T> reader, Object ...sql);
 
 	public <T> void rowsVisit(Object sql, T visitor);
 	

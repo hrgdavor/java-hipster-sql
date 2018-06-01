@@ -10,7 +10,7 @@ public class Query implements IQueryPart{
 	 */
 	public static final IQueryPart EMPTY_QUERY_PART = new QueryLiteral("");
 	
-	List<Object> parts;
+	protected List<Object> parts;
 	
 	@SuppressWarnings("unchecked")
 	public Query(Object ... q){
@@ -120,5 +120,10 @@ public class Query implements IQueryPart{
 		return b;
 	}
 
+	public static final class Immutable extends Query {
+		public Immutable(ImmutableList parts) {
+			this.parts = parts;
+		}
+	}
 	
 }

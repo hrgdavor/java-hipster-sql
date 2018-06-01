@@ -252,4 +252,7 @@ public class QueryUtil {
        	current.put(row.get(columns[index]), row.get(columns[index+1]));
     }
 
+	public static Query query(Object ... parts) {
+		return new Query(parts);
+	}
 }

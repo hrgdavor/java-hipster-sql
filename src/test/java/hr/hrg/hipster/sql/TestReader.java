@@ -14,7 +14,7 @@ public class TestReader {
 //	}
 
 	public void testRead() throws Exception{
-		ReaderSource readerSource = new ReaderSource(new ResultGetterSource());
+		ReaderSource readerSource = new ReaderSource(new TypeSource());
 
 		
 		Class.forName("org.h2.Driver");
@@ -39,7 +39,7 @@ public class TestReader {
 				")");
 		statement.execute("INSERT INTO user_table VALUES(1, 2, 3, 4, 5.5, 6.6, 7.7, 8.8, true, false, 9, 10, 11, 12)");
 		
-		IReadMeta<ITestBasicTypes,IColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
+		IReadMeta<ITestBasicTypes,BaseColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
 	
 		String selectQuery = "select "+reader.getColumnNamesStr()+" FROM user_table ";
 		

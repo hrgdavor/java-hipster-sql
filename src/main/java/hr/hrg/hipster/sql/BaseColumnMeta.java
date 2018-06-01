@@ -1,6 +1,7 @@
 package hr.hrg.hipster.sql;
 
-public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Comparable<IColumnMeta>{
+@SuppressWarnings("rawtypes")
+public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<BaseColumnMeta>{
 
 	protected final Class<?> entity;
 	protected final Class<T> type;
@@ -38,57 +39,46 @@ public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Co
 		this.hashCode = _entity.hashCode() * 31 + ordinal;
 	}
 
-	@Override
 	public String name() {
 		return name;
 	}
 
-	@Override
 	public int ordinal() {
 		return ordinal;
 	}
 
-	@Override
 	public Class<T> getType() {
 		return type;
 	}
 
-	@Override
 	public Class<?> getPrimitiveType() {
 		return primitiveType;
 	}
 
-	@Override
 	public boolean isPrimitive() {
 		return primitiveType != null;
 	}
 
-	@Override
 	public String getColumnName() {
 		return columnName;
 	}
 
-	@Override
 	public String getGetterName() {
 		return getterName;
 	}
 
-	@Override
 	public String getTableName() {
 		return tableName;
 	}
 
-	@Override
 	public String getColumnSql() {
 		return columnSql;
 	}
 
-	@Override
 	public ImmutableList<Class<?>> getTypeParams() {
 		return typeParams;
 	}
 
-	@Override
 	public boolean isGeneric() {
 		return typeParams.isEmpty();
 	}
@@ -102,21 +92,24 @@ public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Co
 	public boolean isIdentifier() {
 		return true;
 	}
-
+	
 	@Override
+	public boolean isEmpty() {
+		return false;
+	}
+
 	public Class<?> getEntity() {
 		return entity;
 	}
 	
-	@Override
 	public final String toString() {
 		return columnName;
 	}
 	 
 	@Override
-	public int compareTo(IColumnMeta o) {
+	public int compareTo(BaseColumnMeta o) {
 		if(o == null) throw new NullPointerException();
-		IColumnMeta meta = (IColumnMeta) o;
+		BaseColumnMeta meta = (BaseColumnMeta) o;
 		int first = tableName.compareTo(meta.getTableName());
 		if(first == 0) {
 			return name.compareTo(meta.name());
@@ -129,8 +122,8 @@ public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Co
 	public boolean equals(Object obj) {
 		if(obj == this) return true;
 		if(obj == null) return false;
-		if(obj instanceof IColumnMeta) {
-			IColumnMeta meta = (IColumnMeta) obj;
+		if(obj instanceof BaseColumnMeta) {
+			BaseColumnMeta meta = (BaseColumnMeta) obj;
 			return meta.ordinal() == ordinal && meta.getEntity() == entity;
 		}
 		return false;
@@ -140,6 +133,5 @@ public class BaseColumnMeta<T> implements IColumnMeta, IQueryLiteral, Key<T>, Co
 	public int hashCode() {
 		return hashCode;
 	}
-	
 	
 }

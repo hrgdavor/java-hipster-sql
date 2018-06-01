@@ -18,7 +18,7 @@ public class EntityEventHub {
 	Map<Class, List<IDeletedDetailListener>> deleteDataListeners = new HashMap<>();
 	Map<Class, List<IAddListener>> addListeners = new HashMap<>();
 
-	public <T, ID, E extends IColumnMeta> void addChangeListener(IChangeListener<T, ID, E> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addChangeListener(IChangeListener<T, ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IChangeListener> list = changeListeners.get(clazz);
 			if(list == null) {
@@ -33,7 +33,7 @@ public class EntityEventHub {
 		return changeListeners.containsKey(clazz);
 	}
 	
-	public <T, ID, E extends IColumnMeta, U extends IUpdatable<E>> void addBeforeChangeListener(IBeforeChangeListener<T, ID, E, U> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta, U extends IUpdatable<E>> void addBeforeChangeListener(IBeforeChangeListener<T, ID, E, U> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IBeforeChangeListener> list = beforeChangeListeners.get(clazz);
 			if(list == null) {
@@ -48,7 +48,7 @@ public class EntityEventHub {
 		return beforeChangeListeners.containsKey(clazz);
 	}
 
-	public <T, ID, E extends IColumnMeta> void addDeleteListener(IDeletedListener<ID, E> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addDeleteListener(IDeletedListener<ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IDeletedListener> list = deleteListeners.get(clazz);
 			if(list == null) {
@@ -63,7 +63,7 @@ public class EntityEventHub {
 		return deleteListeners.containsKey(clazz);
 	}
 	
-	public <ID, O, E extends IColumnMeta> void addDeleteDataListener(IDeletedDetailListener<ID, O, E> listener, Class<O> clazz){
+	public <ID, O, E extends BaseColumnMeta> void addDeleteDataListener(IDeletedDetailListener<ID, O, E> listener, Class<O> clazz){
 		synchronized (clazz) {
 			List<IDeletedDetailListener> list = deleteDataListeners.get(clazz);
 			if(list == null) {
@@ -78,7 +78,7 @@ public class EntityEventHub {
 		return deleteDataListeners.containsKey(clazz);
 	}
 	
-	public <T, ID, E extends IColumnMeta> void addAddListener(IAddListener<T, ID, E> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addAddListener(IAddListener<T, ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IAddListener> list = addListeners.get(clazz);
 			if(list == null) {

@@ -24,22 +24,20 @@ public class HipsterSql {
 	protected String columQuote1 = "\"";
 	protected String columQuote2 = "\"";
 
-	private PreparedSetterSource setterSource;
-	private ResultGetterSource getterSource;
+	private TypeSource typeSource;
 	
 	private ReaderSource readerSource;
 	private VisitorSource visitorSource;
 
-	public HipsterSql(PreparedSetterSource setterSource, ResultGetterSource getterSource){
-		this.setterSource = setterSource;
-		this.getterSource = getterSource;
-		this.readerSource = new ReaderSource(getterSource);
-		this.visitorSource = new VisitorSource(getterSource);
+	public HipsterSql(TypeSource typeSource){
+		this.typeSource = typeSource;
+		this.readerSource = new ReaderSource(typeSource);
+		this.visitorSource = new VisitorSource(typeSource);
 		this.intAllowdOperators();
 	}
 
 	public HipsterSql() {
-		this(new PreparedSetterSource(), new ResultGetterSource());
+		this(new TypeSource());
 	}
 
 	protected void intAllowdOperators() {
@@ -55,16 +53,8 @@ public class HipsterSql {
 		return readerSource;
 	}
 	
-	public PreparedSetterSource getSetterSource() {
-		return setterSource;
-	}
-	
-	public ResultGetterSource getResultGetterSource() {
-		return readerSource.getResultGetterSource();
-	}
-
-	public ResultGetterSource getGetterSource() {
-		return getterSource;
+	public TypeSource getTypeSource() {
+		return typeSource;
 	}
 	
 	public VisitorSource getVisitorSource() {
@@ -325,7 +315,7 @@ public class HipsterSql {
 
 		prepareInto(b, params, queryParts);
 		
-		return new PreparedQuery(b, params); 
+		return new PreparedQuery(typeSource,b.toString(), params); 
 	}
 	
 	public void prepareInto(StringBuilder b, List<Object> params, Object ... queryParts){
@@ -343,8 +333,8 @@ public class HipsterSql {
 				if(queryLiteral.isIdentifier()) b.append(columQuote2);
 				evenOdd = 1;// will be changed to 2 at the end of the loop
 				
-			}else if(obj instanceof IColumnMeta){
-				b.append(columQuote1).append(((IColumnMeta)obj).getColumnName()).append(columQuote2);
+			}else if(obj instanceof BaseColumnMeta){
+				b.append(columQuote1).append(((BaseColumnMeta)obj).getColumnName()).append(columQuote2);
 				evenOdd = 1;// will be changed to 2 at the end of the loop
 
 			}else if(obj instanceof Query){
@@ -369,7 +359,7 @@ public class HipsterSql {
 
 	/** Set a value into the prepared statement <br>
 	 * <br>
-	 * Override if using {@link IPreparedValue} or defining {@link IPreparedSetter} is not sufficient to provide functionality.  
+	 * Override if using {@link IPreparedValue} or defining {@link ICustomType} is not sufficient to provide functionality.  
 	 * 
 	 * @param hipConnection connection that produced the PreparedStatement
 	 * @param ps the statement
@@ -390,10 +380,10 @@ public class HipsterSql {
 			return;
 		}
 
-		IPreparedSetter<C> setter = (IPreparedSetter<C>) setterSource.getFor(value.getClass());
+		ICustomType<C> setter = (ICustomType<C>) typeSource.getFor(value.getClass());
 		
 		if(setter == null){
-			throw new RuntimeException("Setter not defined for type "+value.getClass()+" in prepared statement: "+hipConnection.getLastPrepared().getQueryString()+" on index "+i+" using value "+value);
+			throw new RuntimeException("Type handler not defined for "+value.getClass()+" in prepared statement: "+hipConnection.getLastPrepared().getQueryString()+" on index "+i+" using value "+value);
 		}
 		
 		setter.set(ps, i, (C)value);

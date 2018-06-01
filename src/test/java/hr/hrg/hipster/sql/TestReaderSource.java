@@ -24,9 +24,9 @@ public class TestReaderSource {
 	
 	@Test
 	public void test() {
-		ReaderSource readerSource = new ReaderSource(new ResultGetterSource());
+		ReaderSource readerSource = new ReaderSource(new TypeSource());
 		
-		IReadMeta<ITestBasicTypes,IColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
+		IReadMeta<ITestBasicTypes,BaseColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
 		
 		assertNotNull(reader);
 		assertEquals(reader.getEntityClass(), ITestBasicTypes.class, "entity class");

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.lang.model.element.*;
 
-import com.fasterxml.jackson.annotation.*;
 
 public class HipsterSqlUtil {
 
@@ -137,4 +136,15 @@ public class HipsterSqlUtil {
 		for(int i =1; i<classes.length; i++) b.append(delim).append(classes[i].getName());
 		return b.toString();
 	}
+	
+	public static final String propToGetter(String prop, String type){
+		if("boolean".equals(type)) 
+			return "is"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
+		
+		return "get"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
+	}
+
+	public static final String propToSetter(String prop){
+		return "set"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
+	}	
 }
