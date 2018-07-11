@@ -1,5 +1,7 @@
 package hr.hrg.hipster.sql;
 
+import java.lang.annotation.*;
+
 @SuppressWarnings("rawtypes")
 public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<BaseColumnMeta>{
 
@@ -14,6 +16,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	protected final int ordinal;
 	protected final String name;
 	protected final int hashCode;
+	protected AnnotationInvocationHandler[] annotations = new AnnotationInvocationHandler[0];
 
 	public BaseColumnMeta(
 			int ordinal, 
@@ -105,7 +108,20 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	public final String toString() {
 		return columnName;
 	}
-	 
+
+	public BaseColumnMeta<T> withAnnotations(AnnotationInvocationHandler ... handlers){
+		this.annotations = handlers;
+		return this;
+	}
+	
+	public <A extends Annotation> A getAnnotation(Class<A> clazz){
+		for(AnnotationInvocationHandler tmp: annotations) {
+			if(tmp.annotationType() == clazz) return (A) tmp;
+		}
+
+		return null;
+	}
+	
 	@Override
 	public int compareTo(BaseColumnMeta o) {
 		if(o == null) throw new NullPointerException();

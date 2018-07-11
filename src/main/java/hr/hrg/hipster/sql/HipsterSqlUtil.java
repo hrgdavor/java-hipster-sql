@@ -1,7 +1,8 @@
 package hr.hrg.hipster.sql;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.*;
+import java.lang.reflect.*;
+import java.util.*;
 
 import javax.lang.model.element.*;
 
@@ -146,5 +147,34 @@ public class HipsterSqlUtil {
 
 	public static final String propToSetter(String prop){
 		return "set"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
-	}	
+	}
+	
+    /**
+     * modified from https://github.com/leangen/geantyref/blob/master/src/main/java/io/leangen/geantyref/TypeFactory.java
+     * Creates an instance of an annotation.
+     *
+     * @param annotationType The {@link Class} representing the type of the annotation to be created.
+     * @param values A map of values to be assigned to the annotation elements.
+     * @param <A> The type of the annotation.
+     * @return An {@link Annotation} instanceof matching {@code annotationType}
+     * @throws AnnotationFormatException Thrown if incomplete or invalid {@code values} are provided
+     */
+    @SuppressWarnings("unchecked")
+    public static <A extends Annotation> A annotation(Class<A> annotationType, Map<String, Object> values) {
+    	if(values == null) values = Collections.emptyMap();
+        return (A) Proxy.newProxyInstance(annotationType.getClassLoader(),
+                new Class[] { annotationType },
+                new AnnotationInvocationHandler(annotationType,  values));
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static <A extends Annotation> A annotation(Class<A> annotationType, Object ... values) {
+    	HashMap<String, Object> map = new HashMap<>();
+    	for(int i=1; i<values.length; i+=2) {
+    		map.put((String) values[i-1], values[i-1]);
+    	}
+        return (A) Proxy.newProxyInstance(annotationType.getClassLoader(),
+                new Class[] { annotationType },
+                new AnnotationInvocationHandler(annotationType,  map));
+    }
 }
