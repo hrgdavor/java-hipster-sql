@@ -18,6 +18,7 @@ public class EntityEvent<T, ID, E extends BaseColumnMeta>{
 	private IEntityMeta<T,ID,E> meta;
 
 	public EntityEvent(ID id, T old, T updated, IUpdatable<E> delta, IEntityMeta<T,ID,E> meta){
+		this.id = id;
 		this.old = old;
 		this.updated = updated;
 		this.delta = delta;

@@ -19,12 +19,12 @@ import com.fasterxml.jackson.databind.type.*;
 	 - replaced: AnnotationFormatException with RuntimeException
  * 
  * An implementation of {@link Annotation} that mimics the behavior of normal annotations.
- * It is an {@link InvocationHandler}, meant to be used via {@link TypeFactory#annotation(Class, Map)}.
+ * It is an {@link InvocationHandler}, meant to be used via {@link HipsterSqlUtil#annotation(Class, Map)} or {@link HipsterSqlUtil#annotation(Class, Object...)}.
  * <p>
  * The constructor checks that the all the elements required by the annotation interface are provided
  * and that the types are compatible. If extra elements are provided, they are ignored.
  * If a value is of an incompatible type is provided or no value is provided for an element
- * without a default value, {@link AnnotationFormatException} is thrown.
+ * without a default value, {@link RuntimeException} is thrown.
  * </p>
  * <p>
  * Note: {@link #equals(Object)} and {@link #hashCode()} and implemented as specified

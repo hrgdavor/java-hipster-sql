@@ -157,7 +157,6 @@ public class HipsterSqlUtil {
      * @param values A map of values to be assigned to the annotation elements.
      * @param <A> The type of the annotation.
      * @return An {@link Annotation} instanceof matching {@code annotationType}
-     * @throws AnnotationFormatException Thrown if incomplete or invalid {@code values} are provided
      */
     @SuppressWarnings("unchecked")
     public static <A extends Annotation> A annotation(Class<A> annotationType, Map<String, Object> values) {
