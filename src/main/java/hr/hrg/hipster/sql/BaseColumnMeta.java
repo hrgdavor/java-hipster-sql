@@ -1,6 +1,7 @@
 package hr.hrg.hipster.sql;
 
 import java.lang.annotation.*;
+import java.lang.reflect.*;
 
 @SuppressWarnings("rawtypes")
 public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<BaseColumnMeta>{
@@ -16,7 +17,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	protected final int ordinal;
 	protected final String name;
 	protected final int hashCode;
-	protected AnnotationInvocationHandler[] annotations = new AnnotationInvocationHandler[0];
+	protected Annotation[] annotations;
 
 	public BaseColumnMeta(
 			int ordinal, 
@@ -40,6 +41,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		this.columnSql = _columnSql;
 		this.typeParams = ImmutableList.safe(typeParams);
 		this.hashCode = _entity.hashCode() * 31 + ordinal;
+		
 	}
 
 	public String name() {
@@ -109,13 +111,22 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		return columnName;
 	}
 
-	public BaseColumnMeta<T> withAnnotations(AnnotationInvocationHandler ... handlers){
-		this.annotations = handlers;
+	public BaseColumnMeta<T> withAnnotations(Annotation ... annotations){
+		this.annotations = annotations;
 		return this;
 	}
 	
 	public <A extends Annotation> A getAnnotation(Class<A> clazz){
-		for(AnnotationInvocationHandler tmp: annotations) {
+		if(annotations == null) {			
+			try {
+				Method method = entity.getMethod(getterName);
+				annotations = method.getAnnotations();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		for(Annotation tmp: annotations) {
 			if(tmp.annotationType() == clazz) return (A) tmp;
 		}
 
