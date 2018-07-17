@@ -9,11 +9,11 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 	protected C[] all;
 	protected BaseEntityMeta<?,?,C> meta;
 	
-	public <T, ID> ColumnSet(BaseEntityMeta<T,ID,C> meta){
+	public ColumnSet(BaseEntityMeta<?,?,C> meta){
 		this(meta, false);
 	}
 
-	public <T, ID> ColumnSet(BaseEntityMeta<T,ID,C> meta, boolean allElements){
+	public ColumnSet(BaseEntityMeta<?,?,C> meta, boolean allElements){
 		this.meta = meta;
 		this.all = (C[]) meta.columnArray;
 		if(allElements){
