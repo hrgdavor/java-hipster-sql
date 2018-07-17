@@ -12,6 +12,8 @@ public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,
 	E getPrimaryColumn();
 
 	E getColumn(String name);
+
+	int getColumnOrdinal(String columnName);
 	
 	E getColumn(int ordinal);
 
@@ -24,4 +26,5 @@ public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,
 	ICustomType<?> getTypeHandler(E column);
 
 	ICustomType<?> getTypeHandler(int ordinal);
+
 }
