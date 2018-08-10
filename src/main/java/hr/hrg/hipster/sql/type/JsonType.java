@@ -62,5 +62,12 @@ public class JsonType<T> implements ICustomType<T>{
 	public JavaType getJavaType() {
 		return javaType;
 	}
-	
+
+	public ObjectReader getReader() {
+		return reader;
+	}
+
+	public ObjectWriter getWriter() {
+		return writer;
+	}
 }
