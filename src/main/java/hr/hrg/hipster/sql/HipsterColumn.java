@@ -42,5 +42,12 @@ public @interface HipsterColumn {
 
 
     String customTypeKey() default "";
+
     
+    /**
+     * Should this method be skipped
+     * @return if method should be skipped 
+     */
+    boolean skip() default false;
+
 }
