@@ -13,6 +13,15 @@ public class JsonType<T> implements ICustomType<T>{
 	private String clazz;
 	private ObjectReader reader;
 	private ObjectWriter writer;
+	private JavaType javaType;
+
+	public JsonType(ObjectMapper mapper, JavaType javaType) {
+		this.javaType = javaType;
+		reader = mapper.readerFor(javaType);
+		writer = mapper.writerFor(javaType);
+		mapper.getTypeFactory();
+		this.clazz = javaType.getTypeName();
+	}
 
 	public JsonType(ObjectMapper mapper, TypeReference<T> typeRef) {
 		reader = mapper.readerFor(typeRef);
@@ -50,4 +59,8 @@ public class JsonType<T> implements ICustomType<T>{
 		}
 	}
 
+	public JavaType getJavaType() {
+		return javaType;
+	}
+	
 }
