@@ -15,34 +15,39 @@ public class SimpleUsage {
         
         // global definitions and data handling (can be Singleton)
         HipsterSql hipSql = new HipsterSql();
+        hipSql.getTypeSource().registerFor(new StringListType(), List.class, String.class);
         
         // SQL connection specific (not thread safe, use instance per Thread)
         HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
-
+        
         // "SELECT {column names}" will be added, and column names calculated by analysing the interface
         List<User> users = hip.entities(User.class,"from user_table");      
         for(User user:users){
-            System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());         
+            System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName()+" "+StringListType.implode(user.getRoles()));         
         }
 
         System.out.println();
         
+        hip.update("update user_table set roles=",new StringListType(),Arrays.asList("a","b","c")," WHERE user_id=",2);
+        
         String filterText = "%world%";
         users = hip.entities(User.class,"from user_table WHERE name like ", filterText);        
         for(User user:users){
-            System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName());         
+            System.out.println(user.getUser_id()+" "+user.getAge()+" "+user.getName()+" "+StringListType.implode(user.getRoles()));    
         }
     }
+
+    
 
     public static void initData(Connection conn) throws Exception{
         
         Statement statement = conn.createStatement();
-        statement.execute("CREATE TABLE user_table(user_id INT, name VARCHAR, age int)");
+        statement.execute("CREATE TABLE user_table(user_id INT, name VARCHAR, age int, roles VARCHAR)");
         statement.execute("INSERT INTO user_table VALUES"+
-                "(1, 'Hello',11),"+
-                "(2, 'small,world',22),"+
-                "(3, 'big,world',33),"+
-                "(4, 'huge,world',44)");
+                "(1, 'Hello',11,'admin'),"+
+                "(2, 'small,world',22,'user,editor'),"+
+                "(3, 'big,world',33,'user'),"+
+                "(4, 'huge,world',44,'vendor,user')");
         
     }
     
@@ -54,6 +59,8 @@ public class SimpleUsage {
         public Long getUser_id(); 
         
         public String getName();
+
+        public List<String> getRoles();
         
         public int getAge();
     }   

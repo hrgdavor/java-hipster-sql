@@ -9,7 +9,7 @@ import java.util.regex.*;
 import org.joda.time.*;
 import org.slf4j.*;
 
-import hr.hrg.hipster.dao.IEntityMeta;
+import hr.hrg.hipster.dao.*;
 
 
 public class HipsterSql {
@@ -174,6 +174,47 @@ public class HipsterSql {
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
 	}
 
+	/** Build insert query from an object, with help of entity meta-data. Columns that were not changed
+	 * will be omitted from query.
+	 * 
+	 * @param meta entity meta-data
+	 * @param mutable object with updated values
+	 * @return query ready for inserting
+	 */
+	public <C extends BaseColumnMeta> Query buildInsert(IEntityMeta<?, ?, C> meta, IUpdatable<C> mutable) {
+		
+		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
+			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
+
+		StringBuilder firstPart = new StringBuilder("("); 
+		Query valuesPart = new Query(")VALUES(");
+		
+		C primaryColumn = meta.getPrimaryColumn();
+		
+		int i=0;
+		int ordinal;
+		for(C column:meta.getColumns()) {
+			ordinal = column.ordinal();			
+			
+			if(!mutable.isChanged(ordinal)) continue;
+			if(column == primaryColumn) continue;
+			
+			Object value = mutable.getValue(column);
+			ICustomType<?> customType = meta.getTypeHandler(column);
+			if(i >0) {
+				firstPart.append(",");
+				valuesPart.append(",",customType, value);
+			}else {
+				valuesPart.append(customType, value);
+			}
+			firstPart.append(column);
+			i++;
+		}
+		valuesPart.append(")");
+		
+		return new Query("INSERT INTO ", meta.getTable(), firstPart, valuesPart);		
+	}
+	
 	/** build insert Query from map of key:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
@@ -228,6 +269,45 @@ public class HipsterSql {
 		return new Query(firstPart, valuesPart);		
 	}
 
+	/** Build update query from an object, with help of entity metadata. Columns that were not changed
+	 * will be omitted from query.
+	 * 
+	 * @param meta entity meta-data
+	 * @param mutable object with updated values
+	 * @return query ready for inserting
+	 */
+	public <C extends BaseColumnMeta> Query buildUpdate(IEntityMeta<?, ?, C> meta, Object filter, IUpdatable<C> mutable) {
+		
+		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
+			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
+
+		Query filterQuery = checkFilterDefined(filter);
+		
+		Query query = new Query("UPDATE ",meta.getTable()," SET ");
+
+		int i=0;
+		int ordinal;
+		for(C column:meta.getColumns()) {
+			ordinal = column.ordinal();
+			
+			if(!mutable.isChanged(ordinal)) continue;
+			
+			Object value = mutable.getValue(ordinal);
+			ICustomType<?> customType = meta.getTypeHandler(ordinal);
+			if(i >0){
+				query.append(",",column,"=", customType, value);
+			}else {
+				query.append(column,"=", customType, value);
+			}
+			i++;
+		}
+
+		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+
+		return query;		
+	}
+	
+	
 	/** Build update Query from map of column:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
@@ -312,13 +392,14 @@ public class HipsterSql {
 		
 		StringBuilder b = new StringBuilder();
 		ArrayList<Object> params = new ArrayList<>();
-
-		prepareInto(b, params, queryParts);
+		List<ICustomType<?>> setters = new ArrayList<>();
 		
-		return new PreparedQuery(typeSource,b.toString(), params); 
+		prepareInto(b, params, setters, queryParts);
+		
+		return new PreparedQuery(typeSource,b, params, setters); 
 	}
 	
-	public void prepareInto(StringBuilder b, List<Object> params, Object ... queryParts){
+	public void prepareInto(StringBuilder b, List<Object> params, List<ICustomType<?>> setters, Object ... queryParts){
 		
 		int count = queryParts.length;
 		int evenOdd = 0;
@@ -338,7 +419,7 @@ public class HipsterSql {
 				evenOdd = 1;// will be changed to 2 at the end of the loop
 
 			}else if(obj instanceof Query){
-				prepareInto(b, params, ((Query)obj).getParts().toArray());
+				prepareInto(b, params, setters, ((Query)obj).getParts().toArray());
 				evenOdd = 1;// will be changed to 2 at the end of the loop				
 			
 			}else if(obj instanceof PreparedQuery){
@@ -346,6 +427,10 @@ public class HipsterSql {
 				b.append(prepared.getQueryStringBuilder());
 				params.addAll(prepared.getParams());
 			
+			}else if(obj instanceof ICustomType){
+				PreparedQuery.setCustom(setters, params.size(), (ICustomType) obj);
+				evenOdd = 0;// will be changed to 1 at the end of the loop
+				
 			}else if(evenOdd %2 == 0){
 				b.append(obj);
 			

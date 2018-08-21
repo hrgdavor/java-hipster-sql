@@ -48,10 +48,30 @@ public class PreparedQuery implements IQueryPart{
 	
 	public PreparedQuery append(String query, Object ...params){
 		this.stringBuilder.append(query);
+		for(Object param: params) {
+			if(param instanceof ICustomType) {
+				setCustom(this.params.size(), (ICustomType)param);
+			}
+		}
 		QueryUtil.addToList(this.params, params);
 		return this;
 	}
 	
+	private void setCustom(int pos, ICustomType customType) {
+		while(setters.size() <= pos) setters.add(null);
+		setters.set(pos, customType);
+	}
+	
+	public static void setCustom(List<ICustomType<?>> setters, int pos, ICustomType customType) {
+		while(setters.size() <= pos) setters.add(null);
+		setters.set(pos, customType);
+	}
+	
+	public ICustomType getCustom(int pos){
+		if(pos >= setters.size()) return null;
+		return setters.get(pos);
+	}
+
 	public PreparedQuery appendList(String query, List<Object> params){
 		this.stringBuilder.append(query);
 		//QueryUtil.addToList(this.params, params);
