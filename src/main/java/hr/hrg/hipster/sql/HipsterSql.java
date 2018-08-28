@@ -402,7 +402,8 @@ public class HipsterSql {
 	public void prepareInto(StringBuilder b, List<Object> params, List<ICustomType<?>> setters, Object ... queryParts){
 		
 		int count = queryParts.length;
-		int evenOdd = 0;
+		
+		boolean expectValue = false;
 		
 		for(int i=0; i<count; i++){
 			Object obj = queryParts[i];
@@ -412,33 +413,43 @@ public class HipsterSql {
 				if(queryLiteral.isIdentifier()) b.append(columQuote1);
 				b.append(queryLiteral.getQueryText());
 				if(queryLiteral.isIdentifier()) b.append(columQuote2);
-				evenOdd = 1;// will be changed to 2 at the end of the loop
+				
+				expectValue = false;
 				
 			}else if(obj instanceof BaseColumnMeta){
 				b.append(columQuote1).append(((BaseColumnMeta)obj).getColumnName()).append(columQuote2);
-				evenOdd = 1;// will be changed to 2 at the end of the loop
+				
+				expectValue = false;
 
 			}else if(obj instanceof Query){
 				prepareInto(b, params, setters, ((Query)obj).getParts().toArray());
-				evenOdd = 1;// will be changed to 2 at the end of the loop				
-			
+				
+				expectValue = false;
+				
 			}else if(obj instanceof PreparedQuery){
 				PreparedQuery prepared = (PreparedQuery) obj;
 				b.append(prepared.getQueryStringBuilder());
 				params.addAll(prepared.getParams());
 			
-			}else if(obj instanceof ICustomType){
-				PreparedQuery.setCustom(setters, params.size(), (ICustomType) obj);
-				evenOdd = 0;// will be changed to 1 at the end of the loop
+				expectValue = false;
 				
-			}else if(evenOdd %2 == 0){
+			}else if(obj instanceof ICustomType){
+				// prepare CustomType for the next parameter
+				PreparedQuery.setCustom(setters, params.size(), (ICustomType) obj);
+				
+				expectValue = true; // we just defined custom type for the next value, so yeah :) value expected
+				
+			}else if(!expectValue){
 				b.append(obj);
-			
+
+				expectValue = true; // we just appended a query part to the StringBuilder, so next must be a value
+
 			}else {
 				b.append('?');
 				params.add(obj);
+
+				expectValue = false;
 			}
-			evenOdd++;
 		}
 	}
 

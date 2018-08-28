@@ -7,6 +7,7 @@ import java.util.*;
  * You should not share instance between threads, although the worst that can happen is wrong query reported
  * in case of error, because lastQuery and lastPrepared are instance variables.
  * */
+@SuppressWarnings("rawtypes")
 public class HipsterConnectionImpl implements IHipsterConnection {
 	
 	protected HipsterSql hipster;
@@ -87,7 +88,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#one(java.lang.Object)
 	 */
     @Override
-	public int one(Object ...sql){
+	public int oneInt(Object ...sql){
     	Object obj = oneObj(sql);
     	return obj == null ? 0: ((Number)obj).intValue();
     }
@@ -105,6 +106,21 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	public double oneDouble(Object ...sql){
     	Object obj = oneObj(sql);
     	return obj == null ? 0: ((Number)obj).doubleValue();
+    }
+    
+    @Override
+    public <T> T one(ICustomType<T> reader, Object... sql) {
+        try(Result res = new Result(this);){
+        	res.executeQuery(sql);
+
+        	if(res.next()) {        		
+        		return reader.get(res.getResultSet(), 1);
+        	}
+        	return null;
+
+        } catch (SQLException e) {
+        	throw new HipsterSqlException(this, "failed reading value", e);
+		}
     }
     
     /* (non-Javadoc)
@@ -260,7 +276,8 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     	return entities(hipster.getReaderSource().getOrCreate(clazz), sql);
     }
 
-    @Override
+    
+	@Override
     public <T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object... sql) {
     	
     	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql);
@@ -420,7 +437,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#treeWithRow(hr.hrg.hipster.sql.Query, java.lang.String)
 	 */
     @Override
-	@SuppressWarnings("rawtypes")
 	public Map<Object, Map<Object, Object>> treeWithRow(Query sql, String ...columns) {
         Map<Object, Map<Object, Object>> map = new HashMap<Object,Map<Object,Object>>();
         try(Result res = new Result(this);){

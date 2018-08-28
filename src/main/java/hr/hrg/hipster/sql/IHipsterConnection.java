@@ -37,7 +37,7 @@ public interface IHipsterConnection {
 	 * @param sql varargs query
 	 * @return single result int
 	 */
-	int one(Object... sql);
+	int oneInt(Object... sql);
 
 	/**
 	 *  Get first value as long from first row and first column. <br>
@@ -54,6 +54,15 @@ public interface IHipsterConnection {
 	 */
 	double oneDouble(Object ...sql);
 
+	
+	/**
+	 *  Get first value as parsed by the CustomType from first row and first column. <br>
+	 * @param reader CustomType that reads column
+	 * @param sql varargs query
+	 * @return single result double
+	 */
+	<T> T one(ICustomType<T> reader, Object ...sql);
+	
 	/**
 	 * Get single row. 
 	 * @param sql varargs query

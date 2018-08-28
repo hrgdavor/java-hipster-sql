@@ -4,20 +4,20 @@ import java.util.*;
 
 import hr.hrg.hipster.sql.*;
 
-public class EntityDao <T, ID>{
+public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T, ID, C>>{
 
 	protected IHipsterConnection conn;
-	protected IEntityMeta<T, ID, ? extends BaseColumnMeta> meta;
-	protected Query.Immutable selectQuery;
+	protected M meta;
+	protected Query.ImmutableQuery selectQuery;
 
 	@SuppressWarnings("unchecked")
 	public EntityDao(Class<T> clazz, IHipsterConnection conn, EntitySource entitySource){
-		this.meta = (IEntityMeta<T, ID, ? extends BaseColumnMeta>) entitySource.getFor(clazz);
+		this.meta = (M) entitySource.getFor(clazz);
 		this.conn = conn;
 		init();
 	}
 
-	public EntityDao(IEntityMeta<T, ID, ? extends BaseColumnMeta> meta, IHipsterConnection conn){
+	public EntityDao(M meta, IHipsterConnection conn){
 		this.meta = meta;
 		this.conn = conn;
 		init();
@@ -45,7 +45,7 @@ public class EntityDao <T, ID>{
 		tmp[columnCount+2] = meta.getTable();
 		tmp[columnCount+3] = " ";
 		
-		selectQuery = new Query.Immutable(ImmutableList.safe(tmp));
+		selectQuery = new Query.ImmutableQuery(ImmutableList.safe(tmp));
 
 	}
 
@@ -71,51 +71,46 @@ public class EntityDao <T, ID>{
 		return conn.entities(meta, new Query(selectQuery).append(queryParts));		
 	}
 
-	public Query q(Object... sql) {
-		return new Query(sql);
-	}
-	
-	/** Get first value from first row and first column. <br>
-	 * Useful for counting and other queries that return single value.<br>
-	 * 
-	 * @param sql varargs query
-	 * @return single result Object
-	 */
-	Object oneObj(BaseColumnMeta column, Object... sql) {
-		return conn.oneObj(
-				"SELECT ", column,
-				" FROM ",meta.getTable(), 
-				q(sql));
-		
-	}
-
-	/** 
-	 * Get first value as long from first row and first column. <br>
-	 * @param column column
-	 * @param sql varargs query
-	 * @return single result String
-	 */
-	public String oneString(BaseColumnMeta column, Object... sql) {
-		return conn.oneString(
-				"SELECT ", column,
-				" FROM ",meta.getTable(), 
-				q(sql));
-		
+	public EntityQuery<T, ID, BaseColumnMeta> q(Object... sql) {
+		return new EntityQuery(meta).append(sql);
 	}
 
 	/**
-	 *  Get first value as int from first row and first column. <br>
+	 *  Get first value from first row and first column. <br>
 	 * Useful for counting and other queries that return single int value.<br>
 	 * @param column column
 	 * @param sql varargs query
-	 * @return single result int
+	 * @return single result
 	 */
-	int one(BaseColumnMeta column, Object... sql) {
-		return conn.one(
-				"SELECT ", column,
-				" FROM ",meta.getTable(), 
-				q(sql));
+	public <T2, C2 extends BaseColumnMeta<T2>> T2 one(C2 column, Object... sql) {
+		return _one(column, null, sql);
+	}
+
+	/**
+	 *  Get first value from first row and first column, but wrapped in an operation. <br>
+	 * Useful for counting MAX/MIN and other queries that return single aggregate value or additional function call.<br>
+	 * @param op operation to perform on the column
+	 * @param column column
+	 * @param sql varargs query
+	 * @return single result
+	 */
+	public <T2, C2 extends BaseColumnMeta<T2>> T2 one(String op, C2 column, Object... sql) {
+		return _one(column, op, sql);
+	}
+	
+	@SuppressWarnings({"unchecked","rawtypes"})
+	private <T2, C2 extends BaseColumnMeta<T2>> T2 _one(C2 column, String op, Object... sql) {
+		EntityQuery<T, ID, BaseColumnMeta> q = q("SELECT ");
+		if(op != null && !op.isEmpty()) {
+			q.append(op+"(", column,")");
+		}else {
+			q.append(column);
+		}
+		q.append(" FROM ", meta.getTable(), " ");
+		q.append(sql);
+		ICustomType<?> handler = meta.getTypeHandler((C) column);
 		
+		return (T2) conn.one(handler, q);
 	}
 
 
@@ -123,29 +118,30 @@ public class EntityDao <T, ID>{
 	 *  Get first value as long from first row and first column. <br>
 	 * @param column column
 	 * @param sql varargs query
-	 * @return single result long
+	 * @return single result primitive long
+	 */
+	int oneInt(BaseColumnMeta column, Object... sql) {
+		return conn.oneInt(q("SELECT ", column,	" FROM ",meta.getTable()).append(sql));
+	}
+
+	/**
+	 *  Get first value as long from first row and first column. <br>
+	 * @param column column
+	 * @param sql varargs query
+	 * @return single result primitive long
 	 */
 	long oneLong(BaseColumnMeta column, Object... sql) {
-		return conn.oneLong(
-				"SELECT ", column,
-				" FROM ",meta.getTable(), 
-				q(sql));
-		
+		return conn.oneLong(q("SELECT ", column,	" FROM ",meta.getTable()).append(sql));
 	}
 	
 	/**
 	 *  Get first value as double from first row and first column. <br>
 	 * @param column column
 	 * @param sql varargs query
-	 * @return single result double
+	 * @return single result primitive double
 	 */
 	double oneDouble(BaseColumnMeta column, Object... sql) {
-		return conn.oneDouble(
-				"SELECT ", column,
-				" FROM ",meta.getTable(), 
-				q(sql));
-		
+		return conn.oneDouble(q("SELECT ", column,	" FROM ",meta.getTable()).append(sql));
 	}
-
-
+	
 }
