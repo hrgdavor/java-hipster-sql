@@ -54,7 +54,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql
 	 * @return
 	 */
-	public EntityQuery<T, ID, C> q(Object... sql) {
+	public EntityQuery<T, ID, C, M> q(Object... sql) {
 		return new EntityQuery(meta).append(sql);
 	}
 
@@ -83,7 +83,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	
 	@SuppressWarnings({"unchecked","rawtypes"})
 	private <T2, C2 extends BaseColumnMeta<T2>> T2 _one(C2 column, String op, Object... sql) {
-		EntityQuery<T, ID, BaseColumnMeta> q = q("SELECT ");
+		EntityQuery<T, ID, C, M> q = q("SELECT ");
 		if(op != null && !op.isEmpty()) {
 			q.append(op+"(", column,")");
 		}else {

@@ -3,32 +3,32 @@ package hr.hrg.hipster.sql;
 import hr.hrg.hipster.dao.*;
 
 @SuppressWarnings("rawtypes")
-public class EntityQuery <T,ID,C extends BaseColumnMeta> extends Query{
+public class EntityQuery <T,ID,C extends BaseColumnMeta, M extends IEntityMeta<T, ID, C>> extends Query{
 
-	private IEntityMeta<T, ID, C> meta;
+	private M  meta;
 
-	public EntityQuery(IEntityMeta<T, ID, C> meta) {
+	public EntityQuery(M meta) {
 		this.meta = meta;
 	}
 	
-	public EntityQuery<T, ID, C> addColumnValue(BaseColumnMeta column, Object value) {
+	public EntityQuery<T, ID, C, M> addColumnValue(C column, Object value) {
 		append(meta.getTypeHandler(column.ordinal()), value);
 		return this;
 	}
 
-	public EntityQuery<T, ID, C> addColumnOpValue(BaseColumnMeta column, String op, Object value) {
+	public EntityQuery<T, ID, C, M> addColumnOpValue(BaseColumnMeta column, String op, Object value) {
 		if(op.charAt(0) != ' ') append(Query.QUERY_SPACE);
 		append(column, op, meta.getTypeHandler(column.ordinal()), value);
 		return this;
 	}
 
-	public EntityQuery<T, ID, C> addColumnOpValue(BaseColumnMeta column, String op, Object value, String qAfter) {
+	public EntityQuery<T, ID, C, M> addColumnOpValue(BaseColumnMeta column, String op, Object value, String qAfter) {
 		if(op.charAt(0) != ' ') append(Query.QUERY_SPACE);
 		append(column, op, meta.getTypeHandler(column.ordinal()), value, qAfter);
 		return this;
 	}
 
-	public EntityQuery<T, ID, C> addColumnInValue(BaseColumnMeta column, String op, Object ...values){
+	public EntityQuery<T, ID, C, M> addColumnInValue(BaseColumnMeta column, String op, Object ...values){
 		if(op.charAt(0) != ' ') append(Query.QUERY_SPACE);
 		append(column, op);
 		ICustomType<?> typeHandler = meta.getTypeHandler(column.ordinal());
@@ -45,13 +45,13 @@ public class EntityQuery <T,ID,C extends BaseColumnMeta> extends Query{
 	}
 
 	@Override
-	public EntityQuery<T, ID, C> append(Object... rightSide) {
+	public EntityQuery<T, ID, C, M> append(Object... rightSide) {
 		super.append(rightSide);
 		return this;
 	}
 
 	@Override
-	public EntityQuery<T, ID, C> appendValue(Object value) {
+	public EntityQuery<T, ID, C, M> appendValue(Object value) {
 		super.appendValue(value);
 		return this;
 	}
@@ -61,7 +61,7 @@ public class EntityQuery <T,ID,C extends BaseColumnMeta> extends Query{
 	 * @param rightSide query
 	 * @return self
 	 */
-	public EntityQuery<T, ID, C> add(Object... rightSide) {
+	public EntityQuery<T, ID, C, M> add(Object... rightSide) {
 		super.append(rightSide);
 		return this;
 	}
@@ -72,7 +72,7 @@ public class EntityQuery <T,ID,C extends BaseColumnMeta> extends Query{
 	 * @param value value
 	 * @return self
 	 */
-	public EntityQuery<T, ID, C> addValue(Object value) {
+	public EntityQuery<T, ID, C, M> addValue(Object value) {
 		super.appendValue(value);
 		return this;
 	}
