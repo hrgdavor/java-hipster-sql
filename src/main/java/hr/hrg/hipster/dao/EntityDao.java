@@ -24,36 +24,14 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	}
 
 	public void init() {
-		
-		int columnCount = meta.getColumnCount()*2-1;
-		List<? extends BaseColumnMeta> columns = meta.getColumns();
-		Object[] tmp = new Object[columnCount+4];
-		
-		// SELECT
-		tmp[0] = "SELECT ";
-		// all columns
-		int column = 0;
-		for(int i=1; i<=columnCount; i++) {
-			if(i % 2 == 0) 
-				tmp[i]=",";
-			else 
-				tmp[i] = columns.get(column++);
-		}
-		// from
-		tmp[columnCount+1] = " FROM ";
-		// table
-		tmp[columnCount+2] = meta.getTable();
-		tmp[columnCount+3] = " ";
-		
-		selectQuery = new Query.ImmutableQuery(ImmutableList.safe(tmp));
-
+		selectQuery = HipsterSqlUtil.selectQueryForEntity(meta);
 	}
 
 	public IHipsterConnection getConnection() {
 		return conn;
 	}
 	
-	public IEntityMeta<T, ID, ? extends BaseColumnMeta> getMeta() {
+	public M getMeta() {
 		return meta;
 	}
 	
@@ -71,7 +49,12 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 		return conn.entities(meta, new Query(selectQuery).append(queryParts));		
 	}
 
-	public EntityQuery<T, ID, BaseColumnMeta> q(Object... sql) {
+	/** Create new EntityQuery
+	 * 
+	 * @param sql
+	 * @return
+	 */
+	public EntityQuery<T, ID, C> q(Object... sql) {
 		return new EntityQuery(meta).append(sql);
 	}
 

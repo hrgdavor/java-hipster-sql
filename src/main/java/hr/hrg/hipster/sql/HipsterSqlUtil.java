@@ -6,6 +6,8 @@ import java.util.*;
 
 import javax.lang.model.element.*;
 
+import hr.hrg.hipster.dao.*;
+
 
 public class HipsterSqlUtil {
 
@@ -92,6 +94,30 @@ public class HipsterSqlUtil {
 		return ret;
 	}
 
+	public static <C extends BaseColumnMeta> Query.ImmutableQuery selectQueryForEntity(IEntityMeta<?, ?, C> meta) {
+		int columnCount = meta.getColumnCount()*2-1;
+		List<C> columns = meta.getColumns();
+		Object[] tmp = new Object[columnCount+4];
+		
+		// SELECT
+		tmp[0] = "SELECT ";
+		// all columns
+		int column = 0;
+		for(int i=1; i<=columnCount; i++) {
+			if(i % 2 == 0) 
+				tmp[i]=",";
+			else 
+				tmp[i] = columns.get(column++);
+		}
+		// from
+		tmp[columnCount+1] = " FROM ";
+		// table
+		tmp[columnCount+2] = meta.getTable();
+		tmp[columnCount+3] = " ";
+
+		return new Query.ImmutableQuery(ImmutableList.safe(tmp));
+	}
+	
 	public static String entityNamesPrefix(Class<?> clazz){
 		return clazz.getName().replaceAll("\\$", "_.");
 	}
