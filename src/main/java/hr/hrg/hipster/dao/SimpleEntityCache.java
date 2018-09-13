@@ -61,11 +61,16 @@ public class SimpleEntityCache<T extends IEnumGetter<E>, ID, E extends BaseColum
 		byId.replace(event.getId(), event.getUpdated());
 	}
 
+	public void clear() {
+		byId.clear();
+	}
+	
 	public M getMeta() {
 		return meta;
 	}
 	
 	public T getById(ID id) {
+		if(id == null) return null;
 		return byId.get(id);
 	}
 }
