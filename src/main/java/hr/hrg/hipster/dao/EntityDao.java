@@ -103,8 +103,8 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive long
 	 */
-	int oneInt(BaseColumnMeta column, Object... sql) {
-		return conn.oneInt(q("SELECT ", column,	" FROM ",meta.getTable()).append(sql));
+	public int oneInt(BaseColumnMeta column, Object... sql) {
+		return conn.oneInt(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
 
 	/**
@@ -113,8 +113,8 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive long
 	 */
-	long oneLong(BaseColumnMeta column, Object... sql) {
-		return conn.oneLong(q("SELECT ", column,	" FROM ",meta.getTable()).append(sql));
+	public long oneLong(BaseColumnMeta column, Object... sql) {
+		return conn.oneLong(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
 	
 	/**
@@ -123,8 +123,8 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive double
 	 */
-	double oneDouble(BaseColumnMeta column, Object... sql) {
-		return conn.oneDouble(q("SELECT ", column,	" FROM ",meta.getTable()).append(sql));
+	public double oneDouble(BaseColumnMeta column, Object... sql) {
+		return conn.oneDouble(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
 	
 }
