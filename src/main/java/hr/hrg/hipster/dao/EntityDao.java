@@ -4,6 +4,7 @@ import java.util.*;
 
 import hr.hrg.hipster.sql.*;
 
+@SuppressWarnings("rawtypes")
 public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T, ID, C>>{
 
 	protected IHipsterConnection conn;
@@ -55,7 +56,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @return
 	 */
 	public EntityQuery<T, ID, C, M> q(Object... sql) {
-		return new EntityQuery(meta).append(sql);
+		return new EntityQuery<T, ID, C, M>(meta).append(sql);
 	}
 
 	/**
@@ -81,7 +82,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 		return _one(column, op, sql);
 	}
 	
-	@SuppressWarnings({"unchecked","rawtypes"})
+	@SuppressWarnings({"unchecked"})
 	private <T2, C2 extends BaseColumnMeta<T2>> T2 _one(C2 column, String op, Object... sql) {
 		EntityQuery<T, ID, C, M> q = q("SELECT ");
 		if(op != null && !op.isEmpty()) {
@@ -103,7 +104,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive long
 	 */
-	public int oneInt(BaseColumnMeta column, Object... sql) {
+	public int oneInt(C column, Object... sql) {
 		return conn.oneInt(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
 
@@ -113,7 +114,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive long
 	 */
-	public long oneLong(BaseColumnMeta column, Object... sql) {
+	public long oneLong(C column, Object... sql) {
 		return conn.oneLong(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
 	
@@ -123,7 +124,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive double
 	 */
-	public double oneDouble(BaseColumnMeta column, Object... sql) {
+	public double oneDouble(C column, Object... sql) {
 		return conn.oneDouble(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
 	

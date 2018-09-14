@@ -3,6 +3,7 @@ package hr.hrg.hipster.dao;
 import hr.hrg.hipster.sql.*;
 
 
+@SuppressWarnings("rawtypes")
 public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,E>{
 
 	String getEntityName();

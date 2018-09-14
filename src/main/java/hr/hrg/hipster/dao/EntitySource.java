@@ -6,6 +6,7 @@ import java.util.concurrent.*;
 
 import hr.hrg.hipster.sql.*;
 
+@SuppressWarnings("rawtypes")
 public class EntitySource {
 	protected Map<Class<? extends Object>, IEntityMeta<?,?,?>> registered = new ConcurrentHashMap<>(); 
 	protected Map<String, IEntityMeta<?,?,?>> named = new ConcurrentHashMap<>();
