@@ -14,10 +14,10 @@ public class EntityEvent<T, ID, E extends BaseColumnMeta>{
 	private ID id;
 	private T old;
 	private T updated;
-	private IUpdatable<E> delta;
+	private IUpdatable delta;
 	private IEntityMeta<T,ID,E> meta;
 
-	public EntityEvent(ID id, T old, T updated, IUpdatable<E> delta, IEntityMeta<T,ID,E> meta){
+	public EntityEvent(ID id, T old, T updated, IUpdatable delta, IEntityMeta<T,ID,E> meta){
 		this.id = id;
 		this.old = old;
 		this.updated = updated;
@@ -33,7 +33,7 @@ public class EntityEvent<T, ID, E extends BaseColumnMeta>{
 		return updated;
 	}
 	
-	public IUpdatable<E> getDelta() {
+	public IUpdatable getDelta() {
 		return delta;
 	}
 	

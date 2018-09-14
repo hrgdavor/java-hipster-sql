@@ -15,7 +15,7 @@ import hr.hrg.hipster.sql.BaseColumnMeta;
 import hr.hrg.hipster.sql.IHipsterConnection;
 
 @SuppressWarnings("rawtypes")
-public class SimpleEntityCache<T extends IEnumGetter<E>, ID, E extends BaseColumnMeta,M extends IEntityMeta<T, ID, E>> 
+public class SimpleEntityCache<T extends IEnumGetter, ID, E extends BaseColumnMeta,M extends IEntityMeta<T, ID, E>> 
 	implements IChangeListener<T, ID, E>,
 	IAddListener<T, ID, E, M>,
 	IDeletedListener<ID, E>{

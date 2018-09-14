@@ -19,7 +19,7 @@ public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,
 
 	ID entityGetPrimary(T instance);
 
-	IUpdatable<E> mutableCopy(Object v);
+	IUpdatable mutableCopy(Object v);
 	
 	int ordinal();
 

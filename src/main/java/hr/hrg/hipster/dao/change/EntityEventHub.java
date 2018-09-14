@@ -33,7 +33,7 @@ public class EntityEventHub {
 		return changeListeners.containsKey(clazz);
 	}
 	
-	public <T, ID, E extends BaseColumnMeta, U extends IUpdatable<E>> void addBeforeChangeListener(IBeforeChangeListener<T, ID, E, U> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta, U extends IUpdatable> void addBeforeChangeListener(IBeforeChangeListener<T, ID, E, U> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IBeforeChangeListener> list = beforeChangeListeners.get(clazz);
 			if(list == null) {
@@ -107,7 +107,7 @@ public class EntityEventHub {
 		}
 	}
 
-	public void fireBeforeChange(Object id, Object old, IUpdatable<?> update, IEntityMeta<?,?,?> meta, long batchId){
+	public void fireBeforeChange(Object id, Object old, IUpdatable update, IEntityMeta<?,?,?> meta, long batchId){
 		if(meta.getPrimaryColumn() != null) {
 			checkType(id, meta.getPrimaryColumn().getType(), "primary for ", meta.getEntityName());
 		}

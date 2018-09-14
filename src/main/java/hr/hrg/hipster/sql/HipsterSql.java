@@ -181,7 +181,7 @@ public class HipsterSql {
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */
-	public <C extends BaseColumnMeta> Query buildInsert(IEntityMeta<?, ?, C> meta, IUpdatable<C> mutable) {
+	public <C extends BaseColumnMeta> Query buildInsert(IEntityMeta<?, ?, C> meta, IUpdatable mutable) {
 		
 		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
 			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
@@ -276,7 +276,7 @@ public class HipsterSql {
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */
-	public <C extends BaseColumnMeta> Query buildUpdate(IEntityMeta<?, ?, C> meta, Object filter, IUpdatable<C> mutable) {
+	public <C extends BaseColumnMeta> Query buildUpdate(IEntityMeta<?, ?, C> meta, Object filter, IUpdatable mutable) {
 		
 		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
 			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
