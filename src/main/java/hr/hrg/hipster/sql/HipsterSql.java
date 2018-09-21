@@ -523,11 +523,21 @@ public class HipsterSql {
 	Object handleRsGet(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
     	
         switch (sqlType) {
-            case Types.INTEGER: return Integer.valueOf(rs.getInt(index));
-            case Types.BIGINT: return Long.valueOf(rs.getLong(index));
-            case Types.SMALLINT: return Integer.valueOf(rs.getInt(index));
-            case Types.FLOAT: return Float.valueOf(rs.getFloat(index));
-            case Types.DOUBLE: return Double.valueOf(rs.getDouble(index));
+            case Types.INTEGER: 
+            	int retInt = rs.getInt(index); 
+            	return rs.wasNull() ? null: Integer.valueOf(retInt);
+            case Types.BIGINT:  
+            	long retLong = rs.getLong(index); 
+            	return rs.wasNull() ? null: Long.valueOf(retLong);
+            case Types.SMALLINT: 
+            	short retShort = rs.getShort(index);  
+            	return rs.wasNull() ? null: Short.valueOf(retShort);
+            case Types.FLOAT: 
+            	float retFloat = rs.getFloat(index); 
+            	return rs.wasNull() ? null: Float.valueOf(retFloat);
+            case Types.DOUBLE: 
+            	double retDouble = rs.getDouble(index); 
+            	return rs.wasNull() ? null: Double.valueOf(retDouble);
 
             case Types.DATE:
             case Types.TIME:
