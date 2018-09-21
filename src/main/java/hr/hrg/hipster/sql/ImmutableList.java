@@ -73,6 +73,37 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
     	}
     	return new ImmutableList<T>(true,newArr);
     }
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<T> removeMakeNew(int index){
+    	T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length-1);
+    	int i=0;
+    	for(; i<newArr.length; i++){
+    		if(i == index) break;
+    		newArr[i] = items[i];
+    	}
+    	i++;
+    	for(; i<items.length; i++){
+    		newArr[i-1] = items[i];
+    	}
+    	return new ImmutableList<T>(true,newArr);
+    }    
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<T> insertMakeNew(int index, T obj){
+    	T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length+1);
+    	int i=0;
+    	for(; i<newArr.length; i++){
+    		if(i == index) break;
+    		newArr[i] = items[i];
+    	}
+    	newArr[i] = obj;
+    	i++;
+    	for(; i<items.length; i++){
+    		newArr[i+1] = items[i];
+    	}
+    	return new ImmutableList<T>(true,newArr);
+    }    
     
     @SuppressWarnings("unchecked")
     public ImmutableList<T> replaceMakeNew(T elem, T replacement){

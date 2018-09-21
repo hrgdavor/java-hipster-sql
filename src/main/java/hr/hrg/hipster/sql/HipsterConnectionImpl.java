@@ -235,6 +235,8 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     	if(columnNames == null || columnNames.isEmpty()) return sql; // no need to inject column names
     	
+    	if(sql.length == 0) return new Object[]{" SELECT "+columnNames+" FROM ",table};
+    	
     	Object[] newSql = null;
     	if(sql.length == 1 && sql[0] instanceof Query){
     		newSql = ((Query)sql[0]).parts.toArray();
@@ -248,7 +250,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     			newSql[0] = " SELECT "+columnNames+" "+newSql[0];
     			return newSql;
     		}
-    		if(table != null && ( first.startsWith("where ") || first.startsWith(" where "))){
+    		if(table != null && !( first.startsWith("select ") || first.startsWith(" select "))){
     			newSql[0] = new Query(" SELECT "+columnNames+" FROM ",table," "+newSql[0]);
     			return newSql;
     		}

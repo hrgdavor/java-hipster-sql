@@ -15,7 +15,7 @@ public class EntityEventHub {
 	Map<Class, List<IChangeListener>> changeListeners = new HashMap<>();
 	Map<Class, List<IBeforeChangeListener>> beforeChangeListeners = new HashMap<>();
 	Map<Class, List<IDeletedListener>> deleteListeners = new HashMap<>();
-	Map<Class, List<IDeletedDetailListener>> deleteDataListeners = new HashMap<>();
+	Map<Class, List<IDeletedDetailListener>> deleteDetailListeners = new HashMap<>();
 	Map<Class, List<IAddListener>> addListeners = new HashMap<>();
 
 	public <T, ID, E extends BaseColumnMeta> void addChangeListener(IChangeListener<T, ID, E> listener, Class<T> clazz){
@@ -63,19 +63,19 @@ public class EntityEventHub {
 		return deleteListeners.containsKey(clazz);
 	}
 	
-	public <ID, O, E extends BaseColumnMeta> void addDeleteDataListener(IDeletedDetailListener<ID, O, E> listener, Class<O> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addDeleteDetailListener(IDeletedDetailListener<T, ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
-			List<IDeletedDetailListener> list = deleteDataListeners.get(clazz);
+			List<IDeletedDetailListener> list = deleteDetailListeners.get(clazz);
 			if(list == null) {
 				list = new ArrayList<>();
-				deleteDataListeners.put(clazz, list);
+				deleteDetailListeners.put(clazz, list);
 			}
 			list.add(listener);
 		}
 	}
 
 	public boolean hasDeleteDataListener(Class<?> clazz){
-		return deleteDataListeners.containsKey(clazz);
+		return deleteDetailListeners.containsKey(clazz);
 	}
 	
 	public <T, ID, E extends BaseColumnMeta, M extends IEntityMeta<T, ID, E>> void addAddListener(IAddListener<T, ID, E, M> listener, Class<T> clazz){
@@ -146,7 +146,7 @@ public class EntityEventHub {
 	}
 	
 	public void fireDeleteData(Object id, Object old, IEntityMeta<?,?,?> meta, long batchId){
-		List<IDeletedDetailListener> list = deleteDataListeners.get(meta.getEntityClass());
+		List<IDeletedDetailListener> list = deleteDetailListeners.get(meta.getEntityClass());
 		if(list != null){
 			for (IDeletedDetailListener listener : list) {
 				try {
