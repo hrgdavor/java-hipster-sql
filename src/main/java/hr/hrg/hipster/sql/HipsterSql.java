@@ -197,7 +197,6 @@ public class HipsterSql {
 			ordinal = column.ordinal();			
 			
 			if(!mutable.isChanged(ordinal)) continue;
-			if(column == primaryColumn) continue;
 			
 			Object value = mutable.getValue(column);
 			ICustomType<?> customType = meta.getTypeHandler(column);

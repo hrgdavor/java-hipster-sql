@@ -34,6 +34,8 @@ public class TypeSource{
 
 		registerAll(new DateType(), java.util.Date.class);
 		registerAll(new SqlDateType(), java.sql.Date.class);
+		registerAll(new SqlTimeType(), java.sql.Time.class);
+		registerAll(new SqlTimestampType(), java.sql.Timestamp.class);
 		
 		if(HipsterSqlUtil.isYodaPresent()) {
 			registerAll(new DateTimeType(), DateTime.class);
