@@ -12,8 +12,8 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	protected Query.ImmutableQuery selectQuery;
 
 	@SuppressWarnings("unchecked")
-	public EntityDao(Class<T> clazz, IHipsterConnection conn, EntitySource entitySource){
-		this.meta = (M) entitySource.getFor(clazz);
+	public EntityDao(Class<T> clazz, IHipsterConnection conn){
+		this.meta = (M) conn.getHipster().getEntitySource().getFor(clazz);
 		this.conn = conn;
 		init();
 	}

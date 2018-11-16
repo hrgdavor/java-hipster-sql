@@ -25,24 +25,23 @@ public class HipsterSql {
 	protected String columQuote2 = "\"";
 
 	private TypeSource typeSource;
+	private EntitySource entitySource;
 	
 	private ReaderSource readerSource;
 	private VisitorSource visitorSource;
 
-	public HipsterSql(TypeSource typeSource){
-		this.typeSource = typeSource;
+	public HipsterSql() {
+		this.typeSource = new TypeSource();
 		this.readerSource = new ReaderSource(typeSource);
 		this.visitorSource = new VisitorSource(typeSource);
+		this.entitySource = new EntitySource(typeSource);
 		this.intAllowdOperators();
-	}
-
-	public HipsterSql() {
-		this(new TypeSource());
 	}
 
 	protected void intAllowdOperators() {
 		addAllowdOperator("=","!=","<>","<",">",">=","<=","NOT","LIKE","ILIKE","IN");
 	}
+
 	protected void addAllowdOperator(String ...operators ){
 		for(String operator: operators){
 			allowdSqlOperators.add(operator.toUpperCase());
@@ -53,12 +52,20 @@ public class HipsterSql {
 		return readerSource;
 	}
 	
+	public EntitySource getEntitySource() {
+		return entitySource;
+	}
+	
 	public TypeSource getTypeSource() {
 		return typeSource;
 	}
 	
 	public VisitorSource getVisitorSource() {
 		return visitorSource;
+	}
+
+	public IHipsterConnection openConnection(Connection sqlConnection) {
+		return new HipsterConnectionImpl(this, sqlConnection);
 	}
 	
 	/** Override this method to provide primary column for a table. One useful thing with this
