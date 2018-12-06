@@ -15,8 +15,8 @@ public class ReaderSource {
 
 	private int ordinalIndex;
 	
-	public ReaderSource(TypeSource resultGetterSource){
-		this.typeSource = resultGetterSource;
+	public ReaderSource(TypeSource typeSource){
+		this.typeSource = typeSource;
 	}
 
 	public TypeSource getTypeSource() {
