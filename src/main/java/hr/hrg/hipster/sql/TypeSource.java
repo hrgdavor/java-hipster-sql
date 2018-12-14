@@ -78,7 +78,12 @@ public class TypeSource{
 
 	public ICustomType getForRequired(Class<?> clazz, Class<?> ...classParams) {
 		ICustomType for1 = getFor(clazz, classParams);
-		if(for1 == null) throw new RuntimeException("Handler not found for "+clazz.getName()+"<"+HipsterSqlUtil.joinClassNames(",", classParams)+">");
+		if(for1 == null && clazz.isEnum()) {
+			for1 = new EnumType(clazz);
+		}
+		if(for1 == null) {
+			throw new RuntimeException("Handler not found for "+clazz.getName()+"<"+HipsterSqlUtil.joinClassNames(",", classParams)+">");
+		}
 		return for1;
 	}
 	
