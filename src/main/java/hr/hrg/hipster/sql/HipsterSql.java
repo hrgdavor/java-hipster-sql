@@ -504,7 +504,7 @@ public class HipsterSql {
 	 * @return extracted Object presenting the time from database
 	 * @throws SQLException if get fails
 	 */
-	private Object handleRsGetTime(ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	protected Object handleRsGetTime(ResultSet rs, int index, int sqlType, String column) throws SQLException {
 		if(HipsterSqlUtil.isYodaPresent()) {			
 			switch (sqlType) {
 			case Types.DATE: Date d = rs.getDate(index); return d == null ? null: new LocalDate(d);
@@ -521,12 +521,12 @@ public class HipsterSql {
 		return null;
 	}
 
-	private Object handleRsGetOther(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	protected Object handleRsGetOther(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
         if(log != null && log.isWarnEnabled()) log.warn("unhandled sql type "+sqlType+", at index "+index+", column: "+column+" query: "+hipcConnection.getLastQuery());
         return rs.getString(index);
 	}
 
-	Object handleRsGet(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	protected Object handleRsGet(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
     	
         switch (sqlType) {
             case Types.INTEGER: 
