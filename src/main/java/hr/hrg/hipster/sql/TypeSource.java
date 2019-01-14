@@ -14,7 +14,9 @@ public class TypeSource{
     protected HashMap<String, ICustomType> named = new HashMap<>();
 
     public TypeSource() {
-		registerAll(new BooleanType(), Boolean.class);
+    	registerInstance(new BooleanIntType());
+
+    	registerAll(new BooleanType(), Boolean.class);
 		registerAll(new IntegerType(), Integer.class);
 		registerAll(new LongType(), Long.class);
 		registerAll(new FloatType(), Float.class);
