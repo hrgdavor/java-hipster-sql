@@ -127,5 +127,12 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	public double oneDouble(C column, Object... sql) {
 		return conn.oneDouble(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
 	}
+
+	public ID insert(IUpdatable mutable) {
+		Query insertQuery = conn.getHipster().buildInsert(meta, mutable);
+		return (ID) conn.insert(meta.getPrimaryColumn().getType(), insertQuery);
+	}
+	
 	
 }
+
