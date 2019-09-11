@@ -19,21 +19,18 @@ public class Testh2dbNoDep {
 		long start = System.currentTimeMillis();
 		
 		Class.forName("org.h2.Driver");
-		Connection conn = DriverManager.getConnection("jdbc:h2:mem:;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false");
+
+		HipsterSql hipSql = new HipsterSql();
+		IHipsterConnection hip = hipSql.openConnection("jdbc:h2:mem:;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false");
 		
-		Statement statement = conn.createStatement();
+		Statement statement = hip.getSqlConnection().createStatement();
 		statement.execute("CREATE TABLE user_table(user_id INT, name VARCHAR, age int)");
 		statement.execute("INSERT INTO user_table VALUES(1, 'Hello',11), (2, 'small,world',22), (3, 'big,world',33), (4, 'huge,world',44)");
         System.out.println(" created table in "+(System.currentTimeMillis()-start)+"ms");
 		
+        hipSql.getTypeSource().registerFor(new StringListGetter(), List.class, String.class);
 
-        ResultGetterSource getterSource = new ResultGetterSource();
-        getterSource.registerFor(new StringListGetter(), List.class, String.class);
 
-        HipsterSql hipSql = new HipsterSql(new PreparedSetterSource(), new ReaderSource(getterSource));
-
-		HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
-        
 		System.out.println(" prepared hipster "+(System.currentTimeMillis()-start)+"ms");
 		
 		System.out.println();
