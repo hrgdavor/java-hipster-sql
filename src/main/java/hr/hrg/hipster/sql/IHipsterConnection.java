@@ -37,7 +37,7 @@ public interface IHipsterConnection {
 	 * @param sql varargs query
 	 * @return single result int
 	 */
-	int one(Object... sql);
+	int oneInt(Object... sql);
 
 	/**
 	 *  Get first value as long from first row and first column. <br>
@@ -54,6 +54,15 @@ public interface IHipsterConnection {
 	 */
 	double oneDouble(Object ...sql);
 
+	
+	/**
+	 *  Get first value as parsed by the CustomType from first row and first column. <br>
+	 * @param reader CustomType that reads column
+	 * @param sql varargs query
+	 * @return single result double
+	 */
+	<T> T one(ICustomType<T> reader, Object ...sql);
+	
 	/**
 	 * Get single row. 
 	 * @param sql varargs query
@@ -97,14 +106,14 @@ public interface IHipsterConnection {
 	Object insert(Query sql);
 	<T> T insert(Class<T> primaryColumnType, Query sql);
 
-	<T,E extends IColumnMeta> T entity(IReadMeta<T, E> reader, Object ...sql);
+	<T,E extends BaseColumnMeta> T entity(IReadMeta<T, E> reader, Object ...sql);
 	
-	<T,E extends IColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object ...sql);
-	<T,E extends IColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object ...sql);
+	<T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object ...sql);
+	<T,E extends BaseColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object ...sql);
 
 
 	<T> List<T> column(Class<T> reader, Object ...sql);
-	<T> List<T> column(IResultGetter<T> reader, Object ...sql);
+	<T> List<T> column(ICustomType<T> reader, Object ...sql);
 
 	public <T> void rowsVisit(Object sql, T visitor);
 	

@@ -1,10 +1,10 @@
 package hr.hrg.hipster.sql;
 
 import static hr.hrg.hipster.sql.QueryUtil.*;
-import static hr.hrg.hipster.sql.QueryUtilShort.*;
 import static org.testng.Assert.*;
 
 import org.testng.annotations.*;
+import static hr.hrg.hipster.sql.QueryUtil.*;
 
 
 @Test
@@ -116,7 +116,7 @@ public class TestQuery {
 					joinValues(" IN(", toList(1,2,3) , ",", ") ")),
 			
 			toArray(" IN(1,2,3,4) ",
-					qIn(1,2,3,4)),
+					queryIn(1,2,3,4)),
 
 		};
 	}
@@ -130,4 +130,9 @@ public class TestQuery {
 	private static Object[] qp(String queryString, String prep, Object ... p) {
 		return new Object[]{queryString, prep, p};
 	}
+
+	private static Query q(Object ... parts) {
+		return new Query(parts);
+	}
+
 }

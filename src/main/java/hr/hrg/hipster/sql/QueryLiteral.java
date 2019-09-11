@@ -1,10 +1,15 @@
 package hr.hrg.hipster.sql;
 
-public final class QueryLiteral implements IQueryPart, IQueryLiteral{
+public final class QueryLiteral implements IQueryLiteral{
+
+	public static QueryLiteral NULL = new QueryLiteral("NULL");
+	public static QueryLiteral EMPTY_QUERY = new QueryLiteral("");
+
 	private final String text;
 	private final boolean identifier;
 
 	public QueryLiteral(String text) {
+		if(text == null) throw new NullPointerException("Java null value not allowed");
 		this.text = text;
 		this.identifier = false;
 	}
@@ -24,8 +29,8 @@ public final class QueryLiteral implements IQueryPart, IQueryLiteral{
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return false;
+	public boolean isEmpty(){
+		return text.isEmpty();
 	}
 	
 	@Override

@@ -31,7 +31,7 @@ public class Result implements AutoCloseable{
     }
 
     public Result executePrepared(String query, Object ...params){
-    	return executeQuery(new PreparedQuery(query, params));
+    	return executeQuery(new PreparedQuery(hipster.getTypeSource(),query, params));
     }
 
     private void prepareQuery(boolean returnGeneratedKeys, Object ...queryParts){
@@ -52,7 +52,8 @@ public class Result implements AutoCloseable{
 		prepareForExecution(prepared, returnGeneratedKeys);
     }
 
-    private void prepareForExecution(PreparedQuery p, boolean returnGeneratedKeys){
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private void prepareForExecution(PreparedQuery p, boolean returnGeneratedKeys){
         this.hipConnection.lastPrepared = p;
 
 		try {
@@ -65,10 +66,18 @@ public class Result implements AutoCloseable{
 			throw new RuntimeException("Error preparing statement: "+this.hipConnection.lastPrepared.getQueryString()+" ERR: "+e.getMessage(), e);
 		}
 
+		
+		ICustomType custom;
 		List<Object> params = p.getParams();
+		
 		for(int i=0; i<params.size(); i++){
 			try {
-				hipster.prepSet(hipConnection,ps,i+1,params.get(i));
+				custom = p.getCustom(i);
+				if(custom != null) {
+					custom.set(ps, i+1, params.get(i));
+				}else {					
+					hipster.prepSet(hipConnection,ps,i+1,params.get(i));
+				}
 			} catch (SQLException e) {
 				throw new RuntimeException("Error filling prepared statement: "+this.hipConnection.lastPrepared.getQueryString()+" on index "+(i+1)+" using value "+params.get(i)+" ERR: "+e.getMessage(), e);
 			}
@@ -190,7 +199,7 @@ public class Result implements AutoCloseable{
         }
     }
     
-    public <T,E extends IColumnMeta> T fetchEntity(IReadMeta<T, E> reader){
+    public <T,E extends BaseColumnMeta> T fetchEntity(IReadMeta<T, E> reader){
         try{
             if(!rs.next()) return null;
             return reader.fromResultSet(rs);

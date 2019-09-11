@@ -9,7 +9,7 @@ import java.util.regex.*;
 import org.joda.time.*;
 import org.slf4j.*;
 
-import hr.hrg.hipster.dao.IEntityMeta;
+import hr.hrg.hipster.dao.*;
 
 
 public class HipsterSql {
@@ -24,27 +24,24 @@ public class HipsterSql {
 	protected String columQuote1 = "\"";
 	protected String columQuote2 = "\"";
 
-	private PreparedSetterSource setterSource;
-	private ResultGetterSource getterSource;
+	private TypeSource typeSource;
+	private EntitySource entitySource;
 	
 	private ReaderSource readerSource;
 	private VisitorSource visitorSource;
 
-	public HipsterSql(PreparedSetterSource setterSource, ResultGetterSource getterSource){
-		this.setterSource = setterSource;
-		this.getterSource = getterSource;
-		this.readerSource = new ReaderSource(getterSource);
-		this.visitorSource = new VisitorSource(getterSource);
-		this.intAllowdOperators();
-	}
-
 	public HipsterSql() {
-		this(new PreparedSetterSource(), new ResultGetterSource());
+		this.typeSource = new TypeSource();
+		this.readerSource = new ReaderSource(typeSource);
+		this.visitorSource = new VisitorSource(typeSource);
+		this.entitySource = new EntitySource(typeSource);
+		this.intAllowdOperators();
 	}
 
 	protected void intAllowdOperators() {
 		addAllowdOperator("=","!=","<>","<",">",">=","<=","NOT","LIKE","ILIKE","IN");
 	}
+
 	protected void addAllowdOperator(String ...operators ){
 		for(String operator: operators){
 			allowdSqlOperators.add(operator.toUpperCase());
@@ -55,20 +52,35 @@ public class HipsterSql {
 		return readerSource;
 	}
 	
-	public PreparedSetterSource getSetterSource() {
-		return setterSource;
+	public EntitySource getEntitySource() {
+		return entitySource;
 	}
 	
-	public ResultGetterSource getResultGetterSource() {
-		return readerSource.getResultGetterSource();
-	}
-
-	public ResultGetterSource getGetterSource() {
-		return getterSource;
+	public TypeSource getTypeSource() {
+		return typeSource;
 	}
 	
 	public VisitorSource getVisitorSource() {
 		return visitorSource;
+	}
+
+	public IHipsterConnection openConnection(String url) throws SQLException {
+		Connection connection = DriverManager.getConnection(url);
+		return new HipsterConnectionImpl(this, connection);
+	}
+	
+	public IHipsterConnection openConnection(String url, String username, String password) throws SQLException {
+		Connection connection = DriverManager.getConnection(url,username, password);
+		return new HipsterConnectionImpl(this, connection);
+	}
+	
+	public IHipsterConnection openConnection(String url, Properties conf) throws SQLException {
+		Connection connection = DriverManager.getConnection(url,conf);
+		return new HipsterConnectionImpl(this, connection);
+	}
+	
+	public IHipsterConnection openConnection(Connection sqlConnection) {
+		return new HipsterConnectionImpl(this, sqlConnection);
 	}
 	
 	/** Override this method to provide primary column for a table. One useful thing with this
@@ -184,6 +196,46 @@ public class HipsterSql {
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
 	}
 
+	/** Build insert query from an object, with help of entity meta-data. Columns that were not changed
+	 * will be omitted from query.
+	 * 
+	 * @param meta entity meta-data
+	 * @param mutable object with updated values
+	 * @return query ready for inserting
+	 */
+	public <C extends BaseColumnMeta> Query buildInsert(IEntityMeta<?, ?, C> meta, IUpdatable mutable) {
+		
+		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
+			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
+
+		StringBuilder firstPart = new StringBuilder("("); 
+		Query valuesPart = new Query(")VALUES(");
+		
+		C primaryColumn = meta.getPrimaryColumn();
+		
+		int i=0;
+		int ordinal;
+		for(C column:meta.getColumns()) {
+			ordinal = column.ordinal();			
+			
+			if(!mutable.isChanged(ordinal)) continue;
+			
+			Object value = mutable.getValue(column);
+			ICustomType<?> customType = meta.getTypeHandler(column);
+			if(i >0) {
+				firstPart.append(",");
+				valuesPart.append(",",customType, value);
+			}else {
+				valuesPart.append(customType, value);
+			}
+			firstPart.append(column);
+			i++;
+		}
+		valuesPart.append(")");
+		
+		return new Query("INSERT INTO ", meta.getTable(), firstPart, valuesPart);		
+	}
+	
 	/** build insert Query from map of key:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
@@ -238,6 +290,45 @@ public class HipsterSql {
 		return new Query(firstPart, valuesPart);		
 	}
 
+	/** Build update query from an object, with help of entity metadata. Columns that were not changed
+	 * will be omitted from query.
+	 * 
+	 * @param meta entity meta-data
+	 * @param mutable object with updated values
+	 * @return query ready for inserting
+	 */
+	public <C extends BaseColumnMeta> Query buildUpdate(IEntityMeta<?, ?, C> meta, Object filter, IUpdatable mutable) {
+		
+		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
+			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
+
+		Query filterQuery = checkFilterDefined(filter);
+		
+		Query query = new Query("UPDATE ",meta.getTable()," SET ");
+
+		int i=0;
+		int ordinal;
+		for(C column:meta.getColumns()) {
+			ordinal = column.ordinal();
+			
+			if(!mutable.isChanged(ordinal)) continue;
+			
+			Object value = mutable.getValue(ordinal);
+			ICustomType<?> customType = meta.getTypeHandler(ordinal);
+			if(i >0){
+				query.append(",",column,"=", customType, value);
+			}else {
+				query.append(column,"=", customType, value);
+			}
+			i++;
+		}
+
+		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+
+		return query;		
+	}
+	
+	
 	/** Build update Query from map of column:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
@@ -322,16 +413,18 @@ public class HipsterSql {
 		
 		StringBuilder b = new StringBuilder();
 		ArrayList<Object> params = new ArrayList<>();
-
-		prepareInto(b, params, queryParts);
+		List<ICustomType<?>> setters = new ArrayList<>();
 		
-		return new PreparedQuery(b, params); 
+		prepareInto(b, params, setters, queryParts);
+		
+		return new PreparedQuery(typeSource,b, params, setters); 
 	}
 	
-	public void prepareInto(StringBuilder b, List<Object> params, Object ... queryParts){
+	public void prepareInto(StringBuilder b, List<Object> params, List<ICustomType<?>> setters, Object ... queryParts){
 		
 		int count = queryParts.length;
-		int evenOdd = 0;
+		
+		boolean expectValue = false;
 		
 		for(int i=0; i<count; i++){
 			Object obj = queryParts[i];
@@ -341,35 +434,49 @@ public class HipsterSql {
 				if(queryLiteral.isIdentifier()) b.append(columQuote1);
 				b.append(queryLiteral.getQueryText());
 				if(queryLiteral.isIdentifier()) b.append(columQuote2);
-				evenOdd = 1;// will be changed to 2 at the end of the loop
 				
-			}else if(obj instanceof IColumnMeta){
-				b.append(columQuote1).append(((IColumnMeta)obj).getColumnName()).append(columQuote2);
-				evenOdd = 1;// will be changed to 2 at the end of the loop
+				expectValue = false;
+				
+			}else if(obj instanceof BaseColumnMeta){
+				b.append(columQuote1).append(((BaseColumnMeta)obj).getColumnName()).append(columQuote2);
+				
+				expectValue = false;
 
 			}else if(obj instanceof Query){
-				prepareInto(b, params, ((Query)obj).getParts().toArray());
-				evenOdd = 1;// will be changed to 2 at the end of the loop				
-			
+				prepareInto(b, params, setters, ((Query)obj).getParts().toArray());
+				
+				expectValue = false;
+				
 			}else if(obj instanceof PreparedQuery){
 				PreparedQuery prepared = (PreparedQuery) obj;
 				b.append(prepared.getQueryStringBuilder());
 				params.addAll(prepared.getParams());
 			
-			}else if(evenOdd %2 == 0){
+				expectValue = false;
+				
+			}else if(obj instanceof ICustomType){
+				// prepare CustomType for the next parameter
+				PreparedQuery.setCustom(setters, params.size(), (ICustomType) obj);
+				
+				expectValue = true; // we just defined custom type for the next value, so yeah :) value expected
+				
+			}else if(!expectValue){
 				b.append(obj);
-			
+
+				expectValue = true; // we just appended a query part to the StringBuilder, so next must be a value
+
 			}else {
 				b.append('?');
 				params.add(obj);
+
+				expectValue = false;
 			}
-			evenOdd++;
 		}
 	}
 
 	/** Set a value into the prepared statement <br>
 	 * <br>
-	 * Override if using {@link IPreparedValue} or defining {@link IPreparedSetter} is not sufficient to provide functionality.  
+	 * Override if using {@link IPreparedValue} or defining {@link ICustomType} is not sufficient to provide functionality.  
 	 * 
 	 * @param hipConnection connection that produced the PreparedStatement
 	 * @param ps the statement
@@ -390,10 +497,10 @@ public class HipsterSql {
 			return;
 		}
 
-		IPreparedSetter<C> setter = (IPreparedSetter<C>) setterSource.getFor(value.getClass());
+		ICustomType<C> setter = (ICustomType<C>) typeSource.getFor(value.getClass());
 		
 		if(setter == null){
-			throw new RuntimeException("Setter not defined for type "+value.getClass()+" in prepared statement: "+hipConnection.getLastPrepared().getQueryString()+" on index "+i+" using value "+value);
+			throw new RuntimeException("Type handler not defined for "+value.getClass()+" in prepared statement: "+hipConnection.getLastPrepared().getQueryString()+" on index "+i+" using value "+value);
 		}
 		
 		setter.set(ps, i, (C)value);
@@ -412,7 +519,7 @@ public class HipsterSql {
 	 * @return extracted Object presenting the time from database
 	 * @throws SQLException if get fails
 	 */
-	private Object handleRsGetTime(ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	protected Object handleRsGetTime(ResultSet rs, int index, int sqlType, String column) throws SQLException {
 		if(HipsterSqlUtil.isYodaPresent()) {			
 			switch (sqlType) {
 			case Types.DATE: Date d = rs.getDate(index); return d == null ? null: new LocalDate(d);
@@ -429,19 +536,29 @@ public class HipsterSql {
 		return null;
 	}
 
-	private Object handleRsGetOther(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	protected Object handleRsGetOther(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
         if(log != null && log.isWarnEnabled()) log.warn("unhandled sql type "+sqlType+", at index "+index+", column: "+column+" query: "+hipcConnection.getLastQuery());
         return rs.getString(index);
 	}
 
-	Object handleRsGet(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
+	protected Object handleRsGet(IHipsterConnection hipcConnection, ResultSet rs, int index, int sqlType, String column) throws SQLException {
     	
         switch (sqlType) {
-            case Types.INTEGER: return Integer.valueOf(rs.getInt(index));
-            case Types.BIGINT: return Long.valueOf(rs.getLong(index));
-            case Types.SMALLINT: return Integer.valueOf(rs.getInt(index));
-            case Types.FLOAT: return Float.valueOf(rs.getFloat(index));
-            case Types.DOUBLE: return Double.valueOf(rs.getDouble(index));
+            case Types.INTEGER: 
+            	int retInt = rs.getInt(index); 
+            	return rs.wasNull() ? null: Integer.valueOf(retInt);
+            case Types.BIGINT:  
+            	long retLong = rs.getLong(index); 
+            	return rs.wasNull() ? null: Long.valueOf(retLong);
+            case Types.SMALLINT: 
+            	short retShort = rs.getShort(index);  
+            	return rs.wasNull() ? null: Short.valueOf(retShort);
+            case Types.FLOAT: 
+            	float retFloat = rs.getFloat(index); 
+            	return rs.wasNull() ? null: Float.valueOf(retFloat);
+            case Types.DOUBLE: 
+            	double retDouble = rs.getDouble(index); 
+            	return rs.wasNull() ? null: Double.valueOf(retDouble);
 
             case Types.DATE:
             case Types.TIME:

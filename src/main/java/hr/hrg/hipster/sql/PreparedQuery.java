@@ -5,15 +5,24 @@ import java.util.*;
 public class PreparedQuery implements IQueryPart{
 	protected StringBuilder stringBuilder;
 	protected List<Object> params = new ArrayList<>();
+	protected List<ICustomType<?>> setters = new ArrayList<>();
+	protected final TypeSource typeSource;
 	
-	public PreparedQuery(String query, List<Object> params) {
-		this.stringBuilder = new StringBuilder(query);
-		this.params.addAll(params);
+	public PreparedQuery(TypeSource typeSource) {
+		this.typeSource = typeSource;
+		
 	}
 
-	public PreparedQuery(String query, Object ...params) {
-		this.stringBuilder = new StringBuilder(query);
-		QueryUtil.addToList(this.params, params);
+	public PreparedQuery(TypeSource typeSource, String query, List<Object> params) {
+		this(typeSource);
+		this.stringBuilder = new StringBuilder();
+		this.appendList(query, params);
+	}
+
+	public PreparedQuery(TypeSource typeSource, String query, Object ...params) {
+		this(typeSource);
+		this.stringBuilder = new StringBuilder();
+		this.append(query, params);
 	}
 	
 	/**
@@ -22,9 +31,11 @@ public class PreparedQuery implements IQueryPart{
 	 * @param builder builder
 	 * @param params parameters for place-holders
 	 */
-	public PreparedQuery(StringBuilder builder, ArrayList<Object> params) {
+	public PreparedQuery(TypeSource typeSource, StringBuilder builder, ArrayList<Object> params, List<ICustomType<?>> setters) {
+		this(typeSource);
 		this.stringBuilder = builder;
 		this.params = params;
+		this.setters = setters;
 	}
 
 	public String getQueryString() {
@@ -37,7 +48,34 @@ public class PreparedQuery implements IQueryPart{
 	
 	public PreparedQuery append(String query, Object ...params){
 		this.stringBuilder.append(query);
+		for(Object param: params) {
+			if(param instanceof ICustomType) {
+				setCustom(this.params.size(), (ICustomType)param);
+			}
+		}
 		QueryUtil.addToList(this.params, params);
+		return this;
+	}
+	
+	private void setCustom(int pos, ICustomType customType) {
+		while(setters.size() <= pos) setters.add(null);
+		setters.set(pos, customType);
+	}
+	
+	public static void setCustom(List<ICustomType<?>> setters, int pos, ICustomType customType) {
+		while(setters.size() <= pos) setters.add(null);
+		setters.set(pos, customType);
+	}
+	
+	public ICustomType getCustom(int pos){
+		if(pos >= setters.size()) return null;
+		return setters.get(pos);
+	}
+
+	public PreparedQuery appendList(String query, List<Object> params){
+		this.stringBuilder.append(query);
+		//QueryUtil.addToList(this.params, params);
+		this.params.addAll(params);
 		return this;
 	}
 

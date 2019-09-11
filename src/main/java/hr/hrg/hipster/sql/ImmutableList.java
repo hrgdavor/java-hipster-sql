@@ -15,7 +15,7 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
 	
 	/** Creates ImmutableList by cloning the provided array. Use {@link #safe(Object...)} 
 	 * 
-	 * @param in
+	 * @param in elements
 	 */
 	@SafeVarargs
 	public ImmutableList(T ...in){
@@ -25,7 +25,7 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
 	/** Private constructor that accepts the array directly, knowing that it's reference will not be leaked.
 	 * 
 	 * @param priv private parameter to enable access to this constructor
-	 * @param in
+	 * @param in elements
 	 */
 	@SafeVarargs
 	private ImmutableList(boolean priv, T... in){
@@ -60,16 +60,62 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
     
     @SuppressWarnings("unchecked")
     public ImmutableList<T> removeMakeNew(T elem){
-        if(!contains(elem)) return this;
-        T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length-1);
+    	if(!contains(elem)) return this;
+    	T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length-1);
+    	int i=0;
+    	for(; i<newArr.length; i++){
+    		if(items[i].equals(elem)) break;
+    		newArr[i] = items[i];
+    	}
+    	i++;
+    	for(; i<items.length; i++){
+    		newArr[i-1] = items[i];
+    	}
+    	return new ImmutableList<T>(true,newArr);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<T> removeMakeNew(int index){
+    	T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length-1);
+    	int i=0;
+    	for(; i<newArr.length; i++){
+    		if(i == index) break;
+    		newArr[i] = items[i];
+    	}
+    	i++;
+    	for(; i<items.length; i++){
+    		newArr[i-1] = items[i];
+    	}
+    	return new ImmutableList<T>(true,newArr);
+    }    
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<T> insertMakeNew(int index, T obj){
+    	T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length+1);
+    	int i=0;
+    	for(; i<newArr.length; i++){
+    		if(i == index) break;
+    		newArr[i] = items[i];
+    	}
+    	newArr[i] = obj;
+    	i++;
+    	for(; i<items.length; i++){
+    		newArr[i+1] = items[i];
+    	}
+    	return new ImmutableList<T>(true,newArr);
+    }    
+    
+    @SuppressWarnings("unchecked")
+    public ImmutableList<T> replaceMakeNew(T elem, T replacement){
+    	int indexOf = indexOf(elem);
+        if(indexOf == -1) return this;
+        T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length);
         int i=0;
         for(; i<newArr.length; i++){
-            if(items[i].equals(elem)) break;
-            newArr[i] = items[i];
-        }
-        i++;
-        for(; i<items.length; i++){
-            newArr[i-1] = items[i];
+            if(i == indexOf) 
+            	newArr[i] = replacement;
+            else
+            	newArr[i] = items[i];
         }
         return new ImmutableList<T>(true,newArr);
     }

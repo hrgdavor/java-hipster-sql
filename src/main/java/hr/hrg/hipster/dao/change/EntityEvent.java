@@ -3,7 +3,7 @@ package hr.hrg.hipster.dao.change;
 import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
 
-public class EntityEvent<T, ID, E extends IColumnMeta>{
+public class EntityEvent<T, ID, E extends BaseColumnMeta>{
 
 	public enum Type{
 		BEFORE_ADD,	   AFTER_ADD,
@@ -14,10 +14,11 @@ public class EntityEvent<T, ID, E extends IColumnMeta>{
 	private ID id;
 	private T old;
 	private T updated;
-	private IUpdatable<E> delta;
+	private IUpdatable delta;
 	private IEntityMeta<T,ID,E> meta;
 
-	public EntityEvent(ID id, T old, T updated, IUpdatable<E> delta, IEntityMeta<T,ID,E> meta){
+	public EntityEvent(ID id, T old, T updated, IUpdatable delta, IEntityMeta<T,ID,E> meta){
+		this.id = id;
 		this.old = old;
 		this.updated = updated;
 		this.delta = delta;
@@ -32,7 +33,7 @@ public class EntityEvent<T, ID, E extends IColumnMeta>{
 		return updated;
 	}
 	
-	public IUpdatable<E> getDelta() {
+	public IUpdatable getDelta() {
 		return delta;
 	}
 	

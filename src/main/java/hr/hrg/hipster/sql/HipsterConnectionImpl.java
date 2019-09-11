@@ -7,6 +7,7 @@ import java.util.*;
  * You should not share instance between threads, although the worst that can happen is wrong query reported
  * in case of error, because lastQuery and lastPrepared are instance variables.
  * */
+@SuppressWarnings("rawtypes")
 public class HipsterConnectionImpl implements IHipsterConnection {
 	
 	protected HipsterSql hipster;
@@ -87,7 +88,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#one(java.lang.Object)
 	 */
     @Override
-	public int one(Object ...sql){
+	public int oneInt(Object ...sql){
     	Object obj = oneObj(sql);
     	return obj == null ? 0: ((Number)obj).intValue();
     }
@@ -105,6 +106,21 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	public double oneDouble(Object ...sql){
     	Object obj = oneObj(sql);
     	return obj == null ? 0: ((Number)obj).doubleValue();
+    }
+    
+    @Override
+    public <T> T one(ICustomType<T> reader, Object... sql) {
+        try(Result res = new Result(this);){
+        	res.executeQuery(sql);
+
+        	if(res.next()) {        		
+        		return reader.get(res.getResultSet(), 1);
+        	}
+        	return null;
+
+        } catch (SQLException e) {
+        	throw new HipsterSqlException(this, "failed reading value", e);
+		}
     }
     
     /* (non-Javadoc)
@@ -215,9 +231,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 		}
     }
 
-    public Object[] prepEntityQuery(String columnNames, String tableName, Object... sql) {
+    public Object[] prepEntityQuery(String columnNames, IQueryLiteral table, Object... sql) {
 
     	if(columnNames == null || columnNames.isEmpty()) return sql; // no need to inject column names
+    	
+    	if(sql.length == 0) return new Object[]{" SELECT "+columnNames+" FROM ",table};
     	
     	Object[] newSql = null;
     	if(sql.length == 1 && sql[0] instanceof Query){
@@ -232,8 +250,8 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     			newSql[0] = " SELECT "+columnNames+" "+newSql[0];
     			return newSql;
     		}
-    		if(tableName != null && ( first.startsWith("where ") || first.startsWith(" where "))){
-    			newSql[0] = " SELECT "+columnNames+" FROM "+tableName+" "+newSql[0];
+    		if(table != null && !( first.startsWith("select ") || first.startsWith(" select "))){
+    			newSql[0] = new Query(" SELECT "+columnNames+" FROM ",table," "+newSql[0]);
     			return newSql;
     		}
     	}
@@ -246,8 +264,8 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
 
     @Override
-    public <T,E extends IColumnMeta> T entity(IReadMeta<T, E> reader, Object... sql) {
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTableName(), sql);
+    public <T,E extends BaseColumnMeta> T entity(IReadMeta<T, E> reader, Object... sql) {
+    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql);
     	
     	try(Result res = new Result(this);){
         	res.executeQuery(sql);
@@ -260,10 +278,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     	return entities(hipster.getReaderSource().getOrCreate(clazz), sql);
     }
 
-    @Override
-    public <T,E extends IColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object... sql) {
+    
+	@Override
+    public <T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object... sql) {
     	
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTableName(), sql);
+    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql);
 
     	List<T> ret = new ArrayList<>();
     	T entity = null;
@@ -281,11 +300,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	@Override
 	@SuppressWarnings("unchecked")
     public <T> List<T> column(Class<T> clazz, Object... sql) {
-    	return column((IResultGetter<T>)hipster.getResultGetterSource().getForRequired(clazz), sql);
+    	return column((ICustomType<T>)hipster.getTypeSource().getForRequired(clazz), sql);
     }
 
     @Override
-    public <T> List<T> column(IResultGetter<T> reader, Object... sql) {
+    public <T> List<T> column(ICustomType<T> reader, Object... sql) {
     	
     	List<T> ret = new ArrayList<>();
     	
@@ -309,8 +328,8 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
 
     @Override
-    public <T,E extends IColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object... sql){
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTableName(), sql); 
+    public <T,E extends BaseColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object... sql){
+    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql); 
     	return entities(reader,new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
     }
 
@@ -420,7 +439,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#treeWithRow(hr.hrg.hipster.sql.Query, java.lang.String)
 	 */
     @Override
-	@SuppressWarnings("rawtypes")
 	public Map<Object, Map<Object, Object>> treeWithRow(Query sql, String ...columns) {
         Map<Object, Map<Object, Object>> map = new HashMap<Object,Map<Object,Object>>();
         try(Result res = new Result(this);){
@@ -460,7 +478,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	@Override
 	public <T> T insert(Class<T> primaryColumnType, Query sql){
     	
-    	IResultGetter<?> resultGetter = hipster.getResultGetterSource().getForRequired(primaryColumnType);
+    	ICustomType<?> resultGetter = hipster.getTypeSource().getForRequired(primaryColumnType);
         
     	try(Result res = new Result(this);){
         	res.executeUpdate(sql);

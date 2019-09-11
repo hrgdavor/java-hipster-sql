@@ -1,7 +1,6 @@
 package hr.hrg.hipster.sql;
 
 
-import static hr.hrg.hipster.sql.QueryUtilShort.*;
 import static org.testng.Assert.*;
 
 import java.util.*;
@@ -103,6 +102,10 @@ public class TestBuild {
 		// id IS NOT NULL
 		assertEquals(hip.prepare(query).getQueryString(), "id IS NOT NULL");
 
+	}
+
+	private Object q(Object ... parts) {
+		return new Query(parts);
 	}
 	
 }

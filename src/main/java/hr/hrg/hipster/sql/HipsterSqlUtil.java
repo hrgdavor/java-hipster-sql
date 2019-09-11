@@ -1,11 +1,13 @@
 package hr.hrg.hipster.sql;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.*;
+import java.lang.reflect.*;
+import java.util.*;
 
 import javax.lang.model.element.*;
 
-import com.fasterxml.jackson.annotation.*;
+import hr.hrg.hipster.dao.*;
+
 
 public class HipsterSqlUtil {
 
@@ -92,6 +94,30 @@ public class HipsterSqlUtil {
 		return ret;
 	}
 
+	public static <C extends BaseColumnMeta> Query.ImmutableQuery selectQueryForEntity(IEntityMeta<?, ?, C> meta) {
+		int columnCount = meta.getColumnCount()*2-1;
+		List<C> columns = meta.getColumns();
+		Object[] tmp = new Object[columnCount+4];
+		
+		// SELECT
+		tmp[0] = "SELECT ";
+		// all columns
+		int column = 0;
+		for(int i=1; i<=columnCount; i++) {
+			if(i % 2 == 0) 
+				tmp[i]=",";
+			else 
+				tmp[i] = columns.get(column++);
+		}
+		// from
+		tmp[columnCount+1] = " FROM ";
+		// table
+		tmp[columnCount+2] = meta.getTable();
+		tmp[columnCount+3] = " ";
+
+		return new Query.ImmutableQuery(ImmutableList.safe(tmp));
+	}
+	
 	public static String entityNamesPrefix(Class<?> clazz){
 		return clazz.getName().replaceAll("\\$", "_.");
 	}
@@ -137,4 +163,43 @@ public class HipsterSqlUtil {
 		for(int i =1; i<classes.length; i++) b.append(delim).append(classes[i].getName());
 		return b.toString();
 	}
+	
+	public static final String propToGetter(String prop, String type){
+		if("boolean".equals(type)) 
+			return "is"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
+		
+		return "get"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
+	}
+
+	public static final String propToSetter(String prop){
+		return "set"+Character.toUpperCase(prop.charAt(0))+prop.substring(1);
+	}
+	
+    /**
+     * modified from https://github.com/leangen/geantyref/blob/master/src/main/java/io/leangen/geantyref/TypeFactory.java
+     * Creates an instance of an annotation.
+     *
+     * @param annotationType The {@link Class} representing the type of the annotation to be created.
+     * @param values A map of values to be assigned to the annotation elements.
+     * @param <A> The type of the annotation.
+     * @return An {@link Annotation} instanceof matching {@code annotationType}
+     */
+    @SuppressWarnings("unchecked")
+    public static <A extends Annotation> A annotation(Class<A> annotationType, Map<String, Object> values) {
+    	if(values == null) values = Collections.emptyMap();
+        return (A) Proxy.newProxyInstance(annotationType.getClassLoader(),
+                new Class[] { annotationType },
+                new AnnotationInvocationHandler(annotationType,  values));
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static <A extends Annotation> A annotation(Class<A> annotationType, Object ... values) {
+    	HashMap<String, Object> map = new HashMap<>();
+    	for(int i=1; i<values.length; i+=2) {
+    		map.put((String) values[i-1], values[i-1]);
+    	}
+        return (A) Proxy.newProxyInstance(annotationType.getClassLoader(),
+                new Class[] { annotationType },
+                new AnnotationInvocationHandler(annotationType,  map));
+    }
 }

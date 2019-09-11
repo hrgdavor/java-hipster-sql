@@ -1,18 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>hipster-sql</artifactId>
 	<name>Java hipster SQL library</name>
 	<description>
 		
 	</description>
 	<url>http://github.com/hrgdavor/java-hipster-sql</url>
 
-	<parent>
-		<groupId>hr.hrg</groupId>
-		<artifactId>hipster-sql-all</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
-	</parent>
+	<groupId>hr.hrg</groupId>
+	<artifactId>hipster-sql</artifactId>
+	<version>0.3.0-SNAPSHOT</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -139,7 +136,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+			<!-- plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
@@ -163,7 +160,7 @@
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
-			</plugin>
+			</plugin -->
 		</plugins>
 	</build>
 

@@ -15,10 +15,10 @@ public class EntityEventHub {
 	Map<Class, List<IChangeListener>> changeListeners = new HashMap<>();
 	Map<Class, List<IBeforeChangeListener>> beforeChangeListeners = new HashMap<>();
 	Map<Class, List<IDeletedListener>> deleteListeners = new HashMap<>();
-	Map<Class, List<IDeletedDetailListener>> deleteDataListeners = new HashMap<>();
+	Map<Class, List<IDeletedDetailListener>> deleteDetailListeners = new HashMap<>();
 	Map<Class, List<IAddListener>> addListeners = new HashMap<>();
 
-	public <T, ID, E extends IColumnMeta> void addChangeListener(IChangeListener<T, ID, E> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addChangeListener(IChangeListener<T, ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IChangeListener> list = changeListeners.get(clazz);
 			if(list == null) {
@@ -33,7 +33,7 @@ public class EntityEventHub {
 		return changeListeners.containsKey(clazz);
 	}
 	
-	public <T, ID, E extends IColumnMeta, U extends IUpdatable<E>> void addBeforeChangeListener(IBeforeChangeListener<T, ID, E, U> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta, U extends IUpdatable> void addBeforeChangeListener(IBeforeChangeListener<T, ID, E, U> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IBeforeChangeListener> list = beforeChangeListeners.get(clazz);
 			if(list == null) {
@@ -48,7 +48,7 @@ public class EntityEventHub {
 		return beforeChangeListeners.containsKey(clazz);
 	}
 
-	public <T, ID, E extends IColumnMeta> void addDeleteListener(IDeletedListener<ID, E> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addDeleteListener(IDeletedListener<ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IDeletedListener> list = deleteListeners.get(clazz);
 			if(list == null) {
@@ -63,22 +63,22 @@ public class EntityEventHub {
 		return deleteListeners.containsKey(clazz);
 	}
 	
-	public <ID, O, E extends IColumnMeta> void addDeleteDataListener(IDeletedDetailListener<ID, O, E> listener, Class<O> clazz){
+	public <T, ID, E extends BaseColumnMeta> void addDeleteDetailListener(IDeletedDetailListener<T, ID, E> listener, Class<T> clazz){
 		synchronized (clazz) {
-			List<IDeletedDetailListener> list = deleteDataListeners.get(clazz);
+			List<IDeletedDetailListener> list = deleteDetailListeners.get(clazz);
 			if(list == null) {
 				list = new ArrayList<>();
-				deleteDataListeners.put(clazz, list);
+				deleteDetailListeners.put(clazz, list);
 			}
 			list.add(listener);
 		}
 	}
 
 	public boolean hasDeleteDataListener(Class<?> clazz){
-		return deleteDataListeners.containsKey(clazz);
+		return deleteDetailListeners.containsKey(clazz);
 	}
 	
-	public <T, ID, E extends IColumnMeta> void addAddListener(IAddListener<T, ID, E> listener, Class<T> clazz){
+	public <T, ID, E extends BaseColumnMeta, M extends IEntityMeta<T, ID, E>> void addAddListener(IAddListener<T, ID, E, M> listener, Class<T> clazz){
 		synchronized (clazz) {
 			List<IAddListener> list = addListeners.get(clazz);
 			if(list == null) {
@@ -107,7 +107,7 @@ public class EntityEventHub {
 		}
 	}
 
-	public void fireBeforeChange(Object id, Object old, IUpdatable<?> update, IEntityMeta<?,?,?> meta, long batchId){
+	public void fireBeforeChange(Object id, Object old, IUpdatable update, IEntityMeta<?,?,?> meta, long batchId){
 		if(meta.getPrimaryColumn() != null) {
 			checkType(id, meta.getPrimaryColumn().getType(), "primary for ", meta.getEntityName());
 		}
@@ -146,7 +146,7 @@ public class EntityEventHub {
 	}
 	
 	public void fireDeleteData(Object id, Object old, IEntityMeta<?,?,?> meta, long batchId){
-		List<IDeletedDetailListener> list = deleteDataListeners.get(meta.getEntityClass());
+		List<IDeletedDetailListener> list = deleteDetailListeners.get(meta.getEntityClass());
 		if(list != null){
 			for (IDeletedDetailListener listener : list) {
 				try {

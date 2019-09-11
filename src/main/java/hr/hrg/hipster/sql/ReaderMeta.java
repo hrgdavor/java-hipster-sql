@@ -4,21 +4,23 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 
-public class ReaderMeta <T, E extends IColumnMeta> implements IReadMeta<T, E>{
+public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>{
 
 	private Class<T> entityClass;
 	private Class<?>[] interfaces;
 	private String tableName;
 	private List<E> columns;
 	private String columnNamesStr;
-	private List<IResultGetter<?>> getters;
+	private List<ICustomType<?>> getters;
+	private QueryLiteral table;
 
 	@SuppressWarnings("unchecked")
-	public ReaderMeta(Class<T> entityClass, String tableName, List<E> columns, List<IResultGetter<?>> getters) {
+	public ReaderMeta(Class<T> entityClass, String tableName, List<E> columns, List<ICustomType<?>> getters) {
 		this.entityClass = entityClass;
 		this.tableName = tableName;
+		this.table = new QueryLiteral(tableName, true); 
 		this.getters = getters;
-		E[] array = (E[]) columns.toArray();
+		E[] array = (E[]) columns.toArray(new BaseColumnMeta[columns.size()]);
 		this.columns =  ImmutableList.safe(array);
 		StringBuilder b = new StringBuilder();
 		for (int i = 0; i < array.length; i++) {
@@ -39,6 +41,11 @@ public class ReaderMeta <T, E extends IColumnMeta> implements IReadMeta<T, E>{
 	@Override
 	public String getTableName() {
 		return tableName;
+	}
+	
+	@Override
+	public QueryLiteral getTable() {
+		return table;
 	}
 
 	@Override
@@ -63,7 +70,7 @@ public class ReaderMeta <T, E extends IColumnMeta> implements IReadMeta<T, E>{
 		int i=0;
 		for(E col:columns){
 			i++;
-			map.put(col.getGetterName(), getters.get(i).get(rs, i));
+			map.put(col.getGetterName(), getters.get(i-1).get(rs, i));
 		}
 		return (T) Proxy.newProxyInstance(entityClass.getClassLoader(), interfaces, new ResultProxyHandler(map));
 	}
