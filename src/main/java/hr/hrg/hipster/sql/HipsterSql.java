@@ -64,6 +64,21 @@ public class HipsterSql {
 		return visitorSource;
 	}
 
+	public IHipsterConnection openConnection(String url) throws SQLException {
+		Connection connection = DriverManager.getConnection(url);
+		return new HipsterConnectionImpl(this, connection);
+	}
+	
+	public IHipsterConnection openConnection(String url, String username, String password) throws SQLException {
+		Connection connection = DriverManager.getConnection(url,username, password);
+		return new HipsterConnectionImpl(this, connection);
+	}
+	
+	public IHipsterConnection openConnection(String url, Properties conf) throws SQLException {
+		Connection connection = DriverManager.getConnection(url,conf);
+		return new HipsterConnectionImpl(this, connection);
+	}
+	
 	public IHipsterConnection openConnection(Connection sqlConnection) {
 		return new HipsterConnectionImpl(this, sqlConnection);
 	}
