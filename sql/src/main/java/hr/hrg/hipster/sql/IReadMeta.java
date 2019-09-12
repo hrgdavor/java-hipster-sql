@@ -9,13 +9,11 @@ public interface IReadMeta<T, E extends BaseColumnMeta> {
 
 	String getTableName();
 
-	QueryLiteral getTable();
+	IQueryLiteral getTable();
 
 	int getColumnCount();
 
 	List<E> getColumns();
 	
-	String getColumnNamesStr();
-
 	T fromResultSet(ResultSet rs) throws SQLException;
 }

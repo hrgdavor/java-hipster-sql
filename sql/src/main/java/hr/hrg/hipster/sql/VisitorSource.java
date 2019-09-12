@@ -7,6 +7,8 @@ import java.util.concurrent.*;
 
 import javax.persistence.*;
 
+import hr.hrg.hipster.sql.BaseEntityMeta.*;
+
 public class VisitorSource {
 
 	protected Map<Class<? extends Object>, IResultFwdVisitor<?>> registered = new ConcurrentHashMap<>(); 
@@ -189,7 +191,8 @@ public class VisitorSource {
 
 		Class<?> returnTypePrimitive = returnType;
 		returnType = HipsterSqlUtil.wrap(returnType);
-		return new BaseColumnMeta(ordinalIndex++, parameter.getName(), columnName, parameter.getName(),clazz, returnType, returnTypePrimitive, tableName, columnSql, typeParams); 
+		Simple meta = new BaseEntityMeta.Simple(0,tableName, clazz);
+		return new BaseColumnMeta(ordinalIndex++, parameter.getName(), columnName, parameter.getName(), meta, returnType, returnTypePrimitive, columnSql, null, typeParams); 
 	}
 
 	

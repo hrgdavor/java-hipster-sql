@@ -10,7 +10,6 @@ public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>
 	private Class<?>[] interfaces;
 	private String tableName;
 	private List<E> columns;
-	private String columnNamesStr;
 	private List<ICustomType<?>> getters;
 	private QueryLiteral table;
 
@@ -22,14 +21,6 @@ public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>
 		this.getters = getters;
 		E[] array = (E[]) columns.toArray(new BaseColumnMeta[columns.size()]);
 		this.columns =  ImmutableList.safe(array);
-		StringBuilder b = new StringBuilder();
-		for (int i = 0; i < array.length; i++) {
-			if(i>0) b.append(',');
-			b.append('"');
-			b.append(array[i].getColumnName());
-			b.append('"');
-		}
-		columnNamesStr = b.toString();
 		interfaces = new Class[]{entityClass};
 	}
 	
@@ -56,11 +47,6 @@ public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>
 	@Override
 	public List<E> getColumns() {
 		return columns;
-	}
-
-	@Override
-	public String getColumnNamesStr() {
-		return columnNamesStr;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -101,7 +101,7 @@ public class QueryUtil {
 	 * @param glue string
 	 * @return new joined query or an empty Query if [queries] is empty
 	 */
-	public static final Query join(List<Query> queries, String glue){		
+	public static final <E extends IQueryPart> Query join(List<E> queries, String glue){		
 		return join(null,queries, glue, null);
 	}
 	
@@ -112,7 +112,7 @@ public class QueryUtil {
 	 * @param glue string
 	 * @return new joined query or an empty Query if [queries] is empty
 	 */
-	public static final Query join(String prefix, List<Query> queries, String glue){
+	public static final <E extends IQueryPart> Query join(String prefix, List<E> queries, String glue){
 		return join(prefix,queries, glue, null);
 	}
 	
@@ -124,12 +124,12 @@ public class QueryUtil {
 	 * @param suffix for query
 	 * @return new joined query or an empty Query if [queries] is empty
 	 */
-	public static final Query join(String prefix, List<Query> queries, String glue, String suffix){
+	public static final <E extends IQueryPart> Query join(String prefix, List<E> queries, String glue, String suffix){
 		Query query = new Query();
 
 		// remove empty queries
-		List<Query> tmp = new ArrayList<Query>();
-		for(Query qi:queries) if(!qi.isEmpty()) tmp.add(qi);
+		List<E> tmp = new ArrayList<>();
+		for(E qi:queries) if(!qi.isEmpty()) tmp.add(qi);
 		queries = tmp;
 		
 		if(queries.size() == 0) return query;

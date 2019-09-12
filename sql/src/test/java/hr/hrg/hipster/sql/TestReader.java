@@ -6,6 +6,8 @@ import java.sql.*;
 
 import org.testng.annotations.*;
 
+import com.fasterxml.jackson.databind.*;
+
 @Test
 public class TestReader {
 
@@ -15,7 +17,6 @@ public class TestReader {
 
 	public void testRead() throws Exception{
 		ReaderSource readerSource = new ReaderSource(new TypeSource());
-
 		
 		Class.forName("org.h2.Driver");
 		Connection conn = DriverManager.getConnection("jdbc:h2:mem:");
@@ -41,7 +42,16 @@ public class TestReader {
 		
 		IReadMeta<ITestBasicTypes,BaseColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
 	
-		String selectQuery = "select "+reader.getColumnNamesStr()+" FROM user_table ";
+		StringBuffer b = new StringBuffer();
+		for(int i=0; i<reader.getColumns().size(); i++) {
+			if(i>0)b.append(',');
+			BaseColumnMeta col = reader.getColumns().get(i);
+			b.append('"').append(col.columnName).append('"');
+//			System.out.println(col.columnName+" "+col.getterName+" "+col.columnSql);
+		}
+
+		String selectQuery = "select "+b+" FROM user_table ";
+		System.out.println(selectQuery);
 		
 		ResultSet rs = statement.executeQuery(selectQuery);
 		rs.next();

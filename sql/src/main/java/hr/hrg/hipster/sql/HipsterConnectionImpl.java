@@ -170,7 +170,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     @Override
     public <T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd) {
     	
-    	Object[] sqlArr = prepEntityQuery(visitor.getColumnNamesStr(), null, sql);
+    	Object[] sqlArr = prepEntityQuery(Arrays.asList(new QueryLiteral(visitor.getColumnNamesStr())), null, sql);
     	
     	boolean autoCommit = false;
     	try {
@@ -231,11 +231,14 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 		}
     }
 
-    public Object[] prepEntityQuery(String columnNames, IQueryLiteral table, Object... sql) {
+    public <E extends IQueryPart> Object[] prepEntityQuery(List<E> list, IQueryLiteral table, Object... sql) {
 
-    	if(columnNames == null || columnNames.isEmpty()) return sql; // no need to inject column names
+    	if(list == null || list.isEmpty()) return sql; // no need to inject column names
     	
-    	if(sql.length == 0) return new Object[]{" SELECT "+columnNames+" FROM ",table};
+    	Query columnsQuery = QueryUtil.join(list, ",");
+    	if(sql.length == 0) {
+			return new Object[]{new Query(" SELECT ",columnsQuery," FROM ",table)};
+		}
     	
     	Object[] newSql = null;
     	if(sql.length == 1 && sql[0] instanceof Query){
@@ -247,12 +250,10 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     	if(newSql[0] instanceof String){
     		String first = ((String) newSql[0]).toLowerCase();
     		if(first.startsWith("from ") || first.startsWith(" from ")){
-    			newSql[0] = " SELECT "+columnNames+" "+newSql[0];
-    			return newSql;
+    			return new Object[] {new Query(" SELECT ",columnsQuery," "), new Query(newSql)};
     		}
     		if(table != null && !( first.startsWith("select ") || first.startsWith(" select "))){
-    			newSql[0] = new Query(" SELECT "+columnNames+" FROM ",table," "+newSql[0]);
-    			return newSql;
+    			return new Object[] {new Query(" SELECT ",columnsQuery," FROM ",table," "), new Query(newSql)};
     		}
     	}
     	return sql;
@@ -265,7 +266,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     @Override
     public <T,E extends BaseColumnMeta> T entity(IReadMeta<T, E> reader, Object... sql) {
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql);
+    	sql = prepEntityQuery(reader.getColumns(), reader.getTable(), sql);
     	
     	try(Result res = new Result(this);){
         	res.executeQuery(sql);
@@ -282,7 +283,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	@Override
     public <T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object... sql) {
     	
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql);
+    	sql = prepEntityQuery(reader.getColumns(), reader.getTable(), sql);
 
     	List<T> ret = new ArrayList<>();
     	T entity = null;
@@ -329,7 +330,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     @Override
     public <T,E extends BaseColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object... sql){
-    	sql = prepEntityQuery(reader.getColumnNamesStr(), reader.getTable(), sql); 
+    	sql = prepEntityQuery(reader.getColumns(), reader.getTable(), sql); 
     	return entities(reader,new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
     }
 
