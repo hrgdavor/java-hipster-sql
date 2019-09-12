@@ -12,7 +12,7 @@ public interface IEnumGetter {
 
 	/** Index based version for looping.
 	 * 
-	 * @param ordinal column index
+	 * @param _ordinal column index
 	 * @return Object value
 	 * 
 	 */	

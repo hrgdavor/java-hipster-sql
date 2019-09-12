@@ -34,6 +34,8 @@ public final class User1Immutable implements User1, IEnumGetter, IDirectSerializ
     this.id = id;
     this.name = name;
     this.age = age;
+    User1Meta u = null;
+    
   }
 
   public User1Immutable(User1 v) {

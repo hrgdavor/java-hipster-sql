@@ -1,35 +1,42 @@
 package hr.hrg.hipster.sql;
 
+import java.sql.*;
 import java.util.*;
 
-import hr.hrg.hipster.dao.IEntityMeta;
-import hr.hrg.hipster.sql.*;
+import hr.hrg.hipster.dao.*;
 
+@SuppressWarnings("rawtypes")
 public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements IEntityMeta<T,ID,C>, IQueryLiteral{
-	protected final int ordinal;
-	protected final String tableName;
 
-	protected final ICustomType<?>[] _typeHandler;
-	protected int columnCount;
-	private QueryLiteral table;
-	protected C[] columnArray;
-	protected C[] columnArraySorted;
-	protected String[] columnArraySortedStr;
+	protected final int _ordinal;
+	protected final String _tableName;
+	protected final Class<T> _entityClass;
 
-	public BaseEntityMeta(int ordinal, String tableName, QueryLiteral table, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted) {
-		this.ordinal = ordinal;
-		this.tableName = tableName;
-		this.columnArray = columnArray;
-		this.columnArraySorted = columnArraySorted;
-		this.columnArraySortedStr = columnArraySortedStr;
-		this.table = table;
-		this.columnCount = columnArray.length;
-		_typeHandler = new ICustomType<?>[columnCount];
+	protected ICustomType<?>[] _typeHandler;
+	protected int _columnCount;
+	protected C[] _columnArray;
+	protected C[] _columnArraySorted;
+	protected String[] _columnArraySortedStr;
+
+	public BaseEntityMeta(int ordinal, String tableName, Class<T> entityClass) {
+		this._ordinal = ordinal;
+		this._tableName = tableName;
+		this._entityClass = entityClass;		
+	}
+
+	public BaseEntityMeta(int ordinal, String tableName, Class<T> entityClass, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted) {
+		this(ordinal, tableName, entityClass);
+
+		this._columnArray = columnArray;
+		this._columnArraySorted = columnArraySorted;
+		this._columnArraySortedStr = columnArraySortedStr;
+		this._columnCount = columnArray.length;
+		_typeHandler = new ICustomType<?>[_columnCount];
 	}
 
 	@Override
 	public final int ordinal() {
-		return ordinal;
+		return _ordinal;
 	}
 
 	@Override
@@ -43,49 +50,108 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 	} 
 
 	@Override
+	public final String getTableName() {
+		return _tableName;
+	}
+	
+	@Override
+	public IQueryLiteral getTable() {
+		return this;
+	}
+	
+	@Override
+	public int getColumnCount() {
+		return _columnCount;
+	}
+	
+	@Override
+	public final C getColumn(String columnName) {
+		int pos = Arrays.binarySearch(_columnArraySortedStr, columnName);
+		return pos < 0 ? null : _columnArraySorted[pos];
+	}	
+
+	@Override
+	public final int getColumnOrdinal(String columnName) {
+		return Arrays.binarySearch(_columnArraySortedStr, columnName);
+	}	
+
+	@Override
+	public final C getColumn(int ordinal) {
+		return _columnArray[ordinal];
+	}
+
+	@Override
+	public Class<T> getEntityClass() {
+		return _entityClass;
+	}
+
+	/* IQueryLiteral */
+	
+	@Override
 	public final String getQueryText() {
-		return tableName;
+		return _tableName;
 	}
 	
 	@Override
 	public final boolean isIdentifier() {
 		return true;
 	}
-	
+
 	@Override
 	public final boolean isEmpty() {
 		return false;
 	}
-	
-	@Override
-	public final String getTableName() {
-		return tableName;
-	}
-	
-	@Override
-	public QueryLiteral getTable() {
-		return table;
-	}
-	
-	@Override
-	public int getColumnCount() {
-		return columnCount;
-	}
-	
-	@Override
-	public final C getColumn(String columnName) {
-		int pos = Arrays.binarySearch(columnArraySortedStr, columnName);
-		return pos < 0 ? null : columnArraySorted[pos];
-	}	
 
 	@Override
-	public final int getColumnOrdinal(String columnName) {
-		return Arrays.binarySearch(columnArraySortedStr, columnName);
-	}	
-
-	@Override
-	public final C getColumn(int ordinal) {
-		return columnArray[ordinal];
+	public String toString() {
+		return _tableName;
 	}
+
+	public static class Simple<T,ID,C extends BaseColumnMeta> extends BaseEntityMeta<T, ID, C>{
+
+		private String entityName;
+
+		public Simple(int ordinal, String tableName, Class<T> entityClass){
+			super(ordinal, tableName, entityClass);
+			this.entityName = entityClass.getSimpleName();
+		}
+		
+		@Override
+		public String getEntityName() {
+			return entityName;
+		}
+
+		@Override
+		public boolean containsColumn(String columnName) {
+			return false;
+		}
+
+		@Override
+		public C getPrimaryColumn() {
+			return null;
+		}
+
+		@Override
+		public ID entityGetPrimary(T instance) {
+			return null;
+		}
+
+		@Override
+		public IUpdatable mutableCopy(Object v) {
+			return null;
+		}
+
+		@Override
+		public List<C> getColumns() {
+			return null;
+		}
+
+		@Override
+		public T fromResultSet(ResultSet rs) throws SQLException {
+			return null;
+		}
+		
+	}
+	
 	
 }

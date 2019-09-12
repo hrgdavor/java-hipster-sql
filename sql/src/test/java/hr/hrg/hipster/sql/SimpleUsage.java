@@ -10,7 +10,7 @@ public class SimpleUsage {
         Class.forName("org.h2.Driver");
         Connection conn = DriverManager.getConnection("jdbc:h2:mem:;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false");
 
-        // create table and insert few rows
+        // create _table and insert few rows
         initData(conn);
         
         // global definitions and data handling (can be Singleton)

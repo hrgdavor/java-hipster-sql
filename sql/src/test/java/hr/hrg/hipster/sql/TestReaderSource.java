@@ -30,7 +30,7 @@ public class TestReaderSource {
 		
 		assertNotNull(reader);
 		assertEquals(reader.getEntityClass(), ITestBasicTypes.class, "entity class");
-		assertEquals(reader.getTableName(), "","table name");
+		assertEquals(reader.getTableName(), "","_table name");
 		assertEquals(reader.getColumnCount(), 14, "column count");
 		
 	}

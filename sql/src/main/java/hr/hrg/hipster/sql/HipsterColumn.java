@@ -26,9 +26,9 @@ public @interface HipsterColumn {
     String sql() default "";
 
     /**
-     * (Optional) The name of the table that contains the column. 
-     * If absent the column is assumed to be in the primary table.
-     * @return table 
+     * (Optional) The name of the _table that contains the column. 
+     * If absent the column is assumed to be in the primary _table.
+     * @return _table 
      */
     String table() default "";
     
@@ -36,7 +36,7 @@ public @interface HipsterColumn {
     /**
      * (Optional) The class of ICustomType that converts the column 
      * from database to entity and vice versa
-     * @return table 
+     * @return _table 
      */
     Class<? extends ICustomType> customType() default ICustomType.class;
 

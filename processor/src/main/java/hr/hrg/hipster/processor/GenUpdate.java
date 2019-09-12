@@ -59,9 +59,9 @@ public class GenUpdate {
         if(genBuilder){
 			setValue = methodBuilder(PUBLIC(), void.class, "setValue" );
 	        setValue.addAnnotation(Override.class);
-	        addParameter(setValue,int.class, "ordinal");
+	        addParameter(setValue,int.class, "_ordinal");
 	        addParameter(setValue,Object.class, "value");
-	        setValue.addCode("super.setValue(ordinal, value);\n");
+	        setValue.addCode("super.setValue(_ordinal, value);\n");
 	        genConstrucotrsExt(def, cp, jackson);
         }else{
         	setValue = GenBuilder.genEnumSetter(def, cp,columnMetaBase);
@@ -71,7 +71,7 @@ public class GenUpdate {
             if(jackson) GenImmutable.addDirectSerializer(def,cp);
             
         }
-        setValue.addCode("this._changeSet |= (1L<<ordinal);\n");
+        setValue.addCode("this._changeSet |= (1L<<_ordinal);\n");
         cp.addMethod(setValue.build());
 
 
@@ -94,8 +94,8 @@ public class GenUpdate {
         
         addMethod(cp, PUBLIC(), boolean.class, "isChanged", method -> {
 			method.addAnnotation(Override.class);
-			addParameter(method, int.class, "ordinal");
-			method.addCode("return (_changeSet & (1L << ordinal)) != 0;\n");
+			addParameter(method, int.class, "_ordinal");
+			method.addCode("return (_changeSet & (1L << _ordinal)) != 0;\n");
 		});
 
 
@@ -109,12 +109,12 @@ public class GenUpdate {
         
         addMethod(cp, PUBLIC(), void.class, "setChanged", method -> {
 			method.addAnnotation(Override.class);
-			addParameter(method, int.class, "ordinal");
+			addParameter(method, int.class, "_ordinal");
 			addParameter(method, boolean.class, "changed");
 			method.addCode("if(changed) {\n");
-			method.addCode("    this._changeSet |= (1L<<ordinal);\n");
+			method.addCode("    this._changeSet |= (1L<<_ordinal);\n");
 			method.addCode("}else{\n");
-			method.addCode("    this._changeSet &= ~(1L<<ordinal);\n");
+			method.addCode("    this._changeSet &= ~(1L<<_ordinal);\n");
 			method.addCode("}\n");
 		});
 

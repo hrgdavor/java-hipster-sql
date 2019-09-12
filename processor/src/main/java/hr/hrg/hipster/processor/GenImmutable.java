@@ -162,8 +162,8 @@ public class GenImmutable {
 		addMethod(cp, Object.class, "getValue", method -> {
 			PUBLIC().FINAL().to(method);
 			method.addAnnotation(Override.class);
-			addParameter(method, int.class, "ordinal");
-			method.addCode("switch (ordinal) {\n");
+			addParameter(method, int.class, "_ordinal");
+			method.addCode("switch (_ordinal) {\n");
 
 			int count = def.getProps().size();
 			for (int i = 0; i < count; i++) {
@@ -171,7 +171,7 @@ public class GenImmutable {
 				method.addCode("case " + i + ": return this." + prop.fieldName + ";\n");
 
 			}
-			method.addCode("default: throw new ArrayIndexOutOfBoundsException(ordinal);\n");
+			method.addCode("default: throw new ArrayIndexOutOfBoundsException(_ordinal);\n");
 			method.addCode("}\n");
 		});
 	}

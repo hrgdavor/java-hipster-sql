@@ -23,7 +23,7 @@ public class Testh2db {
 		Connection conn = makeTestConnection();		
 		createUserTable(conn);
 		
-        System.out.println(" created table in "+(System.currentTimeMillis()-start)+"ms");
+        System.out.println(" created _table in "+(System.currentTimeMillis()-start)+"ms");
 		
 
         HipsterSql hipSql = new HipsterSql();

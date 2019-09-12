@@ -83,9 +83,9 @@ public class HipsterSql {
 		return new HipsterConnectionImpl(this, sqlConnection);
 	}
 	
-	/** Override this method to provide primary column for a table. One useful thing with this
+	/** Override this method to provide primary column for a _table. One useful thing with this
 	 * is for generating insert statement in postgres that return newly inserted id. (using "RETURNING" keyword).
-	 * @param tableName table name
+	 * @param _tableName _table name
 	 * @return name of the primary column
 	 * */
 	public String getPrimary(String tableName) {
@@ -104,17 +104,17 @@ public class HipsterSql {
 		return allowdSqlOperators.contains(name.toUpperCase());
 	}
 	
-	/** generate query string for table name and quote if needed. Throws Exception if table name is invalid
-	 * @param name table name
-	 * @return sanitised table name
+	/** generate query string for _table name and quote if needed. Throws Exception if _table name is invalid
+	 * @param name _table name
+	 * @return sanitised _table name
 	 * */
 	public String q_table(String name){
 		name = name.trim().toLowerCase();
-		if(!validateTableName(name)) throw new RuntimeException("Invalid table name "+name);
+		if(!validateTableName(name)) throw new RuntimeException("Invalid _table name "+name);
 		return name;
 	}
 
-	/** generate query string for table name and quote if needed. Throws Exception if column name is invalid
+	/** generate query string for _table name and quote if needed. Throws Exception if column name is invalid
 	 * @param name column name
 	 * @return sanitised column name
 	 * */
@@ -239,7 +239,7 @@ public class HipsterSql {
 	/** build insert Query from map of key:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param tableName table name
+	 * @param _tableName _table name
 	 * @param values map with values to insert
 	 * @return generated query object
 	 * */
@@ -267,7 +267,7 @@ public class HipsterSql {
 	/** build insert Query from vararg paramteters that are pairs (column,value) . Although method accepts objects 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param tableName table name
+	 * @param _tableName _table name
 	 * @param values map expressed as key:value pairs (for values to insert)
 	 * @return generated query object
 	 * */
@@ -332,10 +332,10 @@ public class HipsterSql {
 	/** Build update Query from map of column:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param tableName table name
-	 * @param filter filter to define which rows to update (be careful not to update the whole table) see: {@link #checkFilterDefined(Object)}
+	 * @param _tableName _table name
+	 * @param filter filter to define which rows to update (be careful not to update the whole _table) see: {@link #checkFilterDefined(Object)}
 	 * @param values column:value pairs to generate instead of writing manually<br> 
-	 * <code>new Query("UPDATE [tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
+	 * <code>new Query("UPDATE [_tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
 	 * @return generated query object
 	 */
 	public Query buildUpdate(String tableName, Object filter, Map<?,?> values){
@@ -361,10 +361,10 @@ public class HipsterSql {
 	/** build update Query from  column:value pairs supplied as varargs. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param tableName table name
-	 * @param filter filter to define which rows to update (be careful not to update the whole table) see: {@link #checkFilterDefined(Object)}
+	 * @param _tableName _table name
+	 * @param filter filter to define which rows to update (be careful not to update the whole _table) see: {@link #checkFilterDefined(Object)}
 	 * @param values column-value pairs to generate instead of writing manually<br> 
-	 * <code>new Query("UPDATE [tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
+	 * <code>new Query("UPDATE [_tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
 	 * @return generated query object
 	 * */
 	public Query buildUpdateVar(String tableName, Object filter, Object ...values){
@@ -386,7 +386,7 @@ public class HipsterSql {
 	}
 
 	/** Check if the object is either {@link #ALL_ROWS} or a non-empty query. You can also use new Query("1=1"). <br>
-	 * Helps to sometimes catch unintended whole table update when used by {@link #buildUpdate(String, Object, Map)} or {@link #buildUpdateVar(String, Object, Object...)}
+	 * Helps to sometimes catch unintended whole _table update when used by {@link #buildUpdate(String, Object, Map)} or {@link #buildUpdateVar(String, Object, Object...)}
 	 * 
 	 * @param filter filter
 	 * @return the same filter provided s parameter to allow inline use
@@ -396,7 +396,7 @@ public class HipsterSql {
 		if(ALL_ROWS.equals(filter)) return null;// ok, in this case use the empty query to avoid any filtering
 		
 		if(filter == null || !(filter instanceof Query) || ((Query)filter).isEmpty()){				
-			throw new RuntimeException("Non empty filter query must be supplied to limit the number of rows affected to avoid accidental full table updates. To force update without filter use HipsterSql.ALL_ROWS");
+			throw new RuntimeException("Non empty filter query must be supplied to limit the number of rows affected to avoid accidental full _table updates. To force update without filter use HipsterSql.ALL_ROWS");
 		}
 		return (Query) filter;
 	}

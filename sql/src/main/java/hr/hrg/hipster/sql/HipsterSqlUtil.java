@@ -111,7 +111,7 @@ public class HipsterSqlUtil {
 		}
 		// from
 		tmp[columnCount+1] = " FROM ";
-		// table
+		// _table
 		tmp[columnCount+2] = meta.getTable();
 		tmp[columnCount+3] = " ";
 

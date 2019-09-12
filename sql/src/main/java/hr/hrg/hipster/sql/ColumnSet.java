@@ -15,7 +15,7 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 
 	public ColumnSet(BaseEntityMeta<?,?,C> meta, boolean allElements){
 		this.meta = meta;
-		this.all = (C[]) meta.columnArray;
+		this.all = (C[]) meta._columnArray;
 		if(allElements){
 			items = -1L >>> -all.length;
 		}

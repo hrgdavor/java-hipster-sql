@@ -136,7 +136,7 @@ public class GenMeta {
 				
 		addColumnsDef(cp, def, columnMetaBase);
 		
-		FieldSpec ordinalField = addField(cp,PRIVATE().FINAL(), int.class, "ordinal");
+		FieldSpec ordinalField = addField(cp,PRIVATE().FINAL(), int.class, "_ordinal");
 		
 //		for(Property p:def.getProps()) {
 //			if(getterName(p) == null){
@@ -146,7 +146,7 @@ public class GenMeta {
 
 		MethodSpec.Builder constr = constructorBuilder(PUBLIC());
 		addParameter(constr, TypeSource.class, "_typeSource");
-		constr.addCode("super(ordinal, TABLE_NAME, TABLE, COLUMN_ARRAY, COLUMN_ARRAY_SORTED_STR, COLUMN_ARRAY_SORTED);\n");
+		constr.addCode("super(_ordinal, TABLE_NAME, TABLE, COLUMN_ARRAY, COLUMN_ARRAY_SORTED_STR, COLUMN_ARRAY_SORTED);\n");
 		addSetterParameter(constr, ordinalField, null);
 		int i=0;
 		
@@ -274,11 +274,11 @@ public class GenMeta {
 //		});
 		
 		//@Override
-		//public final SampleEnum getColumn(String name){ return COLUMN_ARRAY[ordinal]; }
+		//public final SampleEnum getColumn(String name){ return COLUMN_ARRAY[_ordinal]; }
 //		addMethod(cp,PUBLIC().FINAL(), columnMetaBase, "getColumn", method->{
-//			method.addParameter(int.class, "ordinal");
+//			method.addParameter(int.class, "_ordinal");
 //			method.addAnnotation(Override.class);
-//			method.addCode("return COLUMN_ARRAY[ordinal];\n");
+//			method.addCode("return COLUMN_ARRAY[_ordinal];\n");
 //		});	
 		
 		if(primaryProp == null){

@@ -6,41 +6,41 @@ import java.lang.reflect.*;
 @SuppressWarnings("rawtypes")
 public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<BaseColumnMeta>{
 
-	protected final Class<?> entity;
 	protected final Class<T> type;
 	protected final Class<?> primitiveType;
 	protected final String columnName;
 	protected final String getterName;
-	protected final String tableName;
+	private IReadMeta meta;
 	protected final String columnSql;
 	protected final ImmutableList<Class<?>> typeParams;
 	protected final int ordinal;
 	protected final String name;
 	protected final int hashCode;
 	protected Annotation[] annotations;
+	private ICustomType<?> typeHandler;
 
 	public BaseColumnMeta(
 			int ordinal, 
 			String _name, 
 			String _columnName, 
-			String _getterName, 
-			Class<?> _entity,
+			String _getterName,
+			IReadMeta meta,
 			Class<T> _type,
 			Class<?> _primitiveType, 
-			String _tableName, 
 			String _columnSql, 
+			ICustomType<?> typeHandler,
 			Class<?>... typeParams){
 		this.ordinal = ordinal;
 		this.name = _name;
 		this.columnName = _columnName;
 		this.getterName = _getterName;
-		this.entity = _entity;
+		this.meta = meta;
 		this.type = _type;
+		this.typeHandler = typeHandler;
 		this.primitiveType = _primitiveType == _type ? null:_primitiveType;
-		this.tableName = _tableName;
 		this.columnSql = _columnSql;
 		this.typeParams = ImmutableList.safe(typeParams);
-		this.hashCode = _entity.hashCode() * 31 + ordinal;
+		this.hashCode = meta.getEntityClass().hashCode() * 31 + ordinal;
 		
 	}
 
@@ -72,8 +72,12 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		return getterName;
 	}
 
+	public IReadMeta getMeta() {
+		return meta;
+	}
+
 	public String getTableName() {
-		return tableName;
+		return meta.getTableName();
 	}
 
 	public String getColumnSql() {
@@ -88,29 +92,10 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		return typeParams.isEmpty();
 	}
 
-	@Override
-	public String getQueryText() {
-		return columnName;
-	}
-
-	@Override
-	public boolean isIdentifier() {
-		return true;
+	public ICustomType<?> getTypeHandler() {
+		return typeHandler;
 	}
 	
-	@Override
-	public boolean isEmpty() {
-		return false;
-	}
-
-	public Class<?> getEntity() {
-		return entity;
-	}
-	
-	public final String toString() {
-		return columnName;
-	}
-
 	public BaseColumnMeta<T> withAnnotations(Annotation ... annotations){
 		this.annotations = annotations;
 		return this;
@@ -119,7 +104,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	public <A extends Annotation> A getAnnotation(Class<A> clazz){
 		if(annotations == null) {			
 			try {
-				Method method = entity.getMethod(getterName);
+				Method method = meta.getEntityClass().getMethod(getterName);
 				annotations = method.getAnnotations();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -137,7 +122,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	public int compareTo(BaseColumnMeta o) {
 		if(o == null) throw new NullPointerException();
 		BaseColumnMeta meta = (BaseColumnMeta) o;
-		int first = tableName.compareTo(meta.getTableName());
+		int first = this.meta.getTableName().compareTo(meta.getTableName());
 		if(first == 0) {
 			return name.compareTo(meta.name());
 		}
@@ -151,7 +136,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		if(obj == null) return false;
 		if(obj instanceof BaseColumnMeta) {
 			BaseColumnMeta meta = (BaseColumnMeta) obj;
-			return meta.ordinal() == ordinal && meta.getEntity() == entity;
+			return meta.ordinal() == ordinal && meta.getEntity() == this.getEntity();
 		}
 		return false;
 	}
@@ -160,5 +145,33 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	public int hashCode() {
 		return hashCode;
 	}
+	
+	
+	/* IQueryLiteral */
+	
+	@Override
+	public String getQueryText() {
+		return columnName;
+	}
+
+	@Override
+	public boolean isIdentifier() {
+		return true;
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return false;
+	}
+	
+	public Class<?> getEntity() {
+		return meta.getEntityClass();
+	}
+	
+	public final String toString() {
+		return columnName;
+	}
+	
+
 	
 }

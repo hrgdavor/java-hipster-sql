@@ -28,4 +28,6 @@ public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,
 
 	ICustomType<?> getTypeHandler(int ordinal);
 
+	
+	
 }

@@ -26,7 +26,7 @@ public class Testh2dbNoDep {
 		Statement statement = hip.getSqlConnection().createStatement();
 		statement.execute("CREATE TABLE user_table(user_id INT, name VARCHAR, age int)");
 		statement.execute("INSERT INTO user_table VALUES(1, 'Hello',11), (2, 'small,world',22), (3, 'big,world',33), (4, 'huge,world',44)");
-        System.out.println(" created table in "+(System.currentTimeMillis()-start)+"ms");
+        System.out.println(" created _table in "+(System.currentTimeMillis()-start)+"ms");
 		
         hipSql.getTypeSource().registerFor(new StringListGetter(), List.class, String.class);
 

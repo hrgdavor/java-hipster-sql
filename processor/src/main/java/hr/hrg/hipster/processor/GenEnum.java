@@ -37,7 +37,7 @@ public class GenEnum {
 		addBeanfieldReadonly(enumbuilder, TN_CLASS_Q, "_primitiveType", addOverride);
 		addBeanfieldReadonly(enumbuilder, String.class, "columnName", addOverride);
 		addBeanfieldReadonly(enumbuilder, String.class, "getterName", addOverride);
-		addBeanfieldReadonly(enumbuilder, String.class, "tableName", addOverride);
+		addBeanfieldReadonly(enumbuilder, String.class, "_tableName", addOverride);
 		addBeanfieldReadonly(enumbuilder, String.class, "columnSql", addOverride);
 		addBeanfieldReadonly(enumbuilder, parametrized(ImmutableList.class, TN_CLASS_Q), "typeParams", addOverride);
 		
@@ -81,7 +81,7 @@ public class GenEnum {
 		}
 				
 		addconstructor(enumbuilder, PRIVATE(), (method) -> {
-			addSetterParameter(enumbuilder,method,"columnName","getterName","_type","_primitiveType","tableName","columnSql");
+			addSetterParameter(enumbuilder,method,"columnName","getterName","_type","_primitiveType","_tableName","columnSql");
 			method.addParameter(ArrayTypeName.of(TN_CLASS_Q), "typeParams");
 			method.varargs();
 			method.addCode("this.typeParams = $T.safe(typeParams);\n",ImmutableList.class);

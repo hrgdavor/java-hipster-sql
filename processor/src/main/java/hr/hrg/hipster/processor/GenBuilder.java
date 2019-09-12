@@ -90,16 +90,16 @@ public class GenBuilder {
 		
         setValue = methodBuilder(PUBLIC(), void.class, "setValue");
         setValue.addAnnotation(Override.class);
-        setValue.addParameter(int.class, "ordinal");
+        setValue.addParameter(int.class, "_ordinal");
         setValue.addParameter(Object.class, "value");
-        setValue.addCode("switch (ordinal) {\n");
+        setValue.addCode("switch (_ordinal) {\n");
 
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
         	Property prop = def.getProps().get(i);
         	setValue.addCode("case "+i+": this."+prop.fieldName+" = ($T) value;break;\n",prop.type.box());
         }
-        setValue.addCode("default: throw new ArrayIndexOutOfBoundsException(ordinal);\n");
+        setValue.addCode("default: throw new ArrayIndexOutOfBoundsException(_ordinal);\n");
         setValue.addCode("}\n");
 		
         return setValue;
