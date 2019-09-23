@@ -8,11 +8,7 @@ public interface ICustomType<T> {
 
 	public void set(PreparedStatement ps, int index, T value) throws SQLException;
 
-//	default String valueToQueryString(T value){
-//		if(value == null) {
-//			return "NULL";
-//		}else {
-//			value.toString();
-//		}
-//	}
+	default String valueToQueryString(T value){
+		return HipsterSql.qValue(new StringBuilder(), value).toString();
+	}
 }

@@ -2,6 +2,7 @@ package hr.hrg.hipster.dao.test;
 
 import static org.testng.Assert.*;
 
+import java.util.*;
 import java.util.concurrent.atomic.*;
 
 import org.testng.annotations.*;
@@ -18,29 +19,41 @@ public class TestChange {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testChangeListenerCall(){
+		HipsterSql hip = new  HipsterSql();
+		hip.getTypeSource().registerFor(new StringListGetter(), List.class, String.class);
+		hip.getEntitySource().register(User1Meta.class);
 		
-		EntityEventHub hub = new EntityEventHub();
-
+		User1Meta userMeta = (User1Meta) hip.getEntitySource().getFor(User1.class);
+		
 		final AtomicInteger callCount = new AtomicInteger();
 		
-		hub.addChangeListener(new IChangeListener<User1, Long, BaseColumnMeta<?>>() {
-
-			@Override
-			public void recordChanged(EntityEvent<User1, Long, BaseColumnMeta<?>> update, long batchId) {
+		hip.getEventHub().addListener(User1.class,(IEntityEventListener<User1, Long, User1Meta>)
+				(type, id, old, updated, delta, meta, batchId) -> {
+				System.out.println("delta:"+delta);
+				for(int i=0; i<meta.getColumnCount(); i++) {
+					if(delta.isChanged(i)) {
+						System.out.println("changed: "+meta.getColumn(i)+":\t "+delta.getValue(i));
+					}
+				}
 				callCount.incrementAndGet();
-			}
-		}, User1.class);
-		
+			
+		}, EntityEventType.AFTER_CHANGE);
+	
 		User1 old = new User1Immutable(1L, ImmutableList.safe("name"), 22);
 		
 		User1Update update = new User1Update(old);
 		update.age(33);
-		User1Meta meta = new User1Meta(new TypeSource(), 0);
+		
+		LocalColumnMeta ageColumn = userMeta.getColumn("age");
+		System.out.println(update.getValue(ageColumn.ordinal()));
+		Integer age = update.getValue(userMeta.age);
+		System.out.println(age);
 		
 		User1Immutable newUser = new User1Immutable(update); 
 
-		hub.fireChange(new EntityEvent<User1, Long, BaseColumnMeta>(1L, old, newUser, update, meta), 1l);
+		hip.getEventHub().fireEvent(EntityEventType.AFTER_CHANGE,1L, old, newUser, update, userMeta, 1l);
 		
 		assertEquals(callCount.get(), 1);
 		

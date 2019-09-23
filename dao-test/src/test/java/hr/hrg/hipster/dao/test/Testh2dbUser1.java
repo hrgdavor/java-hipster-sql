@@ -23,36 +23,37 @@ public class Testh2dbUser1 {
         System.out.println(" created _table in "+(System.currentTimeMillis()-start)+"ms");
 		
 
-        HipsterSql hipSql = new HipsterSql();
-        TypeSource typeSource = hipSql.getTypeSource();
+        HipsterSql hip = new HipsterSql();
+        TypeSource typeSource = hip.getTypeSource();
         typeSource.registerFor(new StringListGetter(), List.class, String.class);
+        hip.getEntitySource().register(User1Meta.class);
 
 
-		HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
+		HipsterConnectionImpl hc = new HipsterConnectionImpl(hip, conn);
 
-		User1Meta meta = new User1Meta(typeSource, 0);
+		User1Meta meta = (User1Meta) hip.getEntitySource().getFor(User1.class);
         
 		System.out.println(" prepared hipster "+(System.currentTimeMillis()-start)+"ms");
 
-        EntityDao<User1,Long, BaseColumnMeta, User1Meta> dao = new EntityDao<User1, Long, BaseColumnMeta, User1Meta>(meta, hip);
+        EntityDao<User1,Long, BaseColumnMeta, User1Meta> dao = new EntityDao<User1, Long, BaseColumnMeta, User1Meta>(meta, hc);
 
-		printUser1s(dao.allByCriteria());
+		printUser1s(dao.qAll());
 
 		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
 
 		System.out.println();
 		System.out.println("By id: 2");
-        printUser1(dao.byId(2l));
+        printUser1(dao.qOneById(2l));
 		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
 
 		System.out.println();
 		System.out.println("where id>2 order by id desc");
-        printUser1s(dao.allByCriteria("WHERE ",User1Meta.id, ">", 2, " order by ", User1Meta.id," desc"));
+        printUser1s(dao.qAll("WHERE ",meta.id, ">", 2, " order by ", meta.id," desc"));
 		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
         				
 		System.out.println();
 		System.out.println("where name like '%world%'  ...... column of Long using reader");
-        List<Long> longs = hip.column(Long.class,"select user_id from user_table WHERE ",User1Meta.name," like ","%world%");
+        List<Long> longs = hc.column(Long.class, "select user_id from user_table WHERE ",meta.name," like ","%world%");
         for(Long l: longs) System.out.println(l);
 		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
 		

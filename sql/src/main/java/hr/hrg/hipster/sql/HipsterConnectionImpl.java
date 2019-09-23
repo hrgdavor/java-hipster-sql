@@ -13,7 +13,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	protected HipsterSql hipster;
 	protected Connection sqlConnection;
 	protected Query lastQuery;
-	protected PreparedQuery lastPrepared;
 	
 	
 	public HipsterConnectionImpl(HipsterSql hipster, Connection sqlConnection) {
@@ -36,15 +35,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	public Query getLastQuery() {
 		return lastQuery;
 	}
-	
-	/* (non-Javadoc)
-	 * @see hr.hrg.hipster.sql.HipsterConnection#getLastPrepared()
-	 */
-	@Override
-	public PreparedQuery getLastPrepared() {
-		return lastPrepared;
-	}
-	
+		
 	/* (non-Javadoc)
 	 * @see hr.hrg.hipster.sql.HipsterConnection#getHipster()
 	 */
@@ -170,7 +161,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     @Override
     public <T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd) {
     	
-    	Object[] sqlArr = prepEntityQuery(Arrays.asList(new QueryLiteral(visitor.getColumnNamesStr())), null, sql);
+    	Query query = prepEntityQuery(Arrays.asList(new QueryLiteral(visitor.getColumnNamesStr())), null, hipster.q(sql));
     	
     	boolean autoCommit = false;
     	try {
@@ -184,7 +175,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     	try(Result res = new Result(this);){
     		res.setFetchSize(512);
     		
-    		res.executeQuery(sqlArr);
+    		res.executeQuery(query);
     		
     		while(res.next()){
     			visitor.visitResult(res.getResultSet(), fwd);
@@ -231,31 +222,22 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 		}
     }
 
-    public <E extends IQueryPart> Object[] prepEntityQuery(List<E> list, IQueryLiteral table, Object... sql) {
+    public <E extends IQueryLiteral> Query prepEntityQuery(List<E> columns, IQueryLiteral table, Query sql) {
 
-    	if(list == null || list.isEmpty()) return sql; // no need to inject column names
+    	if(columns == null || columns.isEmpty()) return sql; // no need to inject column names
+    	String str = sql.getQueryExpression().toString().toLowerCase();
+    	if(str.startsWith("select ") || str.startsWith(" select ")) return sql;
     	
-    	Query columnsQuery = QueryUtil.join(list, ",");
-    	if(sql.length == 0) {
-			return new Object[]{new Query(" SELECT ",columnsQuery," FROM ",table)};
+    	Query columnsQuery = hipster.q("SELECT ").addPartsList(",", columns);
+
+    	    	
+		if(str.startsWith("from ") || str.startsWith(" from ")){
+			sql.addAtBegining(columnsQuery);
+		
+		}else if(table != null &&(str.startsWith("where ") || str.startsWith(" where "))){
+			columnsQuery.add(" FROM ", table).add(" ");
+			sql.addAtBegining(columnsQuery);
 		}
-    	
-    	Object[] newSql = null;
-    	if(sql.length == 1 && sql[0] instanceof Query){
-    		newSql = ((Query)sql[0]).parts.toArray();
-    	}else{
-    		newSql = new Object[sql.length];
-    		System.arraycopy(sql, 0, newSql, 0, sql.length);
-    	}
-    	if(newSql[0] instanceof String){
-    		String first = ((String) newSql[0]).toLowerCase();
-    		if(first.startsWith("from ") || first.startsWith(" from ")){
-    			return new Object[] {new Query(" SELECT ",columnsQuery," "), new Query(newSql)};
-    		}
-    		if(table != null && !( first.startsWith("select ") || first.startsWith(" select "))){
-    			return new Object[] {new Query(" SELECT ",columnsQuery," FROM ",table," "), new Query(newSql)};
-    		}
-    	}
     	return sql;
     }
 
@@ -265,11 +247,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
 
     @Override
-    public <T,E extends BaseColumnMeta> T entity(IReadMeta<T, E> reader, Object... sql) {
-    	sql = prepEntityQuery(reader.getColumns(), reader.getTable(), sql);
+    public <T> T entity(IReadMeta<T> reader, Object... sql) {
+    	Query query = prepEntityQuery(reader.getColumns(), reader, hipster.q(sql));
     	
     	try(Result res = new Result(this);){
-        	res.executeQuery(sql);
+        	res.executeQuery(query);
         	return res.fetchEntity(reader);
         }
     }
@@ -281,15 +263,14 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     
 	@Override
-    public <T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object... sql) {
+    public <T> List<T> entities(IReadMeta<T> reader, Object... sql) {
     	
-    	sql = prepEntityQuery(reader.getColumns(), reader.getTable(), sql);
-
+    	Query query = prepEntityQuery(reader.getColumns(), reader, hipster.q(sql));
     	List<T> ret = new ArrayList<>();
     	T entity = null;
     	
     	try(Result res = new Result(this);){
-        	res.executeQuery(sql);
+        	res.executeQuery(query);
         	while((entity = res.fetchEntity(reader)) != null){
         		ret.add(entity);
         	}
@@ -329,9 +310,9 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
 
     @Override
-    public <T,E extends BaseColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object... sql){
-    	sql = prepEntityQuery(reader.getColumns(), reader.getTable(), sql); 
-    	return entities(reader,new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset)));
+    public <T> List<T> entitiesLimit(IReadMeta<T> reader, int offset, int limit, Object... sql){
+    	Query query  = prepEntityQuery(reader.getColumns(), reader, hipster.q(sql)); 
+    	return entities(reader, query.add(" LIMIT "+limit+" OFFSET "+offset));
     }
 
 
@@ -437,7 +418,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
 
     /* (non-Javadoc)
-	 * @see hr.hrg.hipster.sql.HipsterConnection#treeWithRow(hr.hrg.hipster.sql.Query, java.lang.String)
+	 * @see hr.hrg.hipster.sql.HipsterConnection#treeWithRow(hr.hrg.hipster.sql.QueryOld, java.lang.String)
 	 */
     @Override
 	public Map<Object, Map<Object, Object>> treeWithRow(Query sql, String ...columns) {
@@ -465,7 +446,7 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }
 
     /* (non-Javadoc)
-	 * @see hr.hrg.hipster.sql.HipsterConnection#insert(hr.hrg.hipster.sql.Query)
+	 * @see hr.hrg.hipster.sql.HipsterConnection#insert(hr.hrg.hipster.sql.QueryOld)
 	 */
     @Override
     public Object insert(Query sql){
@@ -496,7 +477,6 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
 	public String lastQueryInfo() {
 		if(lastQuery != null) return lastQuery.toString();
-		if(lastPrepared != null) return lastPrepared.toString();
 		return null;
 	}	
 	    

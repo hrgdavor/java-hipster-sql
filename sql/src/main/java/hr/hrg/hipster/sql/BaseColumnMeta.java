@@ -101,9 +101,11 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		return this;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <A extends Annotation> A getAnnotation(Class<A> clazz){
 		if(annotations == null) {			
 			try {
+				
 				Method method = meta.getEntityClass().getMethod(getterName);
 				annotations = method.getAnnotations();
 			} catch (Exception e) {
@@ -158,12 +160,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	public boolean isIdentifier() {
 		return true;
 	}
-	
-	@Override
-	public boolean isEmpty() {
-		return false;
-	}
-	
+		
 	public Class<?> getEntity() {
 		return meta.getEntityClass();
 	}

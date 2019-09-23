@@ -16,7 +16,8 @@ public class TestReader {
 //	}
 
 	public void testRead() throws Exception{
-		ReaderSource readerSource = new ReaderSource(new TypeSource());
+		HipsterSql hip = new HipsterSql();
+		ReaderSource readerSource = hip.getReaderSource();
 		
 		Class.forName("org.h2.Driver");
 		Connection conn = DriverManager.getConnection("jdbc:h2:mem:");
@@ -40,7 +41,7 @@ public class TestReader {
 				")");
 		statement.execute("INSERT INTO user_table VALUES(1, 2, 3, 4, 5.5, 6.6, 7.7, 8.8, true, false, 9, 10, 11, 12)");
 		
-		IReadMeta<ITestBasicTypes,BaseColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
+		IReadMeta<ITestBasicTypes> reader = readerSource.getOrCreate(ITestBasicTypes.class);
 	
 		StringBuffer b = new StringBuffer();
 		for(int i=0; i<reader.getColumns().size(); i++) {

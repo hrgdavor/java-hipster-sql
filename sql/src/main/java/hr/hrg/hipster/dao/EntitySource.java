@@ -8,60 +8,60 @@ import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings("rawtypes")
 public class EntitySource {
-	protected Map<Class<? extends Object>, IEntityMeta<?,?,?>> registered = new ConcurrentHashMap<>(); 
-	protected Map<String, IEntityMeta<?,?,?>> named = new ConcurrentHashMap<>();
+	protected Map<Class<? extends Object>, IEntityMeta<?,?>> registered = new ConcurrentHashMap<>(); 
+	protected Map<String, IEntityMeta<?,?>> named = new ConcurrentHashMap<>();
 
-	private TypeSource typeSource;
 	private int entityIndex = 0;
+	private HipsterSql hip;
 
 	public EntitySource() {
 	}
 	
-	public EntitySource(TypeSource resultGetterSource) {
-		this.typeSource = resultGetterSource;
+	public EntitySource(HipsterSql hip) {
+		this.hip = hip;
 	}
 	
-	protected <T> void registerFor(IEntityMeta<T, ?,?> meta){
+	protected <T> void registerFor(IEntityMeta<T, ?> meta){
 		registerFor(meta, meta.getEntityClass());
 	}
 
-	protected <T> void registerFor(IEntityMeta<T, ?,?> meta, Class<T> clazz){
+	protected <T> void registerFor(IEntityMeta<T, ?> meta, Class<T> clazz){
 		registered.put(clazz, meta);
 		named.put(clazz.getSimpleName(), meta);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> IEntityMeta<T, ?,? extends BaseColumnMeta> getFor( Class<T> clazz){
-		IEntityMeta<T, ?, ?> ret = (IEntityMeta<T, ?,? extends BaseColumnMeta>) registered.get(clazz);
+	public <T> IEntityMeta<T, ?> getFor( Class<T> clazz){
+		IEntityMeta<T, ?> ret = (IEntityMeta<T, ?>) registered.get(clazz);
 		if(ret == null){
-			ret = (IEntityMeta<T, ?, ?>) loadHandlerFromClass(HipsterSqlUtil.entityNamesPrefix(clazz)+"Meta");
+			ret = (IEntityMeta<T, ?>) loadHandlerFromClass(HipsterSqlUtil.entityNamesPrefix(clazz)+"Meta");
 			if(ret != null) registerFor(ret, clazz);
 		}
 		return ret;
 	}
 	
-	public <T> IEntityMeta<T, ?,? extends BaseColumnMeta> getForRequired( Class<T> clazz){
-		IEntityMeta<T, ?, ?> ret = getFor(clazz);
+	public <T> IEntityMeta<T, ?> getForRequired( Class<T> clazz){
+		IEntityMeta<T, ?> ret = getFor(clazz);
 		
 		if(ret == null) throw new RuntimeException("Meta not found for "+clazz.getName());
 		
 		return ret;
 	}
 
-	public IEntityMeta<?, ?,? extends BaseColumnMeta> getFor(String name){
+	public IEntityMeta<?, ?> getFor(String name){
 		return named.get(name);
 	}
 
-	public IEntityMeta<?, ?,? extends BaseColumnMeta> getForRequired(String name){
-		IEntityMeta<?, ?, ?> ret = named.get(name);
+	public IEntityMeta<?, ?> getForRequired(String name){
+		IEntityMeta<?, ?> ret = named.get(name);
 		
 		if(ret == null) throw new RuntimeException("Meta not found for "+name);
 
 		return ret;
 	}
 
-	public IEntityMeta<?,?,?> loadHandlerFromClass(String cName) {
-		if(typeSource == null) return null;
+	public IEntityMeta<?,?> loadHandlerFromClass(String cName) {
+		if(hip == null) return null;
 		try {
 			Class<?> meta = Class.forName(cName);
 			// found if no exception, now we just need to construct new instance
@@ -76,17 +76,17 @@ public class EntitySource {
 		return null;
 	}
 
-	protected IEntityMeta<?, ?, ?> newInstance(Class<?> meta)	throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-		return (IEntityMeta<?, ?, ?>) meta.getConstructor(new Class<?>[]{TypeSource.class, int.class}).newInstance(typeSource, entityIndex++);
+	protected IEntityMeta<?, ?> newInstance(Class<?> meta)	throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+		return (IEntityMeta<?, ?>) meta.getConstructor(new Class<?>[]{HipsterSql.class, int.class}).newInstance(hip, entityIndex++);
 	}
 
 	@SafeVarargs
-	public final void registerBoth(ReaderSource readerSource, Class<? extends IEntityMeta> ...metas ){
+	public final void register(Class<? extends IEntityMeta> ...metas ){
 		try {			
 			for (Class<? extends IEntityMeta> meta : metas) {
-				IEntityMeta<?, ?, ?> instance = newInstance(meta);
+				IEntityMeta<?, ?> instance = newInstance(meta);
 				registerFor(instance);
-				readerSource.registerFor(instance);
+				hip.getReaderSource().registerFor(instance);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage(),e);

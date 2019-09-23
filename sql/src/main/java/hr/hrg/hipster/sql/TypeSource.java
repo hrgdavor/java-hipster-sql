@@ -60,12 +60,12 @@ public class TypeSource{
 
     /** Register as handler for specific class*/
     public void registerAll(ICustomType handler, Class<?> clazz){
-    	registerInstance(handler, handler.getClass());
     	registerNamed(handler, handler.getClass().getName());
     	registerFor(handler, clazz);
     }
 
     public void registerFor(ICustomType handler, Class<?> clazz, Class<?> ...classParams){
+    	registerInstance(handler, handler.getClass());
 		if(classParams.length == 0){
 			registered.put(clazz, handler);			
 		}else{

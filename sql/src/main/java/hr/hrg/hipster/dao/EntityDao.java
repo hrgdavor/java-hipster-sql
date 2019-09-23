@@ -5,58 +5,84 @@ import java.util.*;
 import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings("rawtypes")
-public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T, ID, C>>{
+public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T, ID>>{
 
-	protected IHipsterConnection conn;
+	protected IHipsterConnection hc;
+	protected HipsterSql hip;
 	protected M meta;
-	protected Query.ImmutableQuery selectQuery;
+	protected Query selectQuery;
+	protected QueryRepeat selectQueryById;
 
 	@SuppressWarnings("unchecked")
 	public EntityDao(Class<T> clazz, IHipsterConnection conn){
 		this.meta = (M) conn.getHipster().getEntitySource().getFor(clazz);
-		this.conn = conn;
+		this.hc = conn;
+		this.hip=conn.getHipster();
 		init();
 	}
 
 	public EntityDao(M meta, IHipsterConnection conn){
 		this.meta = meta;
-		this.conn = conn;
+		this.hc = conn;
+		this.hip=conn.getHipster();
 		init();
 	}
 
 	public void init() {
-		selectQuery = HipsterSqlUtil.selectQueryForEntity(meta);
+		selectQuery = HipsterSqlUtil.selectQueryForEntity(hip,meta);
+		selectQueryById = selectQuery.clone()
+				.add("WHERE ")
+				.add(meta.getPrimaryColumn(),"=",0L)
+				.toRepeatable();
 	}
 
 	public IHipsterConnection getConnection() {
-		return conn;
+		return hc;
 	}
 	
+	/** Metadata for the entity handled by this DAO
+	 * 
+	 * @return metadata object
+	 */
 	public M getMeta() {
 		return meta;
 	}
 	
-	public T byId(ID id){
+	/** Get one entity (row) from database using primary key (id).
+	 * 
+	 * @param id value of primary key
+	 * @return entity
+	 */
+	public T qOneById(ID id){
 		if(meta.getPrimaryColumn() == null) throw new NullPointerException("Entity "+meta.getEntityClass().getName()+" does not have a primary column defined");
-		
-		return conn.entity(meta, new Query(selectQuery).append("WHERE ",meta.getPrimaryColumn(),"=",id));		
+		return hc.entity(meta, selectQueryById.clone().withValue(id));		
 	}
 
-	public T byCriteria(Object ...queryParts){
-		return conn.entity(meta, new Query(selectQuery).append(queryParts));		
+	/** Get one entity (row) from database using supplied filter
+	 * 
+	 * @param queryParts filter starting with WHERE 
+	 * @return entity
+	 */
+	public T qOne(Object ...queryParts){
+		return hc.entity(meta, selectQuery.clone().addParts(queryParts));
 	}
 
-	public List<T> allByCriteria(Object ...queryParts){
-		return conn.entities(meta, new Query(selectQuery).append(queryParts));		
+	/** Get all entities (rows) from database using supplied filter
+	 * 
+	 * @param queryParts filter starting with WHERE 
+	 * @return list of entities
+	 */
+	public List<T> qAll(Object ...queryParts){
+		return hc.entities(meta, selectQuery.clone().addParts(queryParts));		
 	}
 
 	/** Create new EntityQuery
 	 * 
-	 * @param sql
-	 * @return
+	 * @param queryParts query parts
+	 * @return self
 	 */
-	public EntityQuery<T, ID, C, M> q(Object... sql) {
-		return new EntityQuery<T, ID, C, M>(meta).append(sql);
+	public Query q(Object... queryParts) {
+		return hip.q(queryParts);
 	}
 
 	/**
@@ -64,9 +90,11 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * Useful for counting and other queries that return single int value.<br>
 	 * @param column column
 	 * @param sql varargs query
+	 * @param <T2> entity tape
+	 * @param <C2> column meta
 	 * @return single result
 	 */
-	public <T2, C2 extends BaseColumnMeta<T2>> T2 one(C2 column, Object... sql) {
+	public <T2, C2 extends BaseColumnMeta<T2>> T2 qOneValue(C2 column, Object... sql) {
 		return _one(column, null, sql);
 	}
 
@@ -76,36 +104,27 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param op operation to perform on the column
 	 * @param column column
 	 * @param sql varargs query
+	 * @param <T2> entity tape
+	 * @param <C2> column meta
 	 * @return single result
 	 */
-	public <T2, C2 extends BaseColumnMeta<T2>> T2 one(String op, C2 column, Object... sql) {
+	public <T2, C2 extends BaseColumnMeta<T2>> T2 qOneValue(String op, C2 column, Object... sql) {
 		return _one(column, op, sql);
 	}
 	
 	@SuppressWarnings({"unchecked"})
 	private <T2, C2 extends BaseColumnMeta<T2>> T2 _one(C2 column, String op, Object... sql) {
-		EntityQuery<T, ID, C, M> q = q("SELECT ");
+		Query q = q("SELECT ");
 		if(op != null && !op.isEmpty()) {
-			q.append(op+"(", column,")");
+			q.add(op+"(", column).add(")");
 		}else {
-			q.append(column);
+			q.add(column);
 		}
-		q.append(" FROM ", meta.getTable(), " ");
-		q.append(sql);
+		q.add(" FROM ", meta).add(" ");
+		q.addParts(sql);
 		ICustomType<?> handler = meta.getTypeHandler((C) column);
 		
-		return (T2) conn.one(handler, q);
-	}
-
-
-	/**
-	 *  Get first value as long from first row and first column. <br>
-	 * @param column column
-	 * @param sql varargs query
-	 * @return single result primitive long
-	 */
-	public int oneInt(C column, Object... sql) {
-		return conn.oneInt(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
+		return (T2) hc.one(handler, q);
 	}
 
 	/**
@@ -114,8 +133,18 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive long
 	 */
-	public long oneLong(C column, Object... sql) {
-		return conn.oneLong(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
+	public int qOneInt(C column, Object... sql) {
+		return hc.oneInt(q("SELECT ", column,	" FROM ",meta, " ").addParts(sql));
+	}
+
+	/**
+	 *  Get first value as long from first row and first column. <br>
+	 * @param column column
+	 * @param sql varargs query
+	 * @return single result primitive long
+	 */
+	public long qOneLong(C column, Object... sql) {
+		return hc.oneLong(q("SELECT ", column,	" FROM ",meta, " ").addParts(sql));
 	}
 	
 	/**
@@ -124,13 +153,14 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param sql varargs query
 	 * @return single result primitive double
 	 */
-	public double oneDouble(C column, Object... sql) {
-		return conn.oneDouble(q("SELECT ", column,	" FROM ",meta.getTable(), " ").append(sql));
+	public double qOneDouble(C column, Object... sql) {
+		return hc.oneDouble(q("SELECT ", column,	" FROM ",meta, " ").addParts(sql));
 	}
 
+	@SuppressWarnings("unchecked")
 	public ID insert(IUpdatable mutable) {
-		Query insertQuery = conn.getHipster().buildInsert(meta, mutable);
-		return (ID) conn.insert(meta.getPrimaryColumn().getType(), insertQuery);
+		Query insertQuery = hc.getHipster().buildInsert(meta, mutable);
+		return (ID) hc.insert(meta.getPrimaryColumn().getType(), insertQuery);
 	}
 	
 	

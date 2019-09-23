@@ -29,19 +29,19 @@ public class EntityCopy {
 		}
 	}
 	
-	public Builder builder(IEntityMeta<?,?,?> metaFrom, IEntityMeta<?,?,?> metaTo) {
+	public Builder builder(IEntityMeta<?,?> metaFrom, IEntityMeta<?,?> metaTo) {
 		return new Builder(metaFrom, metaTo);
 
 	}
 	
 	public static class Builder{
-		private IEntityMeta<?, ?, ?> metaFrom;
-		private IEntityMeta<?, ?, ?> metaTo;
+		private IEntityMeta<?, ?> metaFrom;
+		private IEntityMeta<?, ?> metaTo;
 		boolean[] ignored;
 		List<Integer> indexFrom = new ArrayList<>();
 		List<Integer> indexTo = new ArrayList<>();
 
-		public Builder(IEntityMeta<?,?,?> metaFrom, IEntityMeta<?,?,?> metaTo) {
+		public Builder(IEntityMeta<?,?> metaFrom, IEntityMeta<?,?> metaTo) {
 			this.metaFrom = metaFrom;
 			this.metaTo = metaTo;
 			ignored = new boolean[metaFrom.getColumnCount()];
@@ -49,7 +49,8 @@ public class EntityCopy {
 
 		/** add all columns by name(respecting ignored columns)
 		 * 
-		 * @return
+		 * @param columnNames column names 
+		 * @return self
 		 */
 		public Builder byName(String ...columnNames) {
 
@@ -68,7 +69,7 @@ public class EntityCopy {
 		
 		/** add all columns with same name(respecting ignored columns)
 		 * 
-		 * @return
+		 * @return self
 		 */
 		public Builder sameNames() {
 			List<BaseColumnMeta> columns = (List<BaseColumnMeta>) metaFrom.getColumns();

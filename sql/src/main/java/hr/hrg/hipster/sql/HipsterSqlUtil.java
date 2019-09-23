@@ -73,6 +73,10 @@ public class HipsterSqlUtil {
 		}
 	}
 
+	public static <T> T[] toArray(T ...arr) {
+		return arr;
+	}
+	
 	public static String[] entityNamesPrefixArray(TypeElement clazz){
 		String[] ret = new String[2];
 		
@@ -94,28 +98,17 @@ public class HipsterSqlUtil {
 		return ret;
 	}
 
-	public static <C extends BaseColumnMeta> Query.ImmutableQuery selectQueryForEntity(IEntityMeta<?, ?, C> meta) {
-		int columnCount = meta.getColumnCount()*2-1;
-		List<C> columns = meta.getColumns();
-		Object[] tmp = new Object[columnCount+4];
+	@SuppressWarnings("rawtypes")
+	public static Query selectQueryForEntity(HipsterSql hipster, IEntityMeta<?, ?> meta) {
+		List<BaseColumnMeta> columns = (List<BaseColumnMeta>) meta.getColumns();
 		
-		// SELECT
-		tmp[0] = "SELECT ";
-		// all columns
-		int column = 0;
-		for(int i=1; i<=columnCount; i++) {
-			if(i % 2 == 0) 
-				tmp[i]=",";
-			else 
-				tmp[i] = columns.get(column++);
-		}
-		// from
-		tmp[columnCount+1] = " FROM ";
-		// _table
-		tmp[columnCount+2] = meta.getTable();
-		tmp[columnCount+3] = " ";
+		Query query = hipster.q("SELECT ");
+		
+		query.addPartsList(",", columns);
+		query.add(" FROM ", meta);
+		query.add(' ');
 
-		return new Query.ImmutableQuery(ImmutableList.safe(tmp));
+		return query;
 	}
 	
 	public static String entityNamesPrefix(Class<?> clazz){

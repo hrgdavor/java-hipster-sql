@@ -81,117 +81,117 @@ public class QueryUtil {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
-	/** Generate query for "IN" operator : " IN(v1,v2,..)"
-	 * 
-	 * @param values for IN(...)
-	 * @return Query object
-	 */
-	public static final Query queryIn(Object ...values){
-		
-		if(values.length == 0 && values[0] instanceof List)
-			return joinValues(" IN(", (List<Object>) values[0], ",", ") ");
-		
-		return joinValues(" IN(", toList(values), ",", ") ");
-	}
+//	@SuppressWarnings("unchecked")
+//	/** Generate query for "IN" operator : " IN(v1,v2,..)"
+//	 * 
+//	 * @param values for IN(...)
+//	 * @return QueryOld object
+//	 */
+//	public static final QueryOld queryIn(Object ...values){
+//		
+//		if(values.length == 0 && values[0] instanceof List)
+//			return joinValues(" IN(", (List<Object>) values[0], ",", ") ");
+//		
+//		return joinValues(" IN(", toList(values), ",", ") ");
+//	}
 
-	/** Join multiple queries with glue/delimiter between.
-	 * 
-	 * @param queries to join
-	 * @param glue string
-	 * @return new joined query or an empty Query if [queries] is empty
-	 */
-	public static final <E extends IQueryPart> Query join(List<E> queries, String glue){		
-		return join(null,queries, glue, null);
-	}
+//	/** Join multiple queries with glue/delimiter between.
+//	 * 
+//	 * @param queries to join
+//	 * @param glue string
+//	 * @return new joined query or an empty QueryOld if [queries] is empty
+//	 */
+//	public static final <E extends IQueryPart> Query join(List<E> queries, String glue){		
+//		return join(null,queries, glue, null);
+//	}
 	
-	/** Join multiple queries with glue/delimiter between. Also add a prefix if [queries] is not empty.
-	 * 
-	 * @param prefix for query
-	 * @param queries to join
-	 * @param glue string
-	 * @return new joined query or an empty Query if [queries] is empty
-	 */
-	public static final <E extends IQueryPart> Query join(String prefix, List<E> queries, String glue){
-		return join(prefix,queries, glue, null);
-	}
+//	/** Join multiple queries with glue/delimiter between. Also add a prefix if [queries] is not empty.
+//	 * 
+//	 * @param prefix for query
+//	 * @param queries to join
+//	 * @param glue string
+//	 * @return new joined query or an empty QueryOld if [queries] is empty
+//	 */
+//	public static final <E extends IQueryPart> Query join(String prefix, List<E> queries, String glue){
+//		return join(prefix,queries, glue, null);
+//	}
 	
-	/** Join multiple queries with glue/delimiter between. Also add a prefix and suffix if [queries] is not empty.
-	 * 
-	 * @param prefix for query
-	 * @param queries to join
-	 * @param glue string
-	 * @param suffix for query
-	 * @return new joined query or an empty Query if [queries] is empty
-	 */
-	public static final <E extends IQueryPart> Query join(String prefix, List<E> queries, String glue, String suffix){
-		Query query = new Query();
-
-		// remove empty queries
-		List<E> tmp = new ArrayList<>();
-		for(E qi:queries) if(!qi.isEmpty()) tmp.add(qi);
-		queries = tmp;
-		
-		if(queries.size() == 0) return query;
-		
-		if(prefix != null) query.append(prefix);
-		
-		int count = queries.size();
-		for(int i=0; i<count; i++) {
-			if(i>0) query.append(glue);
-			query.append(queries.get(i));
-		}
-
-		if(suffix != null) query.append(suffix);
-		return query;
-	}
+//	/** Join multiple queries with glue/delimiter between. Also add a prefix and suffix if [queries] is not empty.
+//	 * 
+//	 * @param prefix for query
+//	 * @param queries to join
+//	 * @param glue string
+//	 * @param suffix for query
+//	 * @return new joined query or an empty QueryOld if [queries] is empty
+//	 */
+//	public static final <E extends IQueryPart> Query join(String prefix, List<E> queries, String glue, String suffix){
+//		Query query = new QueryOld();
+//
+//		// remove empty queries
+//		List<E> tmp = new ArrayList<>();
+//		for(E qi:queries) if(!qi.isEmpty()) tmp.add(qi);
+//		queries = tmp;
+//		
+//		if(queries.size() == 0) return query;
+//		
+//		if(prefix != null) query.append(prefix);
+//		
+//		int count = queries.size();
+//		for(int i=0; i<count; i++) {
+//			if(i>0) query.append(glue);
+//			query.append(queries.get(i));
+//		}
+//
+//		if(suffix != null) query.append(suffix);
+//		return query;
+//	}
 	
-	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
-	 * 
-	 * @param values to join
-	 * @param glue string
-	 * @return new joined query or an empty Query if [values] is empty
-	 */
-	public static final Query joinValues(List<? extends Object> values, String glue){		
-		return joinValues(null,values, glue, null);
-	}
+//	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
+//	 * 
+//	 * @param values to join
+//	 * @param glue string
+//	 * @return new joined query or an empty QueryOld if [values] is empty
+//	 */
+//	public static final QueryOld joinValues(List<? extends Object> values, String glue){		
+//		return joinValues(null,values, glue, null);
+//	}
 	
-	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
-	 * 
-	 * @param prefix for query
-	 * @param values to join
-	 * @param glue string
-	 * @return new joined query or an empty Query if [values] is empty
-	 */
-	public static final Query joinValues(String prefix, List<? extends Object> values, String glue){
-		return joinValues(prefix,values, glue, null);
-	}
+//	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
+//	 * 
+//	 * @param prefix for query
+//	 * @param values to join
+//	 * @param glue string
+//	 * @return new joined query or an empty QueryOld if [values] is empty
+//	 */
+//	public static final QueryOld joinValues(String prefix, List<? extends Object> values, String glue){
+//		return joinValues(prefix,values, glue, null);
+//	}
 	
-	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
-	 * 
-	 * @param prefix for query
-	 * @param values to join
-	 * @param glue string
-	 * @param suffix to join
-	 * @return new joined query or an empty Query if [values] is empty
-	 */
-	public static final Query joinValues(String prefix, List<? extends Object> values, String glue, String suffix){
-		Query query = new Query();
-		
-		if(values.size() == 0) return query;
-		
-		if(prefix != null) query.append(prefix);
-		else query.append("");
-
-		int count = values.size();
-		for(int i=0; i<count; i++) {
-			if(i>0) query.append(glue);
-			query.appendValue(values.get(i));
-		}
-
-		if(suffix != null) query.append(suffix);
-		return query;
-	}	
+//	/** Join multiple values with glue/delimiter between. Also add a prefix and suffix if [values] is not empty.
+//	 * 
+//	 * @param prefix for query
+//	 * @param values to join
+//	 * @param glue string
+//	 * @param suffix to join
+//	 * @return new joined query or an empty QueryOld if [values] is empty
+//	 */
+//	public static final QueryOld joinValues(String prefix, List<? extends Object> values, String glue, String suffix){
+//		QueryOld query = new QueryOld();
+//		
+//		if(values.size() == 0) return query;
+//		
+//		if(prefix != null) query.append(prefix);
+//		else query.append("");
+//
+//		int count = values.size();
+//		for(int i=0; i<count; i++) {
+//			if(i>0) query.append(glue);
+//			query.appendValue(values.get(i));
+//		}
+//
+//		if(suffix != null) query.append(suffix);
+//		return query;
+//	}	
 
     @SuppressWarnings("unchecked")
     /** Utility that fills a java.util.Map based tree of values based on the supplied data List.<br>
@@ -252,7 +252,4 @@ public class QueryUtil {
        	current.put(row.get(columns[index]), row.get(columns[index+1]));
     }
 
-	public static Query query(Object ... parts) {
-		return new Query(parts);
-	}
 }

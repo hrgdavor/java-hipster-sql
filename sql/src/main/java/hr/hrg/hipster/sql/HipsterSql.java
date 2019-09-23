@@ -1,5 +1,7 @@
 package hr.hrg.hipster.sql;
 
+import static hr.hrg.hipster.sql.QueryLiteral.*;
+
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -10,7 +12,7 @@ import org.joda.time.*;
 import org.slf4j.*;
 
 import hr.hrg.hipster.dao.*;
-
+import hr.hrg.hipster.dao.change.*;
 
 public class HipsterSql {
 	
@@ -29,12 +31,14 @@ public class HipsterSql {
 	
 	private ReaderSource readerSource;
 	private VisitorSource visitorSource;
+	private EntityEventHub eventHub;
 
 	public HipsterSql() {
 		this.typeSource = new TypeSource();
-		this.readerSource = new ReaderSource(typeSource);
+		this.readerSource = new ReaderSource(this);
 		this.visitorSource = new VisitorSource(typeSource);
-		this.entitySource = new EntitySource(typeSource);
+		this.entitySource = new EntitySource(this);
+		this.eventHub = new EntityEventHub(entitySource);
 		this.intAllowdOperators();
 	}
 
@@ -63,6 +67,10 @@ public class HipsterSql {
 	public VisitorSource getVisitorSource() {
 		return visitorSource;
 	}
+	
+	public EntityEventHub getEventHub() {
+		return eventHub;
+	}
 
 	public IHipsterConnection openConnection(String url) throws SQLException {
 		Connection connection = DriverManager.getConnection(url);
@@ -85,7 +93,7 @@ public class HipsterSql {
 	
 	/** Override this method to provide primary column for a _table. One useful thing with this
 	 * is for generating insert statement in postgres that return newly inserted id. (using "RETURNING" keyword).
-	 * @param _tableName _table name
+	 * @param tableName table name
 	 * @return name of the primary column
 	 * */
 	public String getPrimary(String tableName) {
@@ -139,7 +147,7 @@ public class HipsterSql {
 
 	public Query buildFilter(List<?> params){
 		int count = params.size();
-		if(count == 0) return new Query();
+		if(count == 0) return this.q();
 
 		if(count == 1 && params.get(1) instanceof List) return buildFilter( (List<?>) params.get(0));
 		
@@ -148,8 +156,8 @@ public class HipsterSql {
 		
 		Object p1 = params.get(1);
 		if(count == 2) {
-			if(p1 == null) return new Query(q_column((String) p0)+"IS NULL");
-			return new Query(q_column((String) p0)+" = ",p1);
+			if(p1 == null) return this.q(identifier((String) p0)," IS NULL");
+			return this.q(identifier((String) p0)," = ",p1);
 		}
 
 		if(count == 3) {
@@ -157,28 +165,28 @@ public class HipsterSql {
 			Object p2 = params.get(2);
 			if(p2 == null) {
 				if("=".equals(operator)) {
-					return new Query(q_column((String) p0)+" IS NULL");
+					return this.q(q_column((String) p0)," IS NULL");
 				}else if("!=".equals(operator) || "<>".equals(operator)) {					
-					return new Query(q_column((String) p0)+" IS NOT NULL");
+					return this.q(q_column((String) p0)+" IS NOT NULL");
 				}
 			}
-			return new Query(q_column((String) p0)+" "+q_op(operator)+" ",p2);
+			return this.q(identifier((String) p0)," "+q_op(operator)+" ",p2);
 		}
-		
+
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
 	}
 	
 	public Query buildFilter(Object ...params){		
 		int count = params.length;
-		if(count == 0) return new Query();
+		if(count == 0) return this.q();
 		
 		Object p0 = params[0];
 		if(count == 1 && p0 instanceof List) return buildFilter( (List<?>) p0);
 		
 		Object p1 = params[1];
 		if(count == 2) {
-			if(p1 == null) return new Query(q_column((String) p0)+" IS NULL");
-			return new Query(q_column((String) p0)+" = ",p1);
+			if(p1 == null) return this.q(identifier((String) p0)," IS NULL");
+			return this.q(identifier((String) p0)," = ",p1);
 		}
 
 		if(count == 3) {
@@ -186,12 +194,12 @@ public class HipsterSql {
 			Object p2 = params[2];
 			if(p2 == null) {
 				if("=".equals(operator)) {
-					return new Query(q_column((String) p0)+" IS NULL");
+					return this.q(identifier((String) p0)," IS NULL");
 				}else if("!=".equals(operator) || "<>".equals(operator)) {					
-					return new Query(q_column((String) p0)+" IS NOT NULL");
+					return this.q(identifier((String) p0)," IS NOT NULL");
 				}
 			}
-			return new Query(q_column((String) p0)+" "+q_op(operator)+" ",p2);
+			return this.q(identifier((String) p0)," "+q_op(operator)+" ",p2);
 		}
 		throw new RuntimeException("buildFilter only accepts 2 or 3 paramteres");
 	}
@@ -203,19 +211,19 @@ public class HipsterSql {
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */
-	public <C extends BaseColumnMeta> Query buildInsert(IEntityMeta<?, ?, C> meta, IUpdatable mutable) {
+	public Query buildInsert(IEntityMeta<?, ?> meta, IUpdatable mutable) {
 		
 		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
 			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
 
 		StringBuilder firstPart = new StringBuilder("("); 
-		Query valuesPart = new Query(")VALUES(");
+		Query valuesPart = this.q(")VALUES(");
 		
-		C primaryColumn = meta.getPrimaryColumn();
+		BaseColumnMeta primaryColumn = meta.getPrimaryColumn();
 		
 		int i=0;
 		int ordinal;
-		for(C column:meta.getColumns()) {
+		for(BaseColumnMeta column:meta.getColumns()) {
 			ordinal = column.ordinal();			
 			
 			if(!mutable.isChanged(ordinal)) continue;
@@ -224,70 +232,72 @@ public class HipsterSql {
 			ICustomType<?> customType = meta.getTypeHandler(column);
 			if(i >0) {
 				firstPart.append(",");
-				valuesPart.append(",",customType, value);
+				valuesPart.addParts(",",new QueryValue(value, customType));
 			}else {
-				valuesPart.append(customType, value);
+				valuesPart.addValue(new QueryValue(value, customType));
 			}
 			firstPart.append(column);
 			i++;
 		}
-		valuesPart.append(")");
+		valuesPart.add(")");
 		
-		return new Query("INSERT INTO ", meta.getTable(), firstPart, valuesPart);		
+		return this.q("INSERT INTO ", meta, firstPart, valuesPart);		
 	}
 	
-	/** build insert Query from map of key:value. Although the map is not declared as Map&lt;String,Object&gt; 
+	/** build insert QueryOld from map of key:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param _tableName _table name
+	 * @param tableName table name
 	 * @param values map with values to insert
 	 * @return generated query object
 	 * */
 	public Query buildInsert(String tableName, Map<?,?> values) {
 		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
 
-		Query valuesPart = new Query(")VALUES(");
+		Query valuesPart = this.q(")VALUES(");
 		
 		int i=0;
 		for(Entry<?, ?> entry:values.entrySet()) {
 			if(i >0) {
 				firstPart.append(",");
-				valuesPart.append(",",entry.getValue());
+				valuesPart.addParts(",",entry.getValue());
 			}else {
-				valuesPart.appendValue(entry.getValue());
+				valuesPart.addValue(entry.getValue());
 			}
 			firstPart.append(q_column((String) entry.getKey()));
 			i++;
 		}
-		valuesPart.append(")");
+		valuesPart.add(")");
 		
-		return new Query(firstPart, valuesPart);		
+		firstPart.append(valuesPart.getQueryExpressionBuilder());
+		return new Query(this, firstPart, valuesPart.size, valuesPart.values);
 	}
 
-	/** build insert Query from vararg paramteters that are pairs (column,value) . Although method accepts objects 
+	/** build insert QueryOld from vararg paramteters that are pairs (column,value) . Although method accepts objects 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param _tableName _table name
+	 * @param tableName _table name
 	 * @param values map expressed as key:value pairs (for values to insert)
 	 * @return generated query object
 	 * */
 	public Query buildInsertVar(String tableName, Object ...values){
 		StringBuilder firstPart = new StringBuilder("INSERT INTO ").append(q_table(tableName)).append("("); 
 
-		Query valuesPart = new Query(")VALUES(");
+		Query valuesPart = this.q(")VALUES(");
 		
 		for(int i=1; i<values.length; i+=2){
 			if(i >1) {
 				firstPart.append(",");
-				valuesPart.append(",",values[i]);
+				valuesPart.addParts(",",values[i]);
 			}else {
-				valuesPart.appendValue(values[i]);
+				valuesPart.addValue(values[i]);
 			}
 			firstPart.append(q_column((String) values[i-1]));
 		}
-		valuesPart.append(")");
+		valuesPart.add(")");
 
-		return new Query(firstPart, valuesPart);		
+		firstPart.append(valuesPart.getQueryExpressionBuilder());
+		return new Query(this, firstPart, valuesPart.size, valuesPart.values);		
 	}
 
 	/** Build update query from an object, with help of entity metadata. Columns that were not changed
@@ -297,18 +307,18 @@ public class HipsterSql {
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */
-	public <C extends BaseColumnMeta> Query buildUpdate(IEntityMeta<?, ?, C> meta, Object filter, IUpdatable mutable) {
+	public Query buildUpdate(IEntityMeta<?, ?> meta, Object filter, IUpdatable mutable) {
 		
 		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
 			throw new RuntimeException("Meta class missmatch "+meta.getClass()+"("+meta.getEntityClass().getName()+") is not suitable for "+mutable.getClass().getName());
 
 		Query filterQuery = checkFilterDefined(filter);
 		
-		Query query = new Query("UPDATE ",meta.getTable()," SET ");
+		Query query = this.q("UPDATE ",meta," SET ");
 
 		int i=0;
 		int ordinal;
-		for(C column:meta.getColumns()) {
+		for(BaseColumnMeta column:meta.getColumns()) {
 			ordinal = column.ordinal();
 			
 			if(!mutable.isChanged(ordinal)) continue;
@@ -316,76 +326,76 @@ public class HipsterSql {
 			Object value = mutable.getValue(ordinal);
 			ICustomType<?> customType = meta.getTypeHandler(ordinal);
 			if(i >0){
-				query.append(",",column,"=", customType, value);
+				query.addParts(",",column,"=", customType, value);
 			}else {
-				query.append(column,"=", customType, value);
+				query.addParts(column,"=", customType, value);
 			}
 			i++;
 		}
 
-		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+		if(filterQuery != null) query.addParts(" WHERE ", filterQuery);
 
-		return query;		
+		return query;	
 	}
 	
 	
-	/** Build update Query from map of column:value. Although the map is not declared as Map&lt;String,Object&gt; 
+	/** Build update QueryOld from map of column:value. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param _tableName _table name
+	 * @param tableName table name
 	 * @param filter filter to define which rows to update (be careful not to update the whole _table) see: {@link #checkFilterDefined(Object)}
 	 * @param values column:value pairs to generate instead of writing manually<br> 
-	 * <code>new Query("UPDATE [_tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
+	 * <code>new QueryOld("UPDATE [_tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
 	 * @return generated query object
 	 */
 	public Query buildUpdate(String tableName, Object filter, Map<?,?> values){
 		Query filterQuery = checkFilterDefined(filter);
 
-		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
+		Query query = this.q("UPDATE ",identifier(tableName)," SET ");
 
 		int i=0;
 		for(Entry<?, ?> entry:values.entrySet()) {
 			if(i >0){
-				query.append(","+q_column((String) entry.getKey())+"=", entry.getValue());
+				query.addParts(",",identifier((String) entry.getKey()),"=", entry.getValue());
 			}else {
-				query.append(q_column((String) entry.getKey())+"=", entry.getValue());
+				query.addParts(identifier((String) entry.getKey()),"=", entry.getValue());
 			}
 			i++;
 		}
 
-		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+		if(filterQuery != null) query.addParts(" WHERE ", filterQuery);
 
 		return query;		
 	}
 	
-	/** build update Query from  column:value pairs supplied as varargs. Although the map is not declared as Map&lt;String,Object&gt; 
+	/** build update QueryOld from  column:value pairs supplied as varargs. Although the map is not declared as Map&lt;String,Object&gt; 
 	 * keys must be strings or ClassCastException will be thrown. 
 	 * 
-	 * @param _tableName _table name
+	 * @param tableName _table name
 	 * @param filter filter to define which rows to update (be careful not to update the whole _table) see: {@link #checkFilterDefined(Object)}
 	 * @param values column-value pairs to generate instead of writing manually<br> 
-	 * <code>new Query("UPDATE [_tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
+	 * <code>new QueryOld("UPDATE [_tableName] SET col1=", val1, ",col2=", val2, " WHERE [filter]")</code>
 	 * @return generated query object
 	 * */
 	public Query buildUpdateVar(String tableName, Object filter, Object ...values){
 		Query filterQuery = checkFilterDefined(filter);
 
-		Query query = new Query("UPDATE "+q_table(tableName)+" SET ");
+		Query query = this.q("UPDATE "+identifier(tableName)+" SET ");
 
 		for(int i=1; i<values.length; i+=2){
 			if(i >1){
-				query.append(","+q_column((String) values[i-1])+"=", values[i]);
+				query.addParts(","+identifier((String) values[i-1])+"=", values[i]);
 			}else {
-				query.append(q_column((String) values[i-1])+"=", values[i]);
+				query.addParts(identifier((String) values[i-1])+"=", values[i]);
 			}
 		}
 
-		if(filterQuery != null) query.append(" WHERE ", filterQuery);
+		if(filterQuery != null) query.addParts(" WHERE ", filterQuery);
 
-		return query;		
+		return query;
 	}
 
-	/** Check if the object is either {@link #ALL_ROWS} or a non-empty query. You can also use new Query("1=1"). <br>
+	/** Check if the object is either {@link #ALL_ROWS} or a non-empty query. You can also use new QueryOld("1=1"). <br>
 	 * Helps to sometimes catch unintended whole _table update when used by {@link #buildUpdate(String, Object, Map)} or {@link #buildUpdateVar(String, Object, Object...)}
 	 * 
 	 * @param filter filter
@@ -395,117 +405,84 @@ public class HipsterSql {
 	public Query checkFilterDefined(Object filter) {
 		if(ALL_ROWS.equals(filter)) return null;// ok, in this case use the empty query to avoid any filtering
 		
-		if(filter == null || !(filter instanceof Query) || ((Query)filter).isEmpty()){				
+		if(filter == null || !(filter instanceof Query) || ((Query)filter).isEmpty()){
 			throw new RuntimeException("Non empty filter query must be supplied to limit the number of rows affected to avoid accidental full _table updates. To force update without filter use HipsterSql.ALL_ROWS");
 		}
 		return (Query) filter;
 	}
 
-	/** Convert {@link Query} object into a {@link PreparedQuery}
-	 * 
-	 * @param queryParts query parts
-	 * @return PreparedQuery that is ready for execution
-	 */
-	public PreparedQuery prepare(Object ... queryParts){
-		if(queryParts.length == 1 && queryParts[0] instanceof PreparedQuery){
-			return (PreparedQuery) queryParts[0];
-		}
-		
-		StringBuilder b = new StringBuilder();
-		ArrayList<Object> params = new ArrayList<>();
-		List<ICustomType<?>> setters = new ArrayList<>();
-		
-		prepareInto(b, params, setters, queryParts);
-		
-		return new PreparedQuery(typeSource,b, params, setters); 
-	}
-	
-	public void prepareInto(StringBuilder b, List<Object> params, List<ICustomType<?>> setters, Object ... queryParts){
-		
-		int count = queryParts.length;
-		
-		boolean expectValue = false;
-		
-		for(int i=0; i<count; i++){
-			Object obj = queryParts[i];
-		
-			if(obj instanceof IQueryLiteral){
-				IQueryLiteral queryLiteral = (IQueryLiteral)obj;
-				if(queryLiteral.isIdentifier()) b.append(columQuote1);
-				b.append(queryLiteral.getQueryText());
-				if(queryLiteral.isIdentifier()) b.append(columQuote2);
-				
-				expectValue = false;
-				
-			}else if(obj instanceof BaseColumnMeta){
-				b.append(columQuote1).append(((BaseColumnMeta)obj).getColumnName()).append(columQuote2);
-				
-				expectValue = false;
-
-			}else if(obj instanceof Query){
-				prepareInto(b, params, setters, ((Query)obj).getParts().toArray());
-				
-				expectValue = false;
-				
-			}else if(obj instanceof PreparedQuery){
-				PreparedQuery prepared = (PreparedQuery) obj;
-				b.append(prepared.getQueryStringBuilder());
-				params.addAll(prepared.getParams());
-			
-				expectValue = false;
-				
-			}else if(obj instanceof ICustomType){
-				// prepare CustomType for the next parameter
-				PreparedQuery.setCustom(setters, params.size(), (ICustomType) obj);
-				
-				expectValue = true; // we just defined custom type for the next value, so yeah :) value expected
-				
-			}else if(!expectValue){
-				b.append(obj);
-
-				expectValue = true; // we just appended a query part to the StringBuilder, so next must be a value
-
-			}else {
-				b.append('?');
-				params.add(obj);
-
-				expectValue = false;
-			}
-		}
-	}
-
-	/** Set a value into the prepared statement <br>
-	 * <br>
-	 * Override if using {@link IPreparedValue} or defining {@link ICustomType} is not sufficient to provide functionality.  
-	 * 
-	 * @param hipConnection connection that produced the PreparedStatement
-	 * @param ps the statement
-	 * @param i index in the statement
-	 * @param value value to set
-	 * 
-	 * @throws SQLException if set fails
-	 */
-	@SuppressWarnings({ "unchecked"})
-	public <C> void prepSet(IHipsterConnection hipConnection,PreparedStatement ps, int i, C value) throws SQLException {
-		if(value == null){
-			ps.setNull(i, Types.OTHER);
-			return;
-		}
-
-		if(value instanceof IPreparedValue) {
-			((IPreparedValue)value).set(ps, i);
-			return;
-		}
-
-		ICustomType<C> setter = (ICustomType<C>) typeSource.getFor(value.getClass());
-		
-		if(setter == null){
-			throw new RuntimeException("Type handler not defined for "+value.getClass()+" in prepared statement: "+hipConnection.getLastPrepared().getQueryString()+" on index "+i+" using value "+value);
-		}
-		
-		setter.set(ps, i, (C)value);
-
-	}
+//	/** Convert {@link QueryOld} object into a {@link PreparedQuery}
+//	 * 
+//	 * @param queryParts query parts
+//	 * @return PreparedQuery that is ready for execution
+//	 */
+//	public PreparedQuery prepare(Object ... queryParts){
+//		if(queryParts.length == 1 && queryParts[0] instanceof PreparedQuery){
+//			return (PreparedQuery) queryParts[0];
+//		}
+//		
+//		StringBuilder b = new StringBuilder();
+//		ArrayList<Object> values = new ArrayList<>();
+//		List<ICustomType<?>> setters = new ArrayList<>();
+//		
+//		prepareInto(b, values, setters, queryParts);
+//		
+//		return new PreparedQuery(typeSource,b, values, setters); 
+//	}
+//	
+//	public void prepareInto(StringBuilder b, List<Object> values, List<ICustomType<?>> setters, Object ... queryParts){
+//		
+//		int count = queryParts.length;
+//		
+//		boolean expectValue = false;
+//		
+//		for(int i=0; i<count; i++){
+//			Object obj = queryParts[i];
+//		
+//			if(obj instanceof IQueryLiteral){
+//				IQueryLiteral queryLiteral = (IQueryLiteral)obj;
+//				if(queryLiteral.isIdentifier()) b.append(columQuote1);
+//				b.append(queryLiteral.getQueryText());
+//				if(queryLiteral.isIdentifier()) b.append(columQuote2);
+//				
+//				expectValue = false;
+//				
+//			}else if(obj instanceof BaseColumnMeta){
+//				b.append(columQuote1).append(((BaseColumnMeta)obj).getColumnName()).append(columQuote2);
+//				
+//				expectValue = false;
+//
+//			}else if(obj instanceof QueryOld){
+//				prepareInto(b, values, setters, ((QueryOld)obj).getParts().toArray());
+//				
+//				expectValue = false;
+//				
+//			}else if(obj instanceof PreparedQuery){
+//				PreparedQuery prepared = (PreparedQuery) obj;
+//				b.append(prepared.getQueryStringBuilder());
+//				values.addAll(prepared.getParams());
+//			
+//				expectValue = false;
+//				
+//			}else if(obj instanceof ICustomType){
+//				// prepare CustomType for the next parameter
+//				PreparedQuery.setCustom(setters, values.size(), (ICustomType) obj);
+//				
+//				expectValue = true; // we just defined custom type for the next value, so yeah :) value expected
+//				
+//			}else if(!expectValue){
+//				b.append(obj);
+//
+//				expectValue = true; // we just appended a query part to the StringBuilder, so next must be a value
+//
+//			}else {
+//				b.append('?');
+//				values.add(obj);
+//
+//				expectValue = false;
+//			}
+//		}
+//	}
 
 	/** HipsterSql returns DateTime LocalDate and LocalTime from yoda-time library if it is present in the classpath.<br>
 	 * Otherwise returns java.sql(Date,Time,TimeStamp).<br>
@@ -574,9 +551,12 @@ public class HipsterSql {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#rowsLimit(int, int, java.lang.Object)
 	 */
 	public Query withLimit(int offset, int limit, Object ...sql){
-    	return new Query(sql).append(new Query(" LIMIT "+limit+" OFFSET "+offset));
+    	Query query = q(sql);
+    	query.queryExpressionBuilder
+    		.append(" LIMIT ") .append(limit)
+    		.append(" OFFSET ").append(offset);
+		return query;
     }
-
 	
 	/* **************************************     UTILITIES FOR PRINTING QUERY TO STRING FOR LOGG AND DEBUG **************************/
 	
@@ -597,7 +577,16 @@ public class HipsterSql {
 		b.append('\'').append(str).append('\'');
 		return b;
 	}
-	
+
+	public Query q(Object ...parts) {
+		if(parts.length == 1 && parts[0] instanceof Query) return (Query) parts[0];
+		
+		// likely needed length is guessed as half parameters plus 1
+		Query q = new Query(this, new StringBuilder(), (int)(parts.length/2) + 1);
+		q.addParts(parts);
+		return q;
+	}
+
 	public static StringBuilder qValue(StringBuilder b, Object val) {
 		if(val == null){
 			b.append("NULL");

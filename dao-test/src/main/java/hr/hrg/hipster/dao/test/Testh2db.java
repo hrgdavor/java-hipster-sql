@@ -34,47 +34,47 @@ public class Testh2db {
 
 		HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
 
-		UserMeta meta = new UserMeta(getterSource, 0);
+		UserMeta meta = new UserMeta(hipSql, 0);
 
-		System.out.println(" prepared hipster "+(System.currentTimeMillis()-start)+"ms");
+		System.out.println(" prepared hipster "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 
         EntityDao<User,Long, BaseColumnMeta, UserMeta> dao = new EntityDao<User, Long, BaseColumnMeta, UserMeta>(meta, hip);
 
-		printUsers(dao.allByCriteria());
+		printUsers(dao.qAll());
 
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 
 		System.out.println();
 		System.out.println("By id: 2");
-        printUser(dao.byId(2l));
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+        printUser(dao.qOneById(2l));
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 
 		System.out.println();
 		System.out.println("where id>2 order by id desc");
-        printUsers(dao.allByCriteria("WHERE ",UserMeta.id, ">", 2, " order by ", UserMeta.id," desc"));
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+        printUsers(dao.qAll("WHERE ",meta.id, ">", 2, " order by ", meta.id," desc"));
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
         
 		System.out.println();
 		System.out.println("where name like '%world%'  ...... UserInnerMeta");
-		UserInnerMeta userInnerMeta = new UserInnerMeta(getterSource, 1);
-        printUsersInner(hip.entities(userInnerMeta,"from user_table WHERE ",UserInnerMeta.name," like ","%world%"));		
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+		UserInnerMeta userInnerMeta = new UserInnerMeta(hipSql, 1);
+        printUsersInner(hip.entities(userInnerMeta,"WHERE ",meta.name," like ","%world%"));		
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 		
 		System.out.println();
 		System.out.println("where name like '%world%'  ...... UserInner interface");
         printUsersInner(hip.entities(UserInner.class,"from user_table WHERE name like ","%world%"));		
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 
 		System.out.println();
 		System.out.println("where name like '%world%'  ...... UserInner interface");
         printUsersInner(hip.entities(UserInner.class,"from user_table WHERE name like ","%world%"));		
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 		
 		System.out.println();
 		System.out.println("where name like '%world%'  ...... column of Long using reader");
-        List<Long> longs = hip.column(Long.class,"select user_id from user_table WHERE ",UserMeta.name," like ","%world%");
+        List<Long> longs = hip.column(Long.class,"select user_id from user_table WHERE ",meta.name," like ","%world%");
         for(Long l: longs) System.out.println(l);
-		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");		
+		System.out.println(" printed results in "+(System.currentTimeMillis()-start)+"ms");start = System.currentTimeMillis();
 
 		
 		System.out.println();
@@ -128,7 +128,7 @@ public class Testh2db {
 	}
 
 	
-	@HipsterEntity(genUpdate=false)
+	@HipsterEntity(genUpdate=false, table = "user_table")
 	public interface UserInner{
 		
 		@Id

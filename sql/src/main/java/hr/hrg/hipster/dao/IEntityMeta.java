@@ -4,19 +4,19 @@ import hr.hrg.hipster.sql.*;
 
 
 @SuppressWarnings("rawtypes")
-public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,E>{
+public interface IEntityMeta<T,ID> extends IReadMeta<T>{
 
 	String getEntityName();
 	
 	boolean containsColumn(String columnName);
 	
-	E getPrimaryColumn();
+	BaseColumnMeta<ID> getPrimaryColumn();
 
-	E getColumn(String name);
+	BaseColumnMeta getColumn(String name);
 
 	int getColumnOrdinal(String columnName);
 	
-	E getColumn(int ordinal);
+	BaseColumnMeta getColumn(int ordinal);
 
 	ID entityGetPrimary(T instance);
 
@@ -24,7 +24,7 @@ public interface IEntityMeta<T,ID,E extends BaseColumnMeta> extends IReadMeta<T,
 	
 	int ordinal();
 
-	ICustomType<?> getTypeHandler(E column);
+	ICustomType<?> getTypeHandler(BaseColumnMeta column);
 
 	ICustomType<?> getTypeHandler(int ordinal);
 

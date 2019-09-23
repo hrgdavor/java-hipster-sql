@@ -1,35 +1,24 @@
 package hr.hrg.hipster.dao;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import hr.hrg.hipster.dao.IEntityMeta;
-import hr.hrg.hipster.dao.IEnumGetter;
-import hr.hrg.hipster.dao.change.EntityEvent;
-import hr.hrg.hipster.dao.change.EntityEventHub;
-import hr.hrg.hipster.dao.change.IAddListener;
-import hr.hrg.hipster.dao.change.IChangeListener;
-import hr.hrg.hipster.dao.change.IDeletedListener;
-import hr.hrg.hipster.sql.BaseColumnMeta;
-import hr.hrg.hipster.sql.IHipsterConnection;
+import hr.hrg.hipster.dao.change.*;
+import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings("rawtypes")
-public class SimpleEntityCache<T extends IEnumGetter, ID, E extends BaseColumnMeta,M extends IEntityMeta<T, ID, E>> 
-	implements IChangeListener<T, ID, E>,
-	IAddListener<T, ID, E, M>,
-	IDeletedListener<ID, E>{
+public class SimpleEntityCache<T, ID, M extends IEntityMeta<T, ID>> 
+	implements IEntityEventListener<T, ID, M>{
 
 	protected Map<ID, T> byId = new HashMap<>();
 	protected M meta;
 	
-	@SuppressWarnings("unchecked")
 	public SimpleEntityCache(EntityEventHub entityEventHub, M meta) {
 		this.meta = meta;
-		Class entity = meta.getEntityClass();
-		entityEventHub.addChangeListener(this, entity);
-		entityEventHub.addAddListener(this, entity);
-		entityEventHub.addDeleteListener(this, entity);
+		entityEventHub.addListenerByMeta(meta,this,
+			EntityEventType.AFTER_ADD,
+			EntityEventType.AFTER_CHANGE,
+			EntityEventType.AFTER_DELETE
+		);
 	}
 
 	public List<T> load(IHipsterConnection conn, Object ...filter) {
@@ -38,27 +27,39 @@ public class SimpleEntityCache<T extends IEnumGetter, ID, E extends BaseColumnMe
 		return list;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void init(List<T> initial) {
-		int idIndex = meta.getPrimaryColumn().ordinal();
 		for (T t : initial) {
-			recordAdded((ID) t.getValue(idIndex), t, meta, -1);
+			recordAdded(meta.entityGetPrimary(t), t, meta, -1);
 		}
 	}
 	
+
 	@Override
+	public void entityEvent(EntityEventType type, 
+			ID id, 
+			T old, 
+			T updated, IUpdatable delta,
+			M meta, 
+			long batchId) {
+
+		switch(type) {
+			case AFTER_ADD: recordAdded(id, updated, (M)meta, batchId); break; 
+			case AFTER_CHANGE: recordChanged(id, old, updated, meta, batchId); break; 
+			case AFTER_DELETE: recordDeleted(id, old, batchId); break;
+			default:;
+		}
+	}
+	
 	public void recordAdded(ID id, T data, M meta, long batchId) {
 		byId.put(id, data);
 	}
 
-	@Override
-	public void recordDeleted(ID id, long batchId) {
-		byId.remove(id);
+	public void recordChanged(ID id, T old, T updated, M meta, long batchId) {
+		byId.replace(id, updated);
 	}
 	
-	@Override
-	public void recordChanged(EntityEvent<T, ID, E> event, long batchId) {
-		byId.replace(event.getId(), event.getUpdated());
+	public void recordDeleted(ID id, T old, long batchId) {
+		byId.remove(id);
 	}
 
 	public void clear() {

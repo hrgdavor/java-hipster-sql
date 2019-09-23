@@ -7,13 +7,13 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 
 	protected long items;
 	protected C[] all;
-	protected BaseEntityMeta<?,?,C> meta;
+	protected BaseEntityMeta<?,?,?> meta;
 	
-	public ColumnSet(BaseEntityMeta<?,?,C> meta){
+	public ColumnSet(BaseEntityMeta<?,?,?> meta){
 		this(meta, false);
 	}
 
-	public ColumnSet(BaseEntityMeta<?,?,C> meta, boolean allElements){
+	public ColumnSet(BaseEntityMeta<?,?,?> meta, boolean allElements){
 		this.meta = meta;
 		this.all = (C[]) meta._columnArray;
 		if(allElements){
@@ -21,7 +21,7 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 		}
 	}
 	
-	protected ColumnSet(long items, C[] all, BaseEntityMeta<?, ?, C> meta) {
+	protected ColumnSet(long items, C[] all, BaseEntityMeta<?, ?, ?> meta) {
 		this.items = items;
 		this.all = all;
 		this.meta = meta;

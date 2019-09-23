@@ -4,22 +4,21 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 
-public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>{
+@SuppressWarnings("rawtypes")
+public class ReaderMeta <T> implements IReadMeta<T>{
 
 	private Class<T> entityClass;
 	private Class<?>[] interfaces;
 	private String tableName;
-	private List<E> columns;
+	private List<BaseColumnMeta> columns;
 	private List<ICustomType<?>> getters;
-	private QueryLiteral table;
 
 	@SuppressWarnings("unchecked")
-	public ReaderMeta(Class<T> entityClass, String tableName, List<E> columns, List<ICustomType<?>> getters) {
+	public ReaderMeta(Class<T> entityClass, String tableName, List<BaseColumnMeta> columns, List<ICustomType<?>> getters) {
 		this.entityClass = entityClass;
 		this.tableName = tableName;
-		this.table = new QueryLiteral(tableName, true); 
 		this.getters = getters;
-		E[] array = (E[]) columns.toArray(new BaseColumnMeta[columns.size()]);
+		BaseColumnMeta[] array = (BaseColumnMeta[]) columns.toArray(new BaseColumnMeta[columns.size()]);
 		this.columns =  ImmutableList.safe(array);
 		interfaces = new Class[]{entityClass};
 	}
@@ -35,18 +34,23 @@ public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>
 	}
 	
 	@Override
-	public QueryLiteral getTable() {
-		return table;
-	}
-
-	@Override
 	public int getColumnCount() {
 		return columns.size();
 	}
 
 	@Override
-	public List<E> getColumns() {
+	public List<BaseColumnMeta> getColumns() {
 		return columns;
+	}
+
+	@Override
+	public CharSequence getQueryText() {
+		return tableName;
+	}
+	
+	@Override
+	public boolean isIdentifier() {
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -54,7 +58,7 @@ public class ReaderMeta <T, E extends BaseColumnMeta> implements IReadMeta<T, E>
 	public T fromResultSet(ResultSet rs) throws SQLException {
 		Map<Object,Object> map = new HashMap<>();
 		int i=0;
-		for(E col:columns){
+		for(BaseColumnMeta col:columns){
 			i++;
 			map.put(col.getGetterName(), getters.get(i-1).get(rs, i));
 		}

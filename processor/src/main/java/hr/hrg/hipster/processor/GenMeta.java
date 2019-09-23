@@ -7,11 +7,11 @@ import java.sql.*;
 import java.util.*;
 
 import com.squareup.javapoet.*;
-import com.squareup.javapoet.FieldSpec.*;
+import com.squareup.javapoet.MethodSpec.*;
 
 import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.dao.change.*;
 import hr.hrg.hipster.sql.*;
-import hr.hrg.javapoet.*;
 
 
 public class GenMeta {
@@ -20,6 +20,8 @@ public class GenMeta {
 		
 		TypeSpec.Builder cp = classBuilder(PUBLIC(), def.typeMeta);
 
+		addComments(cp, def, columnMetaBase);
+		
 		Property primaryProp = def.getPrimaryProp();
 		TypeName primaryType = primaryProp == null ? TypeName.get(Object.class) : primaryProp.type;
 	
@@ -27,12 +29,6 @@ public class GenMeta {
 		
 		// public static final Class<SampleEntity> ENTITY_CLASS = SampleEntity.class;
 		addField(cp, PRIVATE().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
-		
-		// public static final String TABLE_NAME = "sample_table";
-		addField(cp, PUBLIC().STATIC().FINAL(), String.class, "TABLE_NAME", "$S",def.tableName);
-		
-		// public static final String TABLE_NAME = "sample_table";
-		addField(cp, PUBLIC().STATIC().FINAL(), QueryLiteral.class, "TABLE", "new $T(TABLE_NAME,true)",QueryLiteral.class);
 		
 		int ordinal = 0;
 		for(Property prop: def.getProps()){
@@ -42,99 +38,18 @@ public class GenMeta {
 				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
 				rawType = parameterizedTypeName.rawType;
 			}
-			
-			com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
-			codeBlock.add("new $T<$T>($L, $S",columnMetaBase, rawType.box(), ordinal, prop.name);
-			codeBlock.add(",$S",prop.columnName);
-			codeBlock.add(",$S",prop.getterName);
-			codeBlock.add(",ENTITY_CLASS");
-			
-			
-			codeBlock.add(",$T.class",rawType.box());
 
-			if(prop.isPrimitive())
-				codeBlock.add(",$T.class",prop.type);
-			else
-				codeBlock.add(",null");
-			
-			codeBlock.add(",TABLE_NAME");
-			codeBlock.add(",$S",prop.sql);
-
-			// type parameters if any
-			if(prop.type instanceof ParameterizedTypeName){				
-				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
-				for(TypeName ta: parameterizedTypeName.typeArguments){
-					codeBlock.add(",$T.class",ta);					
-				}
-			}
-			codeBlock.add(")");
-			
-			if(prop.annotationsWithDefaults.size() == 0) {
-				// CASE: Reflection
-				// force initialisation of "annotations" field in BaseColumnMeta to empty array, 
-				// (we know there ar non, so reflection can be skipped for this one)
-				codeBlock.add(".withAnnotations()");
-				
-
-				// CASE: Generated (no reflection)
-				// - comment line above 
-				// - make sure "annotations" field in BaseColumnMeta is initialised to: new Annotation[0]
-				
-			}else if(prop.annotationsWithDefaults.size() > 0) {
-				// CASE: Generated (no reflection)
-				// - uncomment all lines in this block
-
-//				codeBlock.add(".withAnnotations(");
-//				int i=0;
-//				codeBlock.indent();
-//				codeBlock.indent();
-//				for(AnnotationSpec spec: prop.annotationsWithDefaults) {
-//					if(i>0) codeBlock.add(", ");
-//					
-//					codeBlock.add("\nannotation($T.class", spec.type);
-//					int j=0;
-//					for(Entry<String, List<CodeBlock>> elem:spec.members.entrySet()) {
-//						codeBlock.add(", ");
-//						
-//						codeBlock.add("$S,",elem.getKey());
-//						if(elem.getValue().size() == 1) {
-//							codeBlock.add(elem.getValue().get(0));							
-//						}else {
-//							codeBlock.add("new Object[]{");
-//							for(int k=0; k<elem.getValue().size(); k++) {
-//								if(k>0) codeBlock.add(", ");
-//								codeBlock.add(elem.getValue().get(k));
-//							}
-//							codeBlock.add("}");
-//						}
-//						j++;
-//					}
-//					codeBlock.add(")");
-//					i++;
-//				}
-//				codeBlock.add(")");				
-//				codeBlock.unindent();
-//				codeBlock.unindent();
-
-			}
-
-			addField(cp, PUBLIC().STATIC().FINAL(), parametrized(columnMetaBase, rawType.box()), prop.fieldName, new FieldCustomizer() {
-				@Override
-				public void customize(Builder arg0) {
-					arg0.initializer(codeBlock.build());
-				}
-			});	
+			addField(cp, PUBLIC().FINAL(), parametrized(columnMetaBase, rawType.box()), prop.fieldName);	
 			ordinal++;
 		}
 
-		if(primaryProp == null) {
-			addField(cp, PUBLIC().STATIC().FINAL(), columnMetaBase, "PRIMARY", "null");
-			
-		}else {
-			addField(cp, PUBLIC().STATIC().FINAL(), parametrized(columnMetaBase, def.getPrimaryProp().type), "PRIMARY", primaryProp.name);			
-		}
+//		if(primaryProp == null) {
+//			addField(cp, PUBLIC().STATIC().FINAL(), columnMetaBase, "PRIMARY", "null");
+//			
+//		}else {
+//			addField(cp, PUBLIC().STATIC().FINAL(), parametrized(columnMetaBase, def.getPrimaryProp().type), "PRIMARY", primaryProp.name);			
+//		}
 				
-		addColumnsDef(cp, def, columnMetaBase);
 		
 		FieldSpec ordinalField = addField(cp,PRIVATE().FINAL(), int.class, "_ordinal");
 		
@@ -145,14 +60,18 @@ public class GenMeta {
 //		}
 
 		MethodSpec.Builder constr = constructorBuilder(PUBLIC());
-		addParameter(constr, TypeSource.class, "_typeSource");
-		constr.addCode("super(_ordinal, TABLE_NAME, TABLE, COLUMN_ARRAY, COLUMN_ARRAY_SORTED_STR, COLUMN_ARRAY_SORTED);\n");
+		addParameter(constr, HipsterSql.class, "hipster");
+		constr.addCode("super(_ordinal, $S, ENTITY_CLASS);\n", def.tableName);
 		addSetterParameter(constr, ordinalField, null);
 		int i=0;
 		
+		
+		constr.addCode("_typeHandler = new $T<?>[COLUMN_COUNT];\n", ICustomType.class);
+		
 		CodeBlock.Builder typeHandlersBlock = CodeBlock.builder();
-		typeHandlersBlock.add("if(_typeSource != null){\n");
+		typeHandlersBlock.add("if(hipster != null){\n");
 		typeHandlersBlock.indent();
+		typeHandlersBlock.add("$T _typeSource = hipster.getTypeSource();\n", TypeSource.class);
 		boolean hasGetters = false;
 		
 		for(Property p:def.getProps()) {
@@ -179,10 +98,12 @@ public class GenMeta {
 			i++;
 		}
 		
-		typeHandlersBlock.add("}\n");
 		typeHandlersBlock.unindent();
+		typeHandlersBlock.add("}\n");
 		
 		constr.addCode(typeHandlersBlock.build());
+
+		addColumnsDef(cp, constr, def, columnMetaBase);
 		
 //		addconstructor(cp, PUBLIC(), method-> {
 //			method.addParameter(HipsterSql.class, "hipster");
@@ -222,10 +143,10 @@ public class GenMeta {
 
 		//@Override
 		//public final Class<Sample> getEntityClass(){ return ENTITY_CLASS; }
-		addMethod(cp,PUBLIC().FINAL(), parametrized(Class.class, def.type), "getEntityClass", method->{
-			method.addAnnotation(Override.class);
-			method.addCode("return ENTITY_CLASS;\n");
-		});
+//		addMethod(cp,PUBLIC().FINAL(), parametrized(Class.class, def.type), "getEntityClass", method->{
+//			method.addAnnotation(Override.class);
+//			method.addCode("return ENTITY_CLASS;\n");
+//		});
 		//@Override
 		//public final String getEntityName(){ return "Sample"; }
 		addMethod(cp,PUBLIC().FINAL(), String.class, "getEntityName", method->{
@@ -235,15 +156,15 @@ public class GenMeta {
 
 		//@Override
 		//public final String getColumnNamesStr(){ return EntityEnum.COLUMNS_STR; }
-		addMethod(cp,PUBLIC().FINAL(), String.class, "getColumnNamesStr", method->{
-			method.addAnnotation(Override.class);
-			method.addCode("return COLUMNS_STR;\n");
-		});
+//		addMethod(cp,PUBLIC().FINAL(), String.class, "getColumnNamesStr", method->{
+//			method.addAnnotation(Override.class);
+//			method.addCode("return COLUMNS_STR;\n");
+//		});
 
 		//public final String getColumnNames(){ return EntityEnum.COLUMN_NAMES; }
-		addMethod(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class,String.class), "getColumnNames", method->{
-			method.addCode("return COLUMN_NAMES;\n");
-		});		
+//		addMethod(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class,String.class), "getColumnNames", method->{
+//			method.addCode("return COLUMN_NAMES;\n");
+//		});		
 
 		//@Override
 		//public final boolean containsColumn(){ return EntityEnum.COLUMN_NAMES.contains(columnName); }
@@ -253,17 +174,18 @@ public class GenMeta {
 		});		
 		
 		//@Override
-		//public final String getColumns(){ return COLUMNS; }
+		//public final String getColumns(){ return _columns; }
 		addMethod(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class,columnMetaBase), "getColumns", method->{
 			method.addAnnotation(Override.class);
-			method.addCode("return COLUMNS;\n");
+			method.addCode("return _columns;\n");
 		});		
 		//@Override
 		//public final String getPrimaryColumn(){ return COLUMNS_STR; }
 		addMethod(cp,PUBLIC().FINAL(), columnMetaBase, "getPrimaryColumn", method->{
 			method.addAnnotation(Override.class);
-			method.addCode("return PRIMARY;\n");
-		});			
+			method.addCode("return "+(primaryProp == null ? "null":primaryProp.fieldName)+";\n");
+		});
+
 		//@Override
 		//public final SampleEnum getColumn(String name){ return SamleEnum.valueOf(name); }
 //		addMethod(cp,PUBLIC().FINAL(), columnMetaBase, "getColumn", method->{
@@ -302,6 +224,53 @@ public class GenMeta {
 		return cp;
 	}
 	
+	private void addComments(com.squareup.javapoet.TypeSpec.Builder cp, EntityDef def, ClassName columnMetaBase) {
+		String typeDao = def.type.simpleName()+"Dao";
+		cp.addJavadoc("Example dao class with proper generic arguments:\n");
+		cp.addJavadoc("<pre>\n");
+		cp.addJavadoc("import hr.hrg.hipster.dao.*;\n");
+		cp.addJavadoc("import hr.hrg.hipster.sql.*;\n");
+		cp.addJavadoc("import $L.*;\n", def.packageName);
+		cp.addJavadoc("\n");
+		Object primaryClass = def.getPrimaryProp() == null ? Object.class : def.getPrimaryProp().type;
+		cp.addJavadoc("public class $L extends EntityDao&lt;$T, $T, $T, $T&gt;{\n",typeDao, def.type, primaryClass, columnMetaBase, def.typeMeta);
+		cp.addJavadoc("\n");
+		cp.addJavadoc("	public $L(IHipsterConnection conn) {\n", typeDao);
+		cp.addJavadoc("\n");
+		cp.addJavadoc("		super($T.class, conn);\n",def.type);
+		cp.addJavadoc("	}\n");
+		cp.addJavadoc("}\n");
+		cp.addJavadoc("</pre>\n");
+		cp.addJavadoc("\n");
+
+		String typeCache = def.type.simpleName()+"Cache";
+		cp.addJavadoc("Example cache class with proper generic arguments:\n");
+		cp.addJavadoc("<pre>\n");
+		cp.addJavadoc("import hr.hrg.hipster.dao.*;\n");
+		cp.addJavadoc("import hr.hrg.hipster.sql.*;\n");
+		cp.addJavadoc("import $L.*;\n", def.packageName);
+		cp.addJavadoc("\n");
+		cp.addJavadoc("public class $L extends SimpleEntityCache&lt;$T, $T, $T&gt;{\n",typeCache, def.type, primaryClass, def.typeMeta);
+		cp.addJavadoc("\n");
+		cp.addJavadoc("	public $L(HipsterSql hipster) {\n", typeCache);
+		cp.addJavadoc("\n");
+		cp.addJavadoc("		super(hipster.getEventHub(), ($T)hipster.getEntitySource().getFor($T.class));\n",def.typeMeta,def.type);
+		cp.addJavadoc("	}\n");
+		cp.addJavadoc("}\n");
+		cp.addJavadoc("</pre>\n");
+		cp.addJavadoc("\n");
+
+		cp.addJavadoc("Example listener:\n");
+		cp.addJavadoc("<pre>\n");
+		cp.addJavadoc("hip.getEventHub().addListener($T.class,(IEntityEventListener&lt;$T, $T, $T&gt;)\n", def.type, def.type, primaryClass, def.typeMeta);
+		cp.addJavadoc("		(type, id, old, updated, delta, meta, batchId) -> {\n");
+		cp.addJavadoc("	// your code here\n");
+		cp.addJavadoc("}, EntityEventType.AFTER_CHANGE, EntityEventType.AFTER_ADD);// if no types are provided here, then it is subscription for all types \n");
+		cp.addJavadoc("</pre>\n");
+		cp.addJavadoc("\n");
+		
+	}
+
 	private String getterName(Property p){
 		if(isType(p, "int","java.lang.Integer")){
 			return "getInt";
@@ -360,7 +329,7 @@ public class GenMeta {
 		cp.addMethod(method.build());
 	}
 	
-	private void addColumnsDef(TypeSpec.Builder cp, EntityDef def, ClassName columnMetaBase) {
+	private void addColumnsDef(com.squareup.javapoet.TypeSpec.Builder cp, Builder constr, EntityDef def, ClassName columnMetaBase) {
 		List<String> colNames = new ArrayList<>();
 		List<String> enumNames = new ArrayList<>();
 		for(Property p:def.props) {
@@ -390,21 +359,115 @@ public class GenMeta {
 
 		arr.append("}");
 		
-		addField(cp,PRIVATE().STATIC().FINAL(), String.class, "COLUMNS_STR", 
-				field->field.initializer("$S",str.toString()));
+		constr.addCode("\n");
 		
+		int ordinal = 0;
+		for(Property prop: def.getProps()){
+			// type or raw type
+			TypeName rawType = prop.type;
+			if(prop.type instanceof ParameterizedTypeName){				
+				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
+				rawType = parameterizedTypeName.rawType;
+			}
+//			constr.addCode(codeBlock)
+			com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
+			codeBlock.add("$L = new $T<$T>($L, $S", prop.fieldName, columnMetaBase, rawType.box(), ordinal, prop.name);
+			codeBlock.add(",$S",prop.columnName);
+			codeBlock.add(",$S",prop.getterName);
+			codeBlock.add(",this");
+			
+			
+			codeBlock.add(",$T.class",rawType.box());
+
+			if(prop.isPrimitive())
+				codeBlock.add(",$T.class",prop.type);
+			else
+				codeBlock.add(",null");
+			
+			codeBlock.add(",$S",prop.sql);
+			codeBlock.add(",_typeHandler[$L]",ordinal);
+
+			// type parameters if any
+			if(prop.type instanceof ParameterizedTypeName){				
+				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
+				for(TypeName ta: parameterizedTypeName.typeArguments){
+					codeBlock.add(",$T.class",ta);					
+				}
+			}
+			codeBlock.add(")");
+			
+			if(prop.annotationsWithDefaults.size() == 0) {
+				// CASE: Reflection
+				// force initialisation of "annotations" field in BaseColumnMeta to empty array, 
+				// (we know there ar non, so reflection can be skipped for this one)
+				codeBlock.add(".withAnnotations()");
+				
+
+				// CASE: Generated (no reflection)
+				// - comment line above 
+				// - make sure "annotations" field in BaseColumnMeta is initialised to: new Annotation[0]
+				
+			}else if(prop.annotationsWithDefaults.size() > 0) {
+				// CASE: Generated (no reflection)
+				// - uncomment all lines in this block
+
+//				codeBlock.add(".withAnnotations(");
+//				int i=0;
+//				codeBlock.indent();
+//				codeBlock.indent();
+//				for(AnnotationSpec spec: prop.annotationsWithDefaults) {
+//					if(i>0) codeBlock.add(", ");
+//					
+//					codeBlock.add("\nannotation($T.class", spec.type);
+//					int j=0;
+//					for(Entry<String, List<CodeBlock>> elem:spec.members.entrySet()) {
+//						codeBlock.add(", ");
+//						
+//						codeBlock.add("$S,",elem.getKey());
+//						if(elem.getValue().size() == 1) {
+//							codeBlock.add(elem.getValue().get(0));							
+//						}else {
+//							codeBlock.add("new Object[]{");
+//							for(int k=0; k<elem.getValue().size(); k++) {
+//								if(k>0) codeBlock.add(", ");
+//								codeBlock.add(elem.getValue().get(k));
+//							}
+//							codeBlock.add("}");
+//						}
+//						j++;
+//					}
+//					codeBlock.add(")");
+//					i++;
+//				}
+//				codeBlock.add(")");				
+//				codeBlock.unindent();
+//				codeBlock.unindent();
+
+			}
+			codeBlock.add(";\n");
+			constr.addCode(codeBlock.build());
+			ordinal++;
+		}
+		
+		
+//		addField(constr,PRIVATE().STATIC().FINAL(), String.class, "COLUMNS_STR", 
+//				field->field.initializer("$S",str.toString()));
+//		
 		addField(cp,PUBLIC().STATIC().FINAL(), int.class, "COLUMN_COUNT", 
 				field->field.initializer(""+def.props.size()));
-		
-		addField(cp,PRIVATE().STATIC().FINAL(), parametrized(ImmutableList.class, String.class), "COLUMN_NAMES", 
-				field->field.initializer("ImmutableList.safe"+arrStr.toString()));
-		
-		addField(cp,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(columnMetaBase), "COLUMN_ARRAY", 
-				field->field.initializer(arr.toString()));
+//		
+//		addField(constr,PRIVATE().STATIC().FINAL(), parametrized(ImmutableList.class, String.class), "COLUMN_NAMES", 
+//				field->field.initializer("ImmutableList.safe"+arrStr.toString()));
+//		
+//		addField(constr,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(columnMetaBase), "COLUMN_ARRAY", 
+//				field->field.initializer(arr.toString()));
+//
+		addField(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class, columnMetaBase), "_columns");
 
-		addField(cp,PUBLIC().STATIC().FINAL(), parametrized(ImmutableList.class, columnMetaBase), "COLUMNS", 
-				field->field.initializer("ImmutableList.safe(COLUMN_ARRAY)"));
-
+		constr.addCode("\n");
+		constr.addCode("_columnArray = new $T[]$L;\n",columnMetaBase, arr.toString());
+		constr.addCode("_columns =  ImmutableList.safe(($T[])_columnArray);\n",columnMetaBase);
+		
 		Collections.sort(enumNames);
 
 		arr.setLength(0);
@@ -422,9 +485,13 @@ public class GenMeta {
 		arr.append("}");
 		str.append("}");
 
-		addField(cp,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(columnMetaBase), "COLUMN_ARRAY_SORTED", 
-				field->field.initializer(arr.toString()));
-		
+		constr.addCode("_columnArraySorted = new $T[]$L;\n",columnMetaBase, arr);
+		constr.addCode("_columnArraySortedStr = COLUMN_ARRAY_SORTED_STR;\n");
+		constr.addCode("this._columnCount = COLUMN_COUNT;\n");
+
+//		addField(constr,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(columnMetaBase), "COLUMN_ARRAY_SORTED", 
+//				field->field.initializer(arr.toString()));
+//		
 		addField(cp,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(String.class), "COLUMN_ARRAY_SORTED_STR", 
 				field->field.initializer(str.toString()));
 

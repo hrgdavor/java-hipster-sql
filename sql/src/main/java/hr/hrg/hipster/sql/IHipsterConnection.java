@@ -10,8 +10,6 @@ public interface IHipsterConnection {
 
 	Query getLastQuery();
 
-	PreparedQuery getLastPrepared();
-
 	HipsterSql getHipster();
 
 	Connection getSqlConnection();
@@ -106,10 +104,10 @@ public interface IHipsterConnection {
 	Object insert(Query sql);
 	<T> T insert(Class<T> primaryColumnType, Query sql);
 
-	<T,E extends BaseColumnMeta> T entity(IReadMeta<T, E> reader, Object ...sql);
+	<T> T entity(IReadMeta<T> reader, Object ...sql);
 	
-	<T,E extends BaseColumnMeta> List<T> entities(IReadMeta<T, E> reader, Object ...sql);
-	<T,E extends BaseColumnMeta> List<T> entitiesLimit(IReadMeta<T, E> reader, int offset, int limit, Object ...sql);
+	<T> List<T> entities(IReadMeta<T> reader, Object ...sql);
+	<T> List<T> entitiesLimit(IReadMeta<T> reader, int offset, int limit, Object ...sql);
 
 
 	<T> List<T> column(Class<T> reader, Object ...sql);

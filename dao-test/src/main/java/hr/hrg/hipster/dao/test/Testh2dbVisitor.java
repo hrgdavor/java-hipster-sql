@@ -22,14 +22,14 @@ public class Testh2dbVisitor {
         System.out.println(" created _table in "+(System.currentTimeMillis()-start)+"ms");
 		
 
-        HipsterSql hipSql = new HipsterSql();
-        TypeSource typeSource = hipSql.getTypeSource();
+        HipsterSql hip = new HipsterSql();
+        TypeSource typeSource = hip.getTypeSource();
         typeSource.registerFor(new StringListGetter(), List.class, String.class);
 
 
 //        hipSql.getVisitorSource().registerFor(new UserVisitorSampleHandler(getterSource), UserVisitorSample.class);
         
-		HipsterConnectionImpl hip = new HipsterConnectionImpl(hipSql, conn);
+		HipsterConnectionImpl hc = new HipsterConnectionImpl(hip, conn);
         
 		System.out.println(" prepared hipster "+(System.currentTimeMillis()-start)+"ms");
 
@@ -37,9 +37,9 @@ public class Testh2dbVisitor {
 		System.out.println("where name like '%world%'  ...... UserInner interface");
 
 		
-		Query query = new Query("select user_id, name, age from user_table WHERE name like ","%world%");
+		Query query = hip.q("select user_id, name, age from user_table WHERE name like ","%world%");
 
-		hip.rowsVisit(query, (UserVisitor) (id, name, age) -> {
+		hc.rowsVisit(query, (UserVisitor) (id, name, age) -> {
 			System.out.println("User1 #"+id+" "+name+" "+age);
 		});
 

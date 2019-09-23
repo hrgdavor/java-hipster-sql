@@ -3,7 +3,7 @@ package hr.hrg.hipster.dao;
 import hr.hrg.hipster.sql.*;
 
 public interface IEnumGetter {
-	/** Type safe version for coded usage.
+	/** EntityEventType safe version for coded usage.
 	 * 
 	 * @param column Enum for column
 	 * @return Object value
@@ -12,7 +12,7 @@ public interface IEnumGetter {
 
 	/** Index based version for looping.
 	 * 
-	 * @param _ordinal column index
+	 * @param ordinal column index
 	 * @return Object value
 	 * 
 	 */	

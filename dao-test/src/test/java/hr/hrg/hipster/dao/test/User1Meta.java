@@ -1,26 +1,16 @@
 package hr.hrg.hipster.dao.test;
 
-import static hr.hrg.hipster.sql.HipsterSqlUtil.annotation;
-
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.Long;
-import java.lang.Object;
-import java.lang.Override;
-import java.lang.String;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 import hr.hrg.hipster.sql.*;
 
-public class User1Meta extends BaseEntityMeta<User1, Long, BaseColumnMeta> {
+public class User1Meta extends BaseEntityMeta<User1, Long, LocalColumnMeta> {
   private static final Class<User1> ENTITY_CLASS = User1.class;
   
-  public final BaseColumnMeta<Long> id;
-  public final BaseColumnMeta<List> name;
-  public final BaseColumnMeta<Integer> age;
+  public final LocalColumnMeta<Long> id;
+  public final LocalColumnMeta<List> name;
+  public final LocalColumnMeta<Integer> age;
 
   private final ImmutableList<BaseColumnMeta> _columns;
 
@@ -43,13 +33,13 @@ public class User1Meta extends BaseEntityMeta<User1, Long, BaseColumnMeta> {
 		_typeHandler[2] = (ICustomType<Integer>) _typeSource.getForRequired(Integer.class);
 	}
 	
-	id = new BaseColumnMeta<Long>(0, "id","user_id","getId",this,Long.class,null,"", _typeHandler[0]);
-    name = new BaseColumnMeta<List>(1, "name","name","getName",this,List.class,null,"", _typeHandler[1],String.class);
-    age = new BaseColumnMeta<Integer>(2, "age","age","getAge",this,Integer.class,int.class,"", _typeHandler[2]).withAnnotations();
+	id = new LocalColumnMeta<Long>(0, "id","user_id","getId",this,Long.class,null,"", _typeHandler[0]);
+    name = new LocalColumnMeta<List>(1, "name","name","getName",this,List.class,null,"", _typeHandler[1],String.class);
+    age = new LocalColumnMeta<Integer>(2, "age","age","getAge",this,Integer.class,int.class,"", _typeHandler[2]).withAnnotations();
     
-	this._columnArray = new BaseColumnMeta[]{id,name,age};
-	this._columns =  ImmutableList.safe(_columnArray);
-	this._columnArraySorted = new BaseColumnMeta[]{age,id,name};
+	this._columnArray = new LocalColumnMeta[]{id,name,age};
+	this._columns =  ImmutableList.safe((BaseColumnMeta[])_columnArray);
+	this._columnArraySorted = new LocalColumnMeta[]{age,id,name};
 	this._columnArraySortedStr = COLUMN_ARRAY_SORTED_STR;
 	this._columnCount = COLUMN_COUNT;
 

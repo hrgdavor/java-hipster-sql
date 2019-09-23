@@ -24,9 +24,10 @@ public class TestReaderSource {
 	
 	@Test
 	public void test() {
-		ReaderSource readerSource = new ReaderSource(new TypeSource());
+		HipsterSql hip = new HipsterSql();
+		ReaderSource readerSource = hip.getReaderSource();
 		
-		IReadMeta<ITestBasicTypes,BaseColumnMeta> reader = readerSource.getOrCreate(ITestBasicTypes.class);
+		IReadMeta<ITestBasicTypes> reader = readerSource.getOrCreate(ITestBasicTypes.class);
 		
 		assertNotNull(reader);
 		assertEquals(reader.getEntityClass(), ITestBasicTypes.class, "entity class");

@@ -103,7 +103,7 @@ Choose your style how queries will look in code with static methods from [QueryU
 ```java
 
 import static hr.hrg.hipster.sql.QueryUtil.*; // "import static" utility methods from QueryUtil
-import hr.hrg.hipster.sql.Query;
+import hr.hrg.hipster.sql.QueryOld;
 
 // creating new query is not very complicated
 query =    new Query("select * from users where id=",id);

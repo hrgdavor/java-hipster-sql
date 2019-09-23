@@ -1,30 +1,21 @@
 package hr.hrg.hipster.processor;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import static com.squareup.javapoet.TypeSpec.classBuilder;
+import static hr.hrg.javapoet.PoetUtil.*;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.SourceVersion;
+import java.io.*;
+import java.util.*;
+import java.util.Map.*;
+
+import javax.annotation.processing.*;
+import javax.lang.model.*;
 import javax.lang.model.element.*;
-import javax.persistence.Id;
-import javax.tools.Diagnostic;
+import javax.persistence.*;
+import javax.tools.*;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileObject;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeSpec.Builder;
+import com.squareup.javapoet.*;
+import com.squareup.javapoet.TypeSpec.*;
 
 import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
@@ -44,16 +35,74 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(HipsterEntity.class);
 		List<EntityDef> defs = new ArrayList<EntityDef>();
+		Map<String,List<EntityDef>> defMap = new HashMap<>(); 
 		processingEnv.getMessager().printMessage(Kind.NOTE, "process classes "+elements);
 		for (Element element : elements) {
 			if		(element.getKind() == ElementKind.INTERFACE) {
-				defs.add(generateClass((TypeElement) element, processingEnv));
+				EntityDef def = generateClass((TypeElement) element, processingEnv);
+				defs.add(def);
+				List<EntityDef> list = defMap.get(def.packageName);
+				if(list == null) {
+					list = new ArrayList<>();
+					defMap.put(def.packageName, list);
+				}
+				list.add(def);
 			}else{
 				processingEnv.getMessager().printMessage(Kind.NOTE, "skip because not interface "+element);				
 			}
 		}
 		
+		for(Entry<String, List<EntityDef>> entry:defMap.entrySet()) {
+			generateAllEntitiesInPackage(entry.getKey(), entry.getValue(), processingEnv);
+		}
+		
 		return false;
+	}
+
+	private void generateAllEntitiesInPackage(String packageName, List<EntityDef> defs, ProcessingEnvironment processingEnv) {
+		ClassName className  = ClassName.get(packageName,"AllEntitiesInPackage");
+		
+		TypeSpec.Builder cp = classBuilder(className);
+
+		com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
+		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
+		codeBlock.indent();
+		for(int i=0; i<defs.size(); i++) {
+			codeBlock.add("$T.class", defs.get(i).typeMeta);
+			if(i != defs.size()-1) codeBlock.add(",\n");
+		}
+		codeBlock.unindent();
+		final CodeBlock code1 = codeBlock.add("\n)").build();
+		
+		// Class<? extends IEntityMeta> ALL_META = HipsterSqlUtil.toArray(...);
+		addField(cp, 
+			ArrayTypeName.of(parametrized(Class.class, WildcardTypeName.subtypeOf(IEntityMeta.class))), 
+			"ALL_META", 
+			field -> {
+				field.addModifiers(PUBLIC().STATIC().FINAL().toArray());
+				field.initializer(code1);
+		} );	
+		
+		codeBlock = CodeBlock.builder();
+		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
+		codeBlock.indent();
+		for(int i=0; i<defs.size(); i++) {
+			codeBlock.add("$T.class", defs.get(i).type);
+			if(i != defs.size()-1) codeBlock.add(",\n");
+		}
+		codeBlock.unindent();
+		final CodeBlock code2 = codeBlock.add("\n)").build();
+		
+		// Class<? extends IEntityMeta> ALL_ENTITIES = HipsterSqlUtil.toArray(...);
+		addField(cp, 
+			ArrayTypeName.of(Class.class), 
+			"ALL_ENTITIES", 
+			field -> {
+				field.addModifiers(PUBLIC().STATIC().FINAL().toArray());
+				field.initializer(code2);
+		} );
+		
+		write(className,cp.build(),processingEnv);
 	}
 
 	private EntityDef generateClass(TypeElement clazz, ProcessingEnvironment processingEnv) {

@@ -3,17 +3,15 @@ package hr.hrg.hipster.sql;
 import java.sql.*;
 import java.util.*;
 
-public interface IReadMeta<T, E extends BaseColumnMeta> {
+public interface IReadMeta<T> extends IQueryLiteral {
 
 	Class<T> getEntityClass();
 
 	String getTableName();
 
-	IQueryLiteral getTable();
-
 	int getColumnCount();
 
-	List<E> getColumns();
+	List<? extends BaseColumnMeta> getColumns();
 	
 	T fromResultSet(ResultSet rs) throws SQLException;
 }

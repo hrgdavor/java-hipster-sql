@@ -21,7 +21,7 @@ public interface IUpdatable extends IEnumGetter{
 
 	public void setChanged(boolean change);
 
-	/** Type safe version for coded usage.
+	/** EntityEventType safe version for coded usage.
 	 * 
 	 * @param column Enum for column
 	 * @param value new value
@@ -31,7 +31,7 @@ public interface IUpdatable extends IEnumGetter{
 	
 	/** Index based version for looping.
 	 * 
-	 * @param _ordinal column index
+	 * @param ordinal column index
 	 * @param value new value
 	 * 
 	 */	

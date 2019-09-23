@@ -30,56 +30,43 @@ public class Result implements AutoCloseable{
     	return execute();
     }
 
-    public Result executePrepared(String query, Object ...params){
-    	return executeQuery(new PreparedQuery(hipster.getTypeSource(),query, params));
+    public Result executePrepared(String query, Object ...parts){
+    	return executeQuery(hipster.q(parts));
     }
 
     private void prepareQuery(boolean returnGeneratedKeys, Object ...queryParts){
     	Query query = null;
-    	PreparedQuery prepared = null;
     	
     	if(queryParts.length == 1 && queryParts[0] instanceof Query){
     		query = (Query) queryParts[0];
-    	}else if(queryParts.length == 1 && queryParts[0] instanceof PreparedQuery){
-    		prepared = (PreparedQuery) queryParts[0];
     	}else
-    		query = new Query(queryParts);
+    		query = hipster.q(queryParts);
 
     	this.hipConnection.lastQuery = query;// will be null if executing a PreparedQuery
     
-		if(prepared == null) prepared = hipster.prepare(query);
-		
-		prepareForExecution(prepared, returnGeneratedKeys);
+		prepareForExecution(query, returnGeneratedKeys);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	private void prepareForExecution(PreparedQuery p, boolean returnGeneratedKeys){
-        this.hipConnection.lastPrepared = p;
+	private void prepareForExecution(Query p, boolean returnGeneratedKeys){
 
-		try {
+    	try {
 			if(returnGeneratedKeys)
-				ps = hipConnection.getConnection().prepareStatement(p.getQueryString(), Statement.RETURN_GENERATED_KEYS);
+				ps = hipConnection.getConnection().prepareStatement(p.getQueryExpression().toString(), Statement.RETURN_GENERATED_KEYS);
 			else
-				ps = hipConnection.getConnection().prepareStatement(p.getQueryString());
+				ps = hipConnection.getConnection().prepareStatement(p.getQueryExpression().toString());
 			ps.setFetchSize(this.fetchSize);
 		} catch (SQLException e) {
-			throw new RuntimeException("Error preparing statement: "+this.hipConnection.lastPrepared.getQueryString()+" ERR: "+e.getMessage(), e);
+			throw new RuntimeException("Error preparing statement: "+hipConnection.lastQuery+" ERR: "+e.getMessage(), e);
 		}
-
 		
-		ICustomType custom;
-		List<Object> params = p.getParams();
-		
-		for(int i=0; i<params.size(); i++){
+		IQeuryValue[] values = p.values;
+		int size = p.size;
+		for(int i=0; i<size; i++){
 			try {
-				custom = p.getCustom(i);
-				if(custom != null) {
-					custom.set(ps, i+1, params.get(i));
-				}else {					
-					hipster.prepSet(hipConnection,ps,i+1,params.get(i));
-				}
+				values[i].set(ps, i+1);
 			} catch (SQLException e) {
-				throw new RuntimeException("Error filling prepared statement: "+this.hipConnection.lastPrepared.getQueryString()+" on index "+(i+1)+" using value "+params.get(i)+" ERR: "+e.getMessage(), e);
+				throw new RuntimeException("Error filling prepared statement: "+this.hipConnection.lastQuery+" on index "+(i+1)+" using value "+values[i]+" ERR: "+e.getMessage(), e);
 			}
 		}    	
     }
@@ -199,7 +186,7 @@ public class Result implements AutoCloseable{
         }
     }
     
-    public <T,E extends BaseColumnMeta> T fetchEntity(IReadMeta<T, E> reader){
+    public <T> T fetchEntity(IReadMeta<T> reader){
         try{
             if(!rs.next()) return null;
             return reader.fromResultSet(rs);
@@ -214,7 +201,7 @@ public class Result implements AutoCloseable{
 			try {
 				ps.close();
 			} catch (Exception e) {
-				HipsterSql.log.error("Error closing prepared statement " + this.hipConnection.lastPrepared + " ERR:"+ e.getMessage(), e);
+				HipsterSql.log.error("Error closing prepared statement " + this.hipConnection.lastQuery + " ERR:"+ e.getMessage(), e);
 			}
 			ps = null;
 		}

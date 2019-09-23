@@ -1,215 +1,511 @@
 package hr.hrg.hipster.sql;
 
-import java.util.ArrayList;
-import java.util.List;
+import static hr.hrg.hipster.sql.QueryValue.*;
 
-public class Query implements IQueryPart{
+import java.util.*;
 
-	/**
-	 * Used mainly when appending to a query that ends with a query literal part
+public class Query{
+	private static final String THIS_QUERY_PART_MUST_BE_QUERY_TEXT_AND_NOT = "this query part must be query text, and not: ";
+
+	protected final HipsterSql hipster;
+
+	
+	protected StringBuilder queryExpressionBuilder;
+	protected IQeuryValue[] values;
+	protected int size = 0;
+
+	
+	public Query(HipsterSql hipster) {
+		this(hipster, new StringBuilder(), 16);
+	}
+	
+	public Query(HipsterSql hip, int initalCapacity) {
+		this(hip, new StringBuilder(), initalCapacity);
+	}
+	
+	public Query(HipsterSql hipster, StringBuilder builder, int initalCapacity) {
+		this.hipster = hipster;
+		this.queryExpressionBuilder = builder;
+		this.values = new IQeuryValue[initalCapacity];
+	}
+
+	/** Constructor that directly uses the supplied StringBuilder and ArrayList. 
+	 * Do not reuse them after supplying them here in the constructor.
+	 * 
+	 * @param builder builder
+	 * @param values parameters for place-holders (be aware that reference is used, the array is not copied)
 	 */
-	public static final IQueryPart EMPTY_QUERY_PART = new QueryLiteral("");
-	public static final IQueryPart QUERY_SPACE = new QueryLiteral(" ");
+	public Query(HipsterSql hipster, StringBuilder builder, int size, IQeuryValue ... values) {
+		this(hipster);
+		this.queryExpressionBuilder = builder;
+		this.values = values;
+		this.size = size;
+	}
+
+	StringBuilder getQueryExpressionBuilder() {
+		return queryExpressionBuilder;
+	}
 	
-	protected List<Object> parts;
-	/**
-	 * If next element that will be added to query is expected to be value.
-	 * if false, a query part is expected to be added.
+	IQeuryValue[] getValues() {
+		return values;
+	}
+	
+	/** resize internal array
+	 * 
+	 * @param newSize new size
 	 */
-	protected boolean expectValue = false;
-	
-	@SuppressWarnings("unchecked")
-	public Query(Object ... q){
-		if(q.length == 1 && q[0] instanceof List) {
-			
-			List<Object> tmp = (List<Object>) q[0];
-			parts = new ArrayList<>(tmp.size());
-			
-			for (Object object : q) {
-				parts.add(object);
-				if(isForceQueryPartNext(object)) {
-					expectValue = false;
-				}else if(isForceValueNext(object)) {
-					expectValue = true;
-				}else {
-					expectValue = !expectValue;
-				}			
-			}
-
-		}else {
-			parts = new ArrayList<>(q.length);
-			append(q);
-		}
-	}
-	
-	public Query appendValue(Object value){
-		if(!expectValue) {
-			parts.add(EMPTY_QUERY_PART);
-		}
-		parts.add(value);
-		expectValue = false;
-
-		return this;
-	}
-	
-	static final boolean isForceQueryPartNext(Object obj){
-		if(obj == null) return false;
-		return obj instanceof IQueryLiteral
-				|| obj instanceof BaseColumnMeta
-				|| obj instanceof Query
-				|| obj instanceof PreparedQuery;
-		
+	public void resize(int newSize) {
+		if(newSize < size) throw new ArrayIndexOutOfBoundsException(newSize);
+		IQeuryValue[] tmp = values;
+		values = new IQeuryValue[newSize];
+		System.arraycopy(tmp, 0, values, 0, size);
 	}
 
-	static final boolean isForceValueNext(Object obj){
-		if(obj == null) return false;
-		return obj instanceof ICustomType;						
-	}
-	
-	public Query append(Object ... rightSide){
-		if(rightSide.length == 0) return this;
+	/** 
+	 * 
+	 * @param queryParts parts to combine into a query
+	 * @return self for builder pattern
+	 */
+	public Query addParts(Object ... queryParts){
 		
-		int countLeft = parts.size();
-		int offset = 0;
+		boolean queryPartNext = true;
 		
+		int length = queryParts.length;
 		
-		// fix the situation where next part is expected to be value
-		// and since append must work like appending a query, first element will not be a value
-		if(expectValue){ 
-			// it should not be possible to have expectValue=true and countLeft=0
-			Object lastPart = parts.get(countLeft-1);
-			boolean forceValue = isForceValueNext(lastPart);
-			boolean forceQueryPart = isForceQueryPartNext(lastPart);
-
-			boolean firstAddedIsForceValue = isForceValueNext(rightSide[0]);
-			boolean firstAddedIsForceQueryPart = isForceQueryPartNext(rightSide[0]);
-			
-			if(forceValue && (firstAddedIsForceValue ||  firstAddedIsForceQueryPart)) 
-				throw new RuntimeException("Last element in current query expects a value, but first element in appended query is not a value");
-			
-			if(!forceQueryPart && !forceValue && !firstAddedIsForceValue){
-				// add dummy to avoid  rightSide[0] being interpreted as variable
-				parts.add(Query.EMPTY_QUERY_PART);				
-			}
-			
-			expectValue = false;
-		}
-
-		// current parts empty - add all (same as even number of entries)
-		// even number of entries - add all because next part is query string like the beginning of new query
-		for(int i=offset; i<rightSide.length; i++) {
-			parts.add(rightSide[i]);
-			if(isForceQueryPartNext(rightSide[i])) {
-				expectValue = false;
-			}else if(isForceValueNext(rightSide[i])) {
-				expectValue = true;
+		for(int i=0; i<length; i++) {
+			if(queryPartNext) {
+				queryPartNext = addAsQueryExpressionPart(queryParts[i],i);
 			}else {
-				expectValue = !expectValue;
+				 addAsQueryValuePart(queryParts[i],i);
+				 queryPartNext = true;
 			}
 		}
-
+		
 		return this;
 	}
 
-	public List<Object> getParts() {
-		return parts;
+	/** Add parts with a delimiter between them.
+	 * 
+	 * @param delim delimiter
+	 * @param queryParts parts
+	 * @return self for builder pattern
+	 */
+	public Query addPartsArray(CharSequence delim, Object ... queryParts) {
+		int length = queryParts.length;
+		
+		for(int i=0; i<length; i++) {
+			Object queryPart = queryParts[i];
+			if(i>0) add(delim);
+			if(!addAndCheckIfQueryPart(queryPart)) {			
+				add('?');
+				return withValue(queryPart);
+			}
+		}
+		return this;
+	}
+	
+	/** Add parts with a delimiter between them.
+	 * 
+	 * @param delim delimiter
+	 * @param queryParts parts
+	 * @return self for builder pattern
+	 */
+	public Query addPartsList(CharSequence delim, List<?> queryParts) {
+		int length = queryParts.size();
+		
+		for(int i=0; i<length; i++) {
+			Object queryPart = queryParts.get(i);
+			if(i>0) add(delim);
+			if(!addAndCheckIfQueryPart(queryPart)) {			
+				add('?');
+				return withValue(queryPart);
+			}
+		}
+		return this;
+	}
+	
+	public final Query add(CharSequence queryExpression, Object value) {
+		add(queryExpression);
+		if(!addAndCheckIfQueryPart(value)) {			
+			add('?');
+			return withValue(value);
+		}
+		return this;
+	}
+	
+	public final Query add(CharSequence queryExpression, int value) {
+		add(queryExpression); add('?');
+		return withValue(value);
+	}
+	
+	
+	public final Query add(CharSequence queryExpression, long value) {
+		add(queryExpression); add('?');
+		return withValue(value);
+	}
+	
+	public final Query add(CharSequence queryExpression, float value) {
+		add(queryExpression); add('?');
+		return withValue(value);
+	}
+	
+	public final Query add(CharSequence queryExpression, double value) {
+		add(queryExpression); add('?');
+		return withValue(value);
 	}
 
-	public boolean isEmpty(){
-		if(parts.isEmpty()) return true;
-		if(parts.size() == 1){
-			Object part = parts.get(0);
-			if(part instanceof IQueryPart && ((IQueryPart)part).isEmpty()) return true;
-			if(part != null && part.toString().isEmpty()) return true;
+	public final Query add(CharSequence queryExpression, boolean value) {
+		add(queryExpression); add('?');
+		return withValue(value);
+	}
+	
+	
+	public final Query addValue(Object value) {
+		add('?');
+		return withValue(value);
+	}
+	
+	/**
+	 * 
+	 * @param delim
+	 * @param values
+	 * @return
+	 */
+	public final Query addValues(CharSequence delim, Object ...values) {
+		for(int i=0; i<values.length; i++) {
+			if(i > 0) add(delim);
+			add('?');
+			withValue(values[i]);
 		}
+		return this;
+	}
+	
+	public final Query addValuesList(CharSequence delim, List<?> values) {
+		int length = values.size();
+		
+		for(int i=0; i<length; i++) {
+			if(i > 0) add(delim);
+			add('?');
+			withValue(values.get(i));
+		}
+		return this;
+	}
+
+	/** Add column, operation, columnValue.
+	 * Column definition is used to extract {@link ICustomType} for the value, so
+	 * it matches what would happen in ORM scenario.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public final Query add(BaseColumnMeta column, CharSequence queryOperationExpr, Object value) {
+		add(column);
+		return add(queryOperationExpr, new QueryValue(value, column.getTypeHandler()));
+	}
+
+
+	public final void addAsQueryValuePart(Object queryPart, int indexForDebug) {
+
+		if(!addAndCheckIfQueryPart(queryPart)) {
+			this.addValue(queryPart);
+		}		
+	}
+
+	/** append to query expecting the part to be an expression.
+	 *  String here is treated as expression
+	 * 
+	 * @param part to append
+	 * @param indexForDebug
+	 * @return true if this is an expression (if called has multiple parts, then next part is a value)
+	 */
+	public final boolean addAsQueryExpressionPart(Object part, int indexForDebug) {
+		if(part == null) throw new HipsterSqlException(this,"#0"+THIS_QUERY_PART_MUST_BE_QUERY_TEXT_AND_NOT+null,null);
+
+		if(addAndCheckIfQueryPart(part)){
+			return true;//not a textual expression, so next part is textual expression
+		}
+
+		if(part instanceof CharSequence) {
+			this.add((CharSequence)part);
+			return false;// textual expression, so next part is value
+		}
+
+		throw new HipsterSqlException(this,"#"+indexForDebug+THIS_QUERY_PART_MUST_BE_QUERY_TEXT_AND_NOT+part,null);
+	}
+	
+
+	/** append to query expecting the part to be an expression.
+	 *  String here is treated as value
+	 * 
+	 * @param queryPart to append
+	 * @return if this is an expression (if called has multiple parts, then next part is a value)
+	 */
+	private boolean addAndCheckIfQueryPart(Object queryPart) {
+		if(queryPart instanceof Query) {
+			this.add((Query) queryPart);
+			return true;// query part
+		}
+		
+		if(queryPart instanceof IQueryLiteral) {
+			this.add((IQueryLiteral) queryPart);
+			return true;// query part
+		}
+		
+		if(queryPart instanceof IQeuryValue) {
+			this.add((IQeuryValue) queryPart);
+			return true;// query part
+		}
+		
 		return false;
 	}
-
-	/** Generate immutable version of this Query object. 
-	 * Does not guarantee immutability of query elements 
-	 * (aside from other Query objects that will be converted to immutable versions)  
+	
+	/** Append query expression text.
 	 * 
-	 * @return immutable version of this query
+	 * @param queryPart expression
+	 * @return this (builder pattern)
 	 */
-	public ImmutableQuery immutable() {
-		Object[] newParts = new Object[parts.size()];
-		
-		Object part = null;
-		for(int i=0; i<newParts.length; i++) {
-			part = parts.get(i);
-			if(part != null && part instanceof Query) {
-				newParts[i] = ((Query)part).immutable();
-			}else {
-				newParts[i] = part;
-			}
-		}
-		
-		return new ImmutableQuery(ImmutableList.safe(newParts));
+	public final Query add(IQueryLiteral queryPart){
+		if(queryPart.isIdentifier())  add(hipster.columQuote1);
+		add(queryPart.getQueryText());
+		if(queryPart.isIdentifier())  add(hipster.columQuote2);
+		return this;
 	}
-	
-	public String toString(){
-		return build(new StringBuilder(), parts).toString();
-	}
-
-	/** Build an SQL string suitable for debugging and printing to log files or testing the resulting query.<br>
-	 * <b>MUST NOT BE USED FOR GENERATING QUERIES THAT GO TO DATABASE.</b><br>
-	 * the escape function only changes single quotes to double quotes in strings and is not protection against SQL injection.
+		
+	/** Append a value.
 	 * 
-	 * @param b StringBuilder to append the query to
-	 * @param parts query parts
-	 * @return the same StringBuilder provided as first parameter
+	 * @param value value
+	 * @return this (builder pattern)
 	 */
-	protected StringBuilder build(StringBuilder b, List<Object> parts){
-
-		if(parts.size() == 1 && parts.get(0) instanceof Query) parts = ((Query)parts.get(0)).getParts();
-		
-		int count = parts.size();
-		if(count == 0) return b;
-
-		int evenOdd = 0;
-		Object queryPart;
-		for(int i=0; i<count; i++){
-			queryPart = parts.get(i);
-			
-			if(queryPart instanceof IQueryLiteral){
-				IQueryLiteral queryLiteral = (IQueryLiteral) queryPart;
-				if(queryLiteral.isIdentifier()) b.append('"');
-				b.append(queryLiteral.getQueryText());
-				if(queryLiteral.isIdentifier()) b.append('"');
-				evenOdd = 1;// will be changed to 2 at the end of the loop
-				
-			}else if(queryPart instanceof Query){
-				this.build(b, ((Query)queryPart).getParts());
-				evenOdd = 1;
-			}else if(queryPart instanceof PreparedQuery){
-				PreparedQuery prepared = (PreparedQuery) queryPart;
-				b.append(prepared.getQueryString());
-			
-			}else if(evenOdd %2 == 0){
-				b.append(queryPart);// all even index parts must be strings
-			}else{
-				HipsterSql.qValue(b, queryPart);
+	public final Query add(IQeuryValue value){
+		add("?");
+		return withValue(value);
+	}
+	
+	/** Append another query.
+	 * 
+	 * @param query query
+	 * @return this (builder pattern)
+	 */
+	public final Query add(Query query){
+		return add(query.getQueryExpression(), query.size, query.values);
+	}
+	
+	/** Append prepared statement with corresponding parameters wrapped in IQueryPart each. 
+	 * Append but only to the size defined. (values array could be larger with values after size not used)
+	 * 
+	 * @param queryExpression query expression
+	 * @param valuesIn parameters
+	 * @return self for builder pattern
+	 */
+	public final Query add(CharSequence queryExpression, int sizeIn, IQeuryValue ...valuesIn){
+		this.add(queryExpression);
+		if(sizeIn > 0) {				
+			if(this.size + sizeIn > this.values.length) {
+				this.resize(this.size + sizeIn);
 			}
-			evenOdd++;
+			System.arraycopy(valuesIn, 0, values, this.size, sizeIn);
+			size += sizeIn;
 		}
-		return b;
+		return this;
+	}
+	
+	public Query add(char queryExpression) {
+		queryExpressionBuilder.append(queryExpression);
+		return this;
+	}
+	
+	public Query add(CharSequence queryExpression) {
+		queryExpressionBuilder.append(queryExpression);
+		return this;
+	}
+	
+	/** append prepared statement with all parameters wrapped in IQueryPart.
+	 * 
+	 * @param queryExpression query string
+	 * @param valuesIn parameters
+	 * @return self for builder pattern
+	 */
+	public final Query add(CharSequence queryExpression, IQeuryValue ...valuesIn){
+		return this.add(queryExpression, valuesIn.length, valuesIn);
+	}
+	
+	/** Prepend prepared statement with corresponding parameters wrapped in IQueryPart each. 
+	 * Append but only to the size defined. (values array could be larger with values after size not used)
+	 * 
+	 * @param queryExpression query expression
+	 * @param valuesIn parameters
+	 * @return self for builder pattern
+	 */
+	public final Query addAtBegining(CharSequence queryExpression, int sizeIn, IQeuryValue ...valuesIn){
+		this.addAtBegining(queryExpression);
+		if(sizeIn > 0){
+			if(this.size + sizeIn > this.values.length) {
+				this.resize(this.size + sizeIn);
+			}
+			System.arraycopy(valuesIn, 0, values, this.size, sizeIn);
+			size += sizeIn;
+		}
+		return this;
+	}
+	
+	/** Prepend a query
+	 * 
+	 * @param query
+	 * @return
+	 */
+	public final Query addAtBegining(Query query){
+		return addAtBegining(query.getQueryExpression(), query.size, query.values);
+	}
+	
+	
+	public Query addAtBegining(CharSequence queryExpression) {
+		queryExpressionBuilder.insert(0,queryExpression);
+		return this;
+	}
+	
+	/** Just add a primitive value without changing the expression, and also avoid boxing. 
+	 * Adding value normally adds "?" placeholder for value, but this method is used when
+	 * we add one or more placeholders and want to add values for them. 
+	 * 
+	 * @param value value
+	 * @return this  (builder pattern)
+	 */
+	public final Query withValue(int value) {
+		return withValue(v(value));
+	}
+	
+	/** Just add a primitive value without changing the expression, and also avoid boxing. 
+	 * Adding value normally adds "?" placeholder for value, but this method is used when
+	 * we add one or more placeholders and want to add values for them. 
+	 * 
+	 * @param value value
+	 * @return this (builder pattern)
+	 */
+	public final Query withValue(long value) {
+		return withValue(v(value));
 	}
 
-	public static final class ImmutableQuery extends Query {
+	/** Just add a primitive value without changing the expression, and also avoid boxing. 
+	 * Adding value normally adds "?" placeholder for value, but this method is used when
+	 * we add one or more placeholders and want to add values for them. 
+	 * 
+	 * @param value value
+	 * @return this (builder pattern)
+	 */
+	public final Query withValue(double value) {
+		return withValue(v(value));
+	}
 
-		public ImmutableQuery(ImmutableList parts) {
-			this.parts = parts;
+	/** Just add a primitive value without changing the expression, and also avoid boxing. 
+	 * Adding value normally adds "?" placeholder for value, but this method is used when
+	 * we add one or more placeholders and want to add values for them. 
+	 * 
+	 * @param value value
+	 * @return this (builder pattern)
+	 */
+	public final Query withValue(float value) {
+		return withValue(v(value));
+	}
+
+	/** Just add a primitive value without changing the expression, and also avoid boxing. 
+	 * Adding value normally adds "?" placeholder for value, but this method is used when
+	 * we add one or more placeholders and want to add values for them. 
+	 * 
+	 * @param value value
+	 * @return this (builder pattern)
+	 */
+	public final Query withValue(boolean value) {
+		return withValue(v(value));
+	}
+
+	/** Just add a value without changing the expression. 
+	 * Adding value normally adds "?" placeholder for value, but this method is used when
+	 * we add one or more placeholders and want to add values for them. 
+	 * 
+	 * @param value value
+	 * @return this (builder pattern)
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Query withValue(Object value) {
+		return withValue(prepValue(value));
+	}
+
+	public IQeuryValue prepValue(Object value) {
+		IQeuryValue wrapped = null;
+		if(value == null) {
+			wrapped = IQeuryValue.NULL;
+		}else if(value instanceof IQeuryValue){
+			wrapped = (IQeuryValue) value;
+		}else {
+			ICustomType type = hipster.getTypeSource().getFor(value.getClass());
+			if(type == null) throw new HipsterSqlException(this, " value type for not supported "+value.getClass().getName(), null);
+			wrapped = new QueryValue(value, type);
+		}
+		return wrapped;
+	}
+
+	public Query withValue(IQeuryValue value) {
+		if(value == null) {
+			value = IQeuryValue.NULL;
+		}
+
+		if(size >= values.length) {
+			this.resize(size*2);
+		}
+		values[size++] = value;
+		
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		String query = this.getQueryExpression().toString();
+		int idx = query.indexOf('?');
+		int offset = 0;
+		int index = 0;
+		while(idx != -1) {
+			b.append(query.substring(offset,idx));
+			b.append(values[index]);
+			
+			offset = idx+1;
+			index++;
+			idx = query.indexOf('?', offset);
+		}
+
+		if(offset < query.length()) {
+			b.append(query.substring(offset));
 		}
 		
-		@Override
-		public ImmutableQuery immutable() {
-			return this;
-		}
+		return b.toString();
 	}
-	
-	public static ImmutableQuery immutable(Object ...parts) {
-		return new ImmutableQuery(ImmutableList.safe(parts));
+
+	public boolean isEmpty() {
+		return queryExpressionBuilder.length() == 0;
 	}
+
+	/** Clone this query.
+	 * Internal query string is cloned and can be appended.
+	 * Internal values array is cloned (shallow values are copied) and can be changed further.
+	 * */
+	public Query clone(){
+		return new Query(hipster, new StringBuilder(queryExpressionBuilder), size, values.clone());
+	}
+
+//	/** No-op method, used by repeat subclass. 
+//	*/
+//	public Query init() {
+//		return this;
+//	}
 	
-	
+	public QueryRepeat toRepeatable() {
+		return new QueryRepeat(this);
+	}
+
+	/** 
+	 * @return accumulated query string
+	 */
+	public CharSequence getQueryExpression() {
+		return queryExpressionBuilder;
+	}
 }

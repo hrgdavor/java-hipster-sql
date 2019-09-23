@@ -1,8 +1,8 @@
 package hr.hrg.hipster.sql;
 
-public interface IQueryLiteral extends IQueryPart{
+public interface IQueryLiteral {
 
-	public String getQueryText();
+	public CharSequence getQueryText();
 	public boolean isIdentifier();
 
 }

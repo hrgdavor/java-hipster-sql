@@ -6,7 +6,7 @@ import java.util.*;
 import hr.hrg.hipster.dao.*;
 
 @SuppressWarnings("rawtypes")
-public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements IEntityMeta<T,ID,C>, IQueryLiteral{
+public abstract class BaseEntityMeta<T,ID, C extends BaseColumnMeta> implements IEntityMeta<T,ID>, IQueryLiteral{
 
 	protected final int _ordinal;
 	protected final String _tableName;
@@ -21,7 +21,7 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 	public BaseEntityMeta(int ordinal, String tableName, Class<T> entityClass) {
 		this._ordinal = ordinal;
 		this._tableName = tableName;
-		this._entityClass = entityClass;		
+		this._entityClass = entityClass;
 	}
 
 	public BaseEntityMeta(int ordinal, String tableName, Class<T> entityClass, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted) {
@@ -40,7 +40,7 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 	}
 
 	@Override
-	public final ICustomType<?> getTypeHandler(C column) {
+	public final ICustomType<?> getTypeHandler(BaseColumnMeta column) {
 		return _typeHandler[column.ordinal()];
 	}
 
@@ -52,11 +52,6 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 	@Override
 	public final String getTableName() {
 		return _tableName;
-	}
-	
-	@Override
-	public IQueryLiteral getTable() {
-		return this;
 	}
 	
 	@Override
@@ -98,16 +93,11 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 	}
 
 	@Override
-	public final boolean isEmpty() {
-		return false;
-	}
-
-	@Override
 	public String toString() {
 		return _tableName;
 	}
 
-	public static class Simple<T,ID,C extends BaseColumnMeta> extends BaseEntityMeta<T, ID, C>{
+	public static class Simple<T,ID, C extends BaseColumnMeta> extends BaseEntityMeta<T, ID, C>{
 
 		private String entityName;
 
@@ -127,7 +117,7 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 		}
 
 		@Override
-		public C getPrimaryColumn() {
+		public BaseColumnMeta<ID> getPrimaryColumn() {
 			return null;
 		}
 
@@ -142,7 +132,7 @@ public abstract class BaseEntityMeta<T,ID,C extends BaseColumnMeta> implements I
 		}
 
 		@Override
-		public List<C> getColumns() {
+		public List<BaseColumnMeta> getColumns() {
 			return null;
 		}
 
