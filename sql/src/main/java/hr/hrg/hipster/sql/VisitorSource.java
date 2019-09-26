@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 
 import javax.persistence.*;
 
-import hr.hrg.hipster.sql.BaseEntityMeta.*;
+import hr.hrg.hipster.sql.EntityMeta.*;
 
 public class VisitorSource {
 
@@ -101,7 +101,7 @@ public class VisitorSource {
 		
 		Parameter[] parameters = method.getParameters();
 		
-		List<BaseColumnMeta> columnsList = new ArrayList<>();
+		List<ColumnMeta> columnsList = new ArrayList<>();
 		List<ICustomType<?>> gettersList = new ArrayList<>();
 		String tableName = "";
 		for (int i = 0; i < parameters.length; i++) {
@@ -113,7 +113,7 @@ public class VisitorSource {
 			columnsList.add(makeColumnMeta(clazz, parameters[i], tableName, i, returnType, typeParams));
 		}
 		
-		final BaseColumnMeta[] columns = columnsList.toArray(new BaseColumnMeta[columnsList.size()]); 
+		final ColumnMeta[] columns = columnsList.toArray(new ColumnMeta[columnsList.size()]); 
 		final ICustomType<?>[] getters = gettersList.toArray(new ICustomType<?>[gettersList.size()]); 
 		StringBuffer buff = new StringBuffer();
 
@@ -169,7 +169,7 @@ public class VisitorSource {
 		return null;
 	}
 
-	private BaseColumnMeta makeColumnMeta(Class<?> clazz, Parameter parameter, String tableName, int ordinal, Class<?> returnType, Class<?>[] typeParams) {
+	private ColumnMeta makeColumnMeta(Class<?> clazz, Parameter parameter, String tableName, int ordinal, Class<?> returnType, Class<?>[] typeParams) {
 		String columnName = parameter.getName();
 		String columnSql = "";
 
@@ -191,8 +191,8 @@ public class VisitorSource {
 
 		Class<?> returnTypePrimitive = returnType;
 		returnType = HipsterSqlUtil.wrap(returnType);
-		Simple meta = new BaseEntityMeta.Simple(0,tableName, clazz);
-		return new BaseColumnMeta(ordinalIndex++, parameter.getName(), columnName, parameter.getName(), meta, returnType, returnTypePrimitive, columnSql, null, typeParams); 
+		Simple meta = new EntityMeta.Simple(0,tableName, clazz);
+		return new ColumnMeta(ordinalIndex++, parameter.getName(), columnName, parameter.getName(), meta, returnType, returnTypePrimitive, columnSql, null, typeParams); 
 	}
 
 	

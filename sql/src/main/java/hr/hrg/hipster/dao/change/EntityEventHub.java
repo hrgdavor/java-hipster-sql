@@ -36,7 +36,7 @@ public class EntityEventHub {
 		return list == null ? false : list.size() > 0;
 	}
 	
-	public <T, ID, C extends BaseColumnMeta> List<IEntityEventListener> getListeners(EntityEventType type, IEntityMeta<T, ID> meta) {
+	public <T, ID, C extends ColumnMeta> List<IEntityEventListener> getListeners(EntityEventType type, IEntityMeta<T, ID> meta) {
 		int ordinal = meta.ordinal();
 		if(ordinal >= listeners.length) return null;
 		

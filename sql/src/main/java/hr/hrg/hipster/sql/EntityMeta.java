@@ -6,28 +6,28 @@ import java.util.*;
 import hr.hrg.hipster.dao.*;
 
 @SuppressWarnings("rawtypes")
-public abstract class BaseEntityMeta<T,ID, C extends BaseColumnMeta> implements IEntityMeta<T,ID>, IQueryLiteral{
+public abstract class EntityMeta<T,ID, C extends ColumnMeta> implements IEntityMeta<T,ID>, IQueryLiteral{
 
 	protected final int _ordinal;
 	protected final String _tableName;
 	protected final Class<T> _entityClass;
-
+    
+	protected ImmutableList<C> _columns;
 	protected ICustomType<?>[] _typeHandler;
 	protected int _columnCount;
 	protected C[] _columnArray;
 	protected C[] _columnArraySorted;
 	protected String[] _columnArraySortedStr;
 
-	public BaseEntityMeta(int ordinal, String tableName, Class<T> entityClass) {
+	public EntityMeta(int ordinal, String tableName, Class<T> entityClass) {
 		this._ordinal = ordinal;
 		this._tableName = tableName;
 		this._entityClass = entityClass;
 	}
 
-	public BaseEntityMeta(int ordinal, String tableName, Class<T> entityClass, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted) {
+	public EntityMeta(int ordinal, String tableName, Class<T> entityClass, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted) {
 		this(ordinal, tableName, entityClass);
 
-		this._columnArray = columnArray;
 		this._columnArraySorted = columnArraySorted;
 		this._columnArraySortedStr = columnArraySortedStr;
 		this._columnCount = columnArray.length;
@@ -40,7 +40,7 @@ public abstract class BaseEntityMeta<T,ID, C extends BaseColumnMeta> implements 
 	}
 
 	@Override
-	public final ICustomType<?> getTypeHandler(BaseColumnMeta column) {
+	public final ICustomType<?> getTypeHandler(ColumnMeta column) {
 		return _typeHandler[column.ordinal()];
 	}
 
@@ -97,7 +97,11 @@ public abstract class BaseEntityMeta<T,ID, C extends BaseColumnMeta> implements 
 		return _tableName;
 	}
 
-	public static class Simple<T,ID, C extends BaseColumnMeta> extends BaseEntityMeta<T, ID, C>{
+	public ImmutableList<C> getColumns() {
+		return _columns;
+	}
+	
+	public static class Simple<T,ID, C extends ColumnMeta> extends EntityMeta<T, ID, C>{
 
 		private String entityName;
 
@@ -117,7 +121,7 @@ public abstract class BaseEntityMeta<T,ID, C extends BaseColumnMeta> implements 
 		}
 
 		@Override
-		public BaseColumnMeta<ID> getPrimaryColumn() {
+		public ColumnMeta<ID> getPrimaryColumn() {
 			return null;
 		}
 
@@ -128,11 +132,6 @@ public abstract class BaseEntityMeta<T,ID, C extends BaseColumnMeta> implements 
 
 		@Override
 		public IUpdatable mutableCopy(Object v) {
-			return null;
-		}
-
-		@Override
-		public List<BaseColumnMeta> getColumns() {
 			return null;
 		}
 

@@ -1,5 +1,8 @@
 package hr.hrg.hipster.dao;
 
+import java.sql.*;
+import java.util.*;
+
 import hr.hrg.hipster.sql.*;
 
 
@@ -10,13 +13,13 @@ public interface IEntityMeta<T,ID> extends IReadMeta<T>{
 	
 	boolean containsColumn(String columnName);
 	
-	BaseColumnMeta<ID> getPrimaryColumn();
+	ColumnMeta<ID> getPrimaryColumn();
 
-	BaseColumnMeta getColumn(String name);
+	ColumnMeta getColumn(String name);
 
 	int getColumnOrdinal(String columnName);
 	
-	BaseColumnMeta getColumn(int ordinal);
+	ColumnMeta getColumn(int ordinal);
 
 	ID entityGetPrimary(T instance);
 
@@ -24,10 +27,18 @@ public interface IEntityMeta<T,ID> extends IReadMeta<T>{
 	
 	int ordinal();
 
-	ICustomType<?> getTypeHandler(BaseColumnMeta column);
+	ICustomType<?> getTypeHandler(ColumnMeta column);
 
 	ICustomType<?> getTypeHandler(int ordinal);
 
+	Class<T> getEntityClass();
+
+	String getTableName();
+
+	int getColumnCount();
+
+	List<? extends ColumnMeta> getColumns();
 	
+	T fromResultSet(ResultSet rs) throws SQLException;	
 	
 }

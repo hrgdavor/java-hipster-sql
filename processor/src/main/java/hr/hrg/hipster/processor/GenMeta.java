@@ -25,7 +25,7 @@ public class GenMeta {
 		Property primaryProp = def.getPrimaryProp();
 		TypeName primaryType = primaryProp == null ? TypeName.get(Object.class) : primaryProp.type;
 	
-		cp.superclass(parametrized(BaseEntityMeta.class,def.type, primaryType, columnMetaBase));
+		cp.superclass(parametrized(EntityMeta.class,def.type, primaryType, columnMetaBase));
 		
 		// public static final Class<SampleEntity> ENTITY_CLASS = SampleEntity.class;
 		addField(cp, PRIVATE().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
@@ -132,7 +132,7 @@ public class GenMeta {
 			});
 		}else{
 			//@Override
-			//public final IUpdatable<BaseColumnMeta> mutableCopy(Sample v){ throw new RuntimeExcep(v); }
+			//public final IUpdatable<ColumnMeta> mutableCopy(Sample v){ throw new RuntimeExcep(v); }
 			addMethod(cp,PUBLIC().FINAL(), IUpdatable.class, "mutableCopy", method->{
 				method.addAnnotation(Override.class);
 				addParameter(method, Object.class, "v");
@@ -175,10 +175,10 @@ public class GenMeta {
 		
 		//@Override
 		//public final String getColumns(){ return _columns; }
-		addMethod(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class,columnMetaBase), "getColumns", method->{
-			method.addAnnotation(Override.class);
-			method.addCode("return _columns;\n");
-		});		
+//		addMethod(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class,columnMetaBase), "getColumns", method->{
+//			method.addAnnotation(Override.class);
+//			method.addCode("return _columns;\n");
+//		});		
 		//@Override
 		//public final String getPrimaryColumn(){ return COLUMNS_STR; }
 		addMethod(cp,PUBLIC().FINAL(), columnMetaBase, "getPrimaryColumn", method->{
@@ -398,14 +398,14 @@ public class GenMeta {
 			
 			if(prop.annotationsWithDefaults.size() == 0) {
 				// CASE: Reflection
-				// force initialisation of "annotations" field in BaseColumnMeta to empty array, 
+				// force initialisation of "annotations" field in ColumnMeta to empty array, 
 				// (we know there ar non, so reflection can be skipped for this one)
 				codeBlock.add(".withAnnotations()");
 				
 
 				// CASE: Generated (no reflection)
 				// - comment line above 
-				// - make sure "annotations" field in BaseColumnMeta is initialised to: new Annotation[0]
+				// - make sure "annotations" field in ColumnMeta is initialised to: new Annotation[0]
 				
 			}else if(prop.annotationsWithDefaults.size() > 0) {
 				// CASE: Generated (no reflection)

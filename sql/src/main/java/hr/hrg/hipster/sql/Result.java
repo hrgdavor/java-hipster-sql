@@ -2,6 +2,8 @@ package hr.hrg.hipster.sql;
 
 import java.sql.*;
 import java.util.*;
+
+import hr.hrg.hipster.dao.*;
 /**
  * 
  * @author hrg
@@ -81,7 +83,7 @@ public class Result implements AutoCloseable{
         }
 	}
 
-	public Result executeUpdate(Object ...queryParts){
+	Result executeUpdate(Object ...queryParts){
     	prepareQuery(true, queryParts);
     	try{
             ps.executeUpdate();
@@ -186,7 +188,7 @@ public class Result implements AutoCloseable{
         }
     }
     
-    public <T> T fetchEntity(IReadMeta<T> reader){
+    public <T,ID> T fetchEntity(IEntityMeta<T,ID> reader){
         try{
             if(!rs.next()) return null;
             return reader.fromResultSet(rs);

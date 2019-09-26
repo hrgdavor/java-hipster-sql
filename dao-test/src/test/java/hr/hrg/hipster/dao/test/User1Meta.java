@@ -5,14 +5,12 @@ import java.util.*;
 
 import hr.hrg.hipster.sql.*;
 
-public class User1Meta extends BaseEntityMeta<User1, Long, LocalColumnMeta> {
+public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta> {
   private static final Class<User1> ENTITY_CLASS = User1.class;
   
   public final LocalColumnMeta<Long> id;
   public final LocalColumnMeta<List> name;
   public final LocalColumnMeta<Integer> age;
-
-  private final ImmutableList<BaseColumnMeta> _columns;
 
   public static final int COLUMN_COUNT = 3;
 
@@ -38,7 +36,7 @@ public class User1Meta extends BaseEntityMeta<User1, Long, LocalColumnMeta> {
     age = new LocalColumnMeta<Integer>(2, "age","age","getAge",this,Integer.class,int.class,"", _typeHandler[2]).withAnnotations();
     
 	this._columnArray = new LocalColumnMeta[]{id,name,age};
-	this._columns =  ImmutableList.safe((BaseColumnMeta[])_columnArray);
+	this._columns =  ImmutableList.safe((LocalColumnMeta[])_columnArray);
 	this._columnArraySorted = new LocalColumnMeta[]{age,id,name};
 	this._columnArraySortedStr = COLUMN_ARRAY_SORTED_STR;
 	this._columnCount = COLUMN_COUNT;
@@ -72,12 +70,7 @@ public class User1Meta extends BaseEntityMeta<User1, Long, LocalColumnMeta> {
   }
 
   @Override
-  public final ImmutableList<BaseColumnMeta> getColumns() {
-    return _columns;
-  }
-
-  @Override
-  public final BaseColumnMeta getPrimaryColumn() {
+  public final ColumnMeta getPrimaryColumn() {
     return id;
   }
 
@@ -85,4 +78,5 @@ public class User1Meta extends BaseEntityMeta<User1, Long, LocalColumnMeta> {
   public final Long entityGetPrimary(User1 instance) {
     return instance.getId();
   }
+
 }

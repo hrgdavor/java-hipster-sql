@@ -1,6 +1,6 @@
 package hr.hrg.hipster.dao;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -86,7 +86,6 @@ public class EntitySource {
 			for (Class<? extends IEntityMeta> meta : metas) {
 				IEntityMeta<?, ?> instance = newInstance(meta);
 				registerFor(instance);
-				hip.getReaderSource().registerFor(instance);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage(),e);

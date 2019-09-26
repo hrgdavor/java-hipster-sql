@@ -72,11 +72,11 @@ public class EntityCopy {
 		 * @return self
 		 */
 		public Builder sameNames() {
-			List<BaseColumnMeta> columns = (List<BaseColumnMeta>) metaFrom.getColumns();
-			for (BaseColumnMeta columnFrom : columns) {
+			List<ColumnMeta> columns = (List<ColumnMeta>) metaFrom.getColumns();
+			for (ColumnMeta columnFrom : columns) {
 				if(ignored[columnFrom.ordinal()]) continue;
 				
-				BaseColumnMeta columnTo = metaTo.getColumn(columnFrom.name());
+				ColumnMeta columnTo = metaTo.getColumn(columnFrom.name());
 				if (columnTo != null) {
 					indexFrom.add(columnFrom.ordinal());
 					indexTo.add(columnTo.ordinal());
@@ -85,8 +85,8 @@ public class EntityCopy {
 			return this;
 		}		
 
-		public Builder ignore(BaseColumnMeta ...columns) {
-			for (BaseColumnMeta column: columns) {
+		public Builder ignore(ColumnMeta ...columns) {
+			for (ColumnMeta column: columns) {
 				if(column.getEntity() != metaFrom.getEntityClass()) {
 					throw new RuntimeException("Can not use column from different entity. Column from: "+column.getEntity() +" but metadata from: "+ metaFrom.getEntityClass());
 				}
@@ -95,7 +95,7 @@ public class EntityCopy {
 			return this;
 		}
 		
-		public<T> Builder addMapping(BaseColumnMeta<T> columnFrom, BaseColumnMeta<T> columnTo) {
+		public<T> Builder addMapping(ColumnMeta<T> columnFrom, ColumnMeta<T> columnTo) {
 			if(columnFrom.getEntity() != metaFrom.getEntityClass()) {
 				throw new RuntimeException("Can not use column from different entity. Column from: "+columnFrom.getEntity() +" but metadata from: "+ metaFrom.getEntityClass());
 			}

@@ -3,17 +3,17 @@ package hr.hrg.hipster.sql;
 import java.util.*;
 
 @SuppressWarnings("rawtypes")
-public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
+public class ColumnSet<C extends ColumnMeta> implements Iterable<C>{
 
 	protected long items;
 	protected C[] all;
-	protected BaseEntityMeta<?,?,?> meta;
+	protected EntityMeta<?,?,?> meta;
 	
-	public ColumnSet(BaseEntityMeta<?,?,?> meta){
+	public ColumnSet(EntityMeta<?,?,?> meta){
 		this(meta, false);
 	}
 
-	public ColumnSet(BaseEntityMeta<?,?,?> meta, boolean allElements){
+	public ColumnSet(EntityMeta<?,?,?> meta, boolean allElements){
 		this.meta = meta;
 		this.all = (C[]) meta._columnArray;
 		if(allElements){
@@ -21,7 +21,7 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 		}
 	}
 	
-	protected ColumnSet(long items, C[] all, BaseEntityMeta<?, ?, ?> meta) {
+	protected ColumnSet(long items, C[] all, EntityMeta<?, ?, ?> meta) {
 		this.items = items;
 		this.all = all;
 		this.meta = meta;
@@ -45,7 +45,7 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 	}
 
 	public boolean contains(String columnName){
-		BaseColumnMeta<?> column = meta.getColumn(columnName);
+		ColumnMeta<?> column = meta.getColumn(columnName);
 		return column == null ? false : contains(column.ordinal);
 	}
 	
@@ -62,7 +62,7 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 
 	@SuppressWarnings("unchecked")
 	public boolean add(String columnName){
-		BaseColumnMeta<?> column = meta.getColumn(columnName);
+		ColumnMeta<?> column = meta.getColumn(columnName);
 
         return add((C) column);	
 	}
@@ -90,7 +90,7 @@ public class ColumnSet<C extends BaseColumnMeta> implements Iterable<C>{
 	}
 
 	public C getColumn(String columnName){
-		BaseColumnMeta<?> column = meta.getColumn(columnName);
+		ColumnMeta<?> column = meta.getColumn(columnName);
 		return column == null ? null : getColumn(column.ordinal);
 	}
 

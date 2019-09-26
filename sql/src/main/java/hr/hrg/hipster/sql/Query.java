@@ -198,7 +198,7 @@ public class Query{
 	 * @param value
 	 * @return
 	 */
-	public final Query add(BaseColumnMeta column, CharSequence queryOperationExpr, Object value) {
+	public final Query add(ColumnMeta column, CharSequence queryOperationExpr, Object value) {
 		add(column);
 		return add(queryOperationExpr, new QueryValue(value, column.getTypeHandler()));
 	}

@@ -29,13 +29,11 @@ public class HipsterSql {
 	private TypeSource typeSource;
 	private EntitySource entitySource;
 	
-	private ReaderSource readerSource;
 	private VisitorSource visitorSource;
 	private EntityEventHub eventHub;
 
 	public HipsterSql() {
 		this.typeSource = new TypeSource();
-		this.readerSource = new ReaderSource(this);
 		this.visitorSource = new VisitorSource(typeSource);
 		this.entitySource = new EntitySource(this);
 		this.eventHub = new EntityEventHub(entitySource);
@@ -51,11 +49,7 @@ public class HipsterSql {
 			allowdSqlOperators.add(operator.toUpperCase());
 		}
 	}
-	
-	public ReaderSource getReaderSource() {
-		return readerSource;
-	}
-	
+		
 	public EntitySource getEntitySource() {
 		return entitySource;
 	}
@@ -219,11 +213,11 @@ public class HipsterSql {
 		StringBuilder firstPart = new StringBuilder("("); 
 		Query valuesPart = this.q(")VALUES(");
 		
-		BaseColumnMeta primaryColumn = meta.getPrimaryColumn();
+		ColumnMeta primaryColumn = meta.getPrimaryColumn();
 		
 		int i=0;
 		int ordinal;
-		for(BaseColumnMeta column:meta.getColumns()) {
+		for(ColumnMeta column:meta.getColumns()) {
 			ordinal = column.ordinal();			
 			
 			if(!mutable.isChanged(ordinal)) continue;
@@ -318,7 +312,7 @@ public class HipsterSql {
 
 		int i=0;
 		int ordinal;
-		for(BaseColumnMeta column:meta.getColumns()) {
+		for(ColumnMeta column:meta.getColumns()) {
 			ordinal = column.ordinal();
 			
 			if(!mutable.isChanged(ordinal)) continue;
@@ -447,8 +441,8 @@ public class HipsterSql {
 //				
 //				expectValue = false;
 //				
-//			}else if(obj instanceof BaseColumnMeta){
-//				b.append(columQuote1).append(((BaseColumnMeta)obj).getColumnName()).append(columQuote2);
+//			}else if(obj instanceof ColumnMeta){
+//				b.append(columQuote1).append(((ColumnMeta)obj).getColumnName()).append(columQuote2);
 //				
 //				expectValue = false;
 //

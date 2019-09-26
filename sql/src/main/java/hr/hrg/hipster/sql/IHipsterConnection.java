@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
+import hr.hrg.hipster.dao.*;
+
 public interface IHipsterConnection {
 
 	Connection getConnection();
@@ -71,6 +73,7 @@ public interface IHipsterConnection {
 	List<Map<Object, Object>> rows(Object... sql);
 
 	<T> T entity(Class<T> clazz, Object... sql);
+	<T,ID> T entity(IEntityMeta<T, ID> reader, Object ...sql);
 
 	<T> List<T> entitiesLimit(Class<T> clazz, int offset, int limit, Object... sql);
 
@@ -104,10 +107,9 @@ public interface IHipsterConnection {
 	Object insert(Query sql);
 	<T> T insert(Class<T> primaryColumnType, Query sql);
 
-	<T> T entity(IReadMeta<T> reader, Object ...sql);
 	
-	<T> List<T> entities(IReadMeta<T> reader, Object ...sql);
-	<T> List<T> entitiesLimit(IReadMeta<T> reader, int offset, int limit, Object ...sql);
+	<T,ID> List<T> entities(IEntityMeta<T,ID> reader, Object ...sql);
+	<T,ID> List<T> entitiesLimit(IEntityMeta<T,ID> reader, int offset, int limit, Object ...sql);
 
 
 	<T> List<T> column(Class<T> reader, Object ...sql);

@@ -3,6 +3,8 @@ package hr.hrg.hipster.sql;
 import java.sql.*;
 import java.util.*;
 
+import hr.hrg.hipster.dao.*;
+
 /** Short lived throw away instance that can be used per thread(sql connection) and discarded. 
  * You should not share instance between threads, although the worst that can happen is wrong query reported
  * in case of error, because lastQuery and lastPrepared are instance variables.
@@ -243,11 +245,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     @Override
     public <T> T entity(Class<T> clazz, Object... sql) {
-    	return entity(hipster.getReaderSource().getOrCreate(clazz), sql);
+    	return entity(hipster.getEntitySource().getForRequired(clazz), sql);
     }
 
     @Override
-    public <T> T entity(IReadMeta<T> reader, Object... sql) {
+    public <T,ID> T entity(IEntityMeta<T, ID> reader, Object... sql) {
     	Query query = prepEntityQuery(reader.getColumns(), reader, hipster.q(sql));
     	
     	try(Result res = new Result(this);){
@@ -258,12 +260,12 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 
     @Override
     public <T> List<T> entities(Class<T> clazz, Object... sql) {
-    	return entities(hipster.getReaderSource().getOrCreate(clazz), sql);
+    	return entities(hipster.getEntitySource().getForRequired(clazz), sql);
     }
 
     
 	@Override
-    public <T> List<T> entities(IReadMeta<T> reader, Object... sql) {
+    public <T, ID> List<T> entities(IEntityMeta<T, ID> reader, Object... sql) {
     	
     	Query query = prepEntityQuery(reader.getColumns(), reader, hipster.q(sql));
     	List<T> ret = new ArrayList<>();
@@ -306,11 +308,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     
     @Override
     public <T> List<T> entitiesLimit(Class<T> clazz, int offset, int limit, Object... sql) {
-    	return entitiesLimit(hipster.getReaderSource().getOrCreate(clazz), offset, limit, sql);    
+    	return entitiesLimit(hipster.getEntitySource().getForRequired(clazz), offset, limit, sql);
     }
 
     @Override
-    public <T> List<T> entitiesLimit(IReadMeta<T> reader, int offset, int limit, Object... sql){
+    public <T,ID> List<T> entitiesLimit(IEntityMeta<T,ID> reader, int offset, int limit, Object... sql){
     	Query query  = prepEntityQuery(reader.getColumns(), reader, hipster.q(sql)); 
     	return entities(reader, query.add(" LIMIT "+limit+" OFFSET "+offset));
     }

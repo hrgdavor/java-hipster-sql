@@ -150,7 +150,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 //        	Builder builder = new GenEnum().gen2(def);
 //        	write(def.typeEnum.packageName(), builder.build(), processingEnv);
         	
-        	String[] className = HipsterProcessorUtil.splitClassName(processingEnv.getOptions().getOrDefault("hipster_proc_column_meta_class","hr.hrg.hipster.sql.BaseColumnMeta"));
+        	String[] className = HipsterProcessorUtil.splitClassName(processingEnv.getOptions().getOrDefault("hipster_proc_column_meta_class","hr.hrg.hipster.sql.ColumnMeta"));
         	ClassName columnMetaBase  = ClassName.get(className[0],className[1]);
         	
         	Builder builder = new GenImmutable(jackson, columnMetaBase).gen2(def);

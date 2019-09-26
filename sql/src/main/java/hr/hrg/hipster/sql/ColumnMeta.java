@@ -3,14 +3,16 @@ package hr.hrg.hipster.sql;
 import java.lang.annotation.*;
 import java.lang.reflect.*;
 
+import hr.hrg.hipster.dao.*;
+
 @SuppressWarnings("rawtypes")
-public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<BaseColumnMeta>{
+public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMeta>{
 
 	protected final Class<T> type;
 	protected final Class<?> primitiveType;
 	protected final String columnName;
 	protected final String getterName;
-	private IReadMeta meta;
+	private IEntityMeta meta;
 	protected final String columnSql;
 	protected final ImmutableList<Class<?>> typeParams;
 	protected final int ordinal;
@@ -19,12 +21,12 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	protected Annotation[] annotations;
 	private ICustomType<?> typeHandler;
 
-	public BaseColumnMeta(
+	public ColumnMeta(
 			int ordinal, 
 			String _name, 
 			String _columnName, 
 			String _getterName,
-			IReadMeta meta,
+			IEntityMeta meta,
 			Class<T> _type,
 			Class<?> _primitiveType, 
 			String _columnSql, 
@@ -96,7 +98,7 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 		return typeHandler;
 	}
 	
-	public BaseColumnMeta<T> withAnnotations(Annotation ... annotations){
+	public ColumnMeta<T> withAnnotations(Annotation ... annotations){
 		this.annotations = annotations;
 		return this;
 	}
@@ -121,9 +123,9 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	}
 	
 	@Override
-	public int compareTo(BaseColumnMeta o) {
+	public int compareTo(ColumnMeta o) {
 		if(o == null) throw new NullPointerException();
-		BaseColumnMeta meta = (BaseColumnMeta) o;
+		ColumnMeta meta = (ColumnMeta) o;
 		int first = this.meta.getTableName().compareTo(meta.getTableName());
 		if(first == 0) {
 			return name.compareTo(meta.name());
@@ -136,8 +138,8 @@ public class BaseColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<Base
 	public boolean equals(Object obj) {
 		if(obj == this) return true;
 		if(obj == null) return false;
-		if(obj instanceof BaseColumnMeta) {
-			BaseColumnMeta meta = (BaseColumnMeta) obj;
+		if(obj instanceof ColumnMeta) {
+			ColumnMeta meta = (ColumnMeta) obj;
 			return meta.ordinal() == ordinal && meta.getEntity() == this.getEntity();
 		}
 		return false;

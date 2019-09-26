@@ -100,7 +100,7 @@ public class HipsterSqlUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static Query selectQueryForEntity(HipsterSql hipster, IEntityMeta<?, ?> meta) {
-		List<BaseColumnMeta> columns = (List<BaseColumnMeta>) meta.getColumns();
+		List<ColumnMeta> columns = (List<ColumnMeta>) meta.getColumns();
 		
 		Query query = hipster.q("SELECT ");
 		

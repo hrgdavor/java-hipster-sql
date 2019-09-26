@@ -5,7 +5,7 @@ import java.util.*;
 import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings("rawtypes")
-public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T, ID>>{
+public class EntityDao <T, ID, C extends ColumnMeta, M extends IEntityMeta<T, ID>>{
 
 	protected IHipsterConnection hc;
 	protected HipsterSql hip;
@@ -36,6 +36,10 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 				.toRepeatable();
 	}
 
+	/** 
+	 * 
+	 * @return
+	 */
 	public IHipsterConnection getConnection() {
 		return hc;
 	}
@@ -94,7 +98,7 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param <C2> column meta
 	 * @return single result
 	 */
-	public <T2, C2 extends BaseColumnMeta<T2>> T2 qOneValue(C2 column, Object... sql) {
+	public <T2, C2 extends ColumnMeta<T2>> T2 qOneValue(C2 column, Object... sql) {
 		return _one(column, null, sql);
 	}
 
@@ -108,12 +112,12 @@ public class EntityDao <T, ID, C extends BaseColumnMeta, M extends IEntityMeta<T
 	 * @param <C2> column meta
 	 * @return single result
 	 */
-	public <T2, C2 extends BaseColumnMeta<T2>> T2 qOneValue(String op, C2 column, Object... sql) {
+	public <T2, C2 extends ColumnMeta<T2>> T2 qOneValue(String op, C2 column, Object... sql) {
 		return _one(column, op, sql);
 	}
 	
 	@SuppressWarnings({"unchecked"})
-	private <T2, C2 extends BaseColumnMeta<T2>> T2 _one(C2 column, String op, Object... sql) {
+	private <T2, C2 extends ColumnMeta<T2>> T2 _one(C2 column, String op, Object... sql) {
 		Query q = q("SELECT ");
 		if(op != null && !op.isEmpty()) {
 			q.add(op+"(", column).add(")");

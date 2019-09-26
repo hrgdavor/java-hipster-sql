@@ -12,8 +12,8 @@ public class TestQueryRepeat {
 
 	static HipsterSql hip = new HipsterSql();
 
-	BaseEntityMeta.Simple<Object, Long, BaseColumnMeta> meta = new BaseEntityMeta.Simple<>(0, "users", Object.class);
-	BaseColumnMeta<Long> idColumn = new BaseColumnMeta<>(0, "id", "userId", "getId", meta, Long.class, null, "", 
+	EntityMeta.Simple<Object, Long, ColumnMeta> meta = new EntityMeta.Simple<>(0, "users", Object.class);
+	ColumnMeta<Long> idColumn = new ColumnMeta<>(0, "id", "userId", "getId", meta, Long.class, null, "", 
 			hip.getTypeSource().getFor(Long.class));
 
 	volatile Query query = new Query(hip,1);// throw-away instance to 

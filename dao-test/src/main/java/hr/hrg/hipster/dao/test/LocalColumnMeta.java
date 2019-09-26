@@ -2,16 +2,17 @@ package hr.hrg.hipster.dao.test;
 
 import java.lang.annotation.*;
 
+import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
 
-public class LocalColumnMeta<T> extends BaseColumnMeta<T>{
+public class LocalColumnMeta<T> extends ColumnMeta<T>{
 
 	public LocalColumnMeta(
 			int ordinal, 
 			String _name, 
 			String _columnName, 
 			String _getterName, 
-			IReadMeta meta,
+			IEntityMeta meta,
 			Class<T> _type, 
 			Class<?> _primitiveType, 
 			String _columnSql, ICustomType<?> typeHandler,
