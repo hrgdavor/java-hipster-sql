@@ -295,4 +295,13 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
 		return ret;
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		for(int i=0; i<items.length; i++) {
+			if(i>0) b.append(',');
+			b.append(items[i]);
+		}
+		return b.toString();
+	}
 }
