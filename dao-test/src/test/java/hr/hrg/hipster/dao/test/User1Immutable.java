@@ -6,7 +6,8 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import hr.hrg.hipster.dao.IEnumGetter;
+
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.jackson.*;
 import hr.hrg.hipster.sql.*;
 

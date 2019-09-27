@@ -15,6 +15,7 @@ import javax.tools.Diagnostic.*;
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.AnnotationSpec.*;
 
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 import hr.hrg.javapoet.PoetUtil;

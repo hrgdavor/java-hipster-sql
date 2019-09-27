@@ -1,6 +1,6 @@
 package hr.hrg.hipster.change;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 
 public interface IEntityEventListener<T, ID, M extends IEntityMeta<T, ID>>{
 	

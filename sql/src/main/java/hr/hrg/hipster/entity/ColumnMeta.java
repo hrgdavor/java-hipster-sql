@@ -1,4 +1,4 @@
-package hr.hrg.hipster.dao;
+package hr.hrg.hipster.entity;
 
 import java.lang.annotation.*;
 import java.lang.reflect.*;

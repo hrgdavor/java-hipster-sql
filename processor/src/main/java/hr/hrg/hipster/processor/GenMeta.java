@@ -10,7 +10,7 @@ import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.*;
 
 import hr.hrg.hipster.change.*;
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
@@ -229,7 +229,7 @@ public class GenMeta {
 		String typeDao = def.type.simpleName()+"Dao";
 		cp.addJavadoc("Example dao class with proper generic arguments:\n");
 		cp.addJavadoc("<pre>\n");
-		cp.addJavadoc("import hr.hrg.hipster.dao.*;\n");
+		cp.addJavadoc("import hr.hrg.hipster.entity.*;\n");
 		cp.addJavadoc("import hr.hrg.hipster.sql.*;\n");
 		cp.addJavadoc("import $L.*;\n", def.packageName);
 		cp.addJavadoc("\n");
@@ -247,7 +247,7 @@ public class GenMeta {
 		String typeCache = def.type.simpleName()+"Cache";
 		cp.addJavadoc("Example cache class with proper generic arguments:\n");
 		cp.addJavadoc("<pre>\n");
-		cp.addJavadoc("import hr.hrg.hipster.dao.*;\n");
+		cp.addJavadoc("import hr.hrg.hipster.entity.*;\n");
 		cp.addJavadoc("import hr.hrg.hipster.sql.*;\n");
 		cp.addJavadoc("import $L.*;\n", def.packageName);
 		cp.addJavadoc("\n");

@@ -12,7 +12,7 @@ import org.joda.time.*;
 import org.slf4j.*;
 
 import hr.hrg.hipster.change.*;
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.type.*;
 

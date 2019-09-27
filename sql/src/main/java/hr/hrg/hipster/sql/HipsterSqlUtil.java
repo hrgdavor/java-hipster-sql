@@ -6,7 +6,7 @@ import java.util.*;
 
 import javax.lang.model.element.*;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
 
 

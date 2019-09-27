@@ -3,7 +3,7 @@ package hr.hrg.hipster.sql;
 import java.sql.*;
 import java.util.*;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.type.*;
 

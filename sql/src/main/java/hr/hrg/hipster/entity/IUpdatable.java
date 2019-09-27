@@ -1,4 +1,4 @@
-package hr.hrg.hipster.dao;
+package hr.hrg.hipster.entity;
 
 import hr.hrg.hipster.sql.*;
 

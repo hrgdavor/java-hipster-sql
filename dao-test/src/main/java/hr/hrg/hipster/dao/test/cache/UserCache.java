@@ -1,7 +1,7 @@
 package hr.hrg.hipster.dao.test.cache;
- import hr.hrg.hipster.dao.*;
  import hr.hrg.hipster.sql.*;
  import hr.hrg.hipster.dao.test.*;
+import hr.hrg.hipster.entity.*;
 
  public class UserCache extends SimpleEntityCache<User, Long, UserMeta>{
 

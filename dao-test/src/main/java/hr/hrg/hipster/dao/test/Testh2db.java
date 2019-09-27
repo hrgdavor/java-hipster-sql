@@ -5,8 +5,8 @@ import java.util.*;
 
 import javax.persistence.*;
 
-import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.dao.test.Testh2db_.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 

@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.type.*;
 

@@ -7,7 +7,7 @@ import java.sql.*;
 
 import org.testng.annotations.*;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
 
 @Test

@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.*;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 
 @HipsterEntity(table="user_table")

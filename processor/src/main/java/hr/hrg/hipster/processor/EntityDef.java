@@ -12,7 +12,7 @@ import javax.lang.model.util.*;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 
 public class EntityDef {

@@ -17,10 +17,10 @@ import javax.tools.Diagnostic.Kind;
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.TypeSpec.*;
 
-import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 
-@SupportedAnnotationTypes("hr.hrg.hipster.dao.HipsterEntity")
+@SupportedAnnotationTypes("hr.hrg.hipster.entity.HipsterEntity")
 @SupportedOptions({"hipster_proc_jackson","hipster_proc_builder", "hipster_proc_column_meta_class"})
 public class HipsterDaoProcessor extends AbstractProcessor{
 

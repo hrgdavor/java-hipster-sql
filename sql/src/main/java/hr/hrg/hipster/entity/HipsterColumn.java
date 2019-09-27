@@ -1,4 +1,4 @@
-package hr.hrg.hipster.sql;
+package hr.hrg.hipster.entity;
 
 import java.lang.annotation.*;
 
