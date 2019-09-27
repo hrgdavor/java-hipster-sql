@@ -74,6 +74,7 @@ public class HipsterSqlUtil {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> T[] toArray(T ...arr) {
 		return arr;
 	}
@@ -99,7 +100,7 @@ public class HipsterSqlUtil {
 		return ret;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Query selectQueryForEntity(HipsterSql hipster, IEntityMeta<?, ?> meta) {
 		List<ColumnMeta> columns = (List<ColumnMeta>) meta.getColumns();
 		

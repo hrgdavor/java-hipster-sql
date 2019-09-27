@@ -5,8 +5,8 @@ import java.util.*;
 import org.joda.time.*;
 
 import hr.hrg.hipster.sql.*;
-import hr.hrg.hipster.type.*;
 
+@SuppressWarnings("rawtypes")
 public class TypeSource{
 	protected HashMap<Class<? extends Object>, ICustomType<?>> registered = new HashMap<>(); 
 	protected HashMap<Class<? extends Object>, GenericEntry<ICustomType<?>>> registeredGeneric = new HashMap<>(); 
@@ -79,6 +79,7 @@ public class TypeSource{
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public ICustomType getForRequired(Class<?> clazz, Class<?> ...classParams) {
 		ICustomType for1 = getFor(clazz, classParams);
 		if(for1 == null && clazz.isEnum()) {
@@ -106,6 +107,7 @@ public class TypeSource{
 		return instances.get(clazz);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T extends ICustomType> T getInstanceRequired(Class<T> clazz) {
 		T handler = (T) instances.get(clazz);
 		if(handler == null) throw new RuntimeException("Instance not found "+clazz);

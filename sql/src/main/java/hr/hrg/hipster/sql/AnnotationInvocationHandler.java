@@ -11,8 +11,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.*;
 
-import com.fasterxml.jackson.databind.type.*;
-
 /**
 	Modified from apache licensed project 
 	https://github.com/leangen/geantyref/blob/master/src/main/java/io/leangen/geantyref/AnnotationInvocationHandler.java
@@ -56,7 +54,7 @@ class AnnotationInvocationHandler implements Annotation, InvocationHandler, Seri
     private final int hashCode;
 
     AnnotationInvocationHandler(Class<? extends Annotation> annotationType, Map<String, Object> values) {
-        Class[] interfaces = annotationType.getInterfaces();
+        Class<?>[] interfaces = annotationType.getInterfaces();
         if (annotationType.isAnnotation() && interfaces.length == 1 && interfaces[0] == Annotation.class) {
             this.annotationType = annotationType;
             this.values = Collections.unmodifiableMap(normalize(annotationType, values));

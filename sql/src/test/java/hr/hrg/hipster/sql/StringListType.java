@@ -3,7 +3,6 @@ package hr.hrg.hipster.sql;
 import java.sql.*;
 import java.util.*;
 
-import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
 class StringListType implements ICustomType<List<String>>{

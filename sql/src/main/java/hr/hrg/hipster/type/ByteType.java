@@ -2,8 +2,6 @@ package hr.hrg.hipster.type;
 
 import java.sql.*;
 
-import hr.hrg.hipster.sql.*;
-
 public class ByteType implements ICustomType<Byte>{
 
 	@Override

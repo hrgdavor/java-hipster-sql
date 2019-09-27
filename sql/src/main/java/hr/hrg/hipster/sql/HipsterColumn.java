@@ -40,7 +40,8 @@ public @interface HipsterColumn {
      * from database to entity and vice versa
      * @return _table 
      */
-    Class<? extends ICustomType> customType() default ICustomType.class;
+    @SuppressWarnings("rawtypes")
+	Class<? extends ICustomType> customType() default ICustomType.class;
 
 
     String customTypeKey() default "";

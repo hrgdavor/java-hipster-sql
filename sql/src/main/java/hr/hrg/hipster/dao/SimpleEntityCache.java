@@ -5,7 +5,6 @@ import java.util.*;
 import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.sql.*;
 
-@SuppressWarnings("rawtypes")
 public class SimpleEntityCache<T, ID, M extends IEntityMeta<T, ID>> 
 	implements IEntityEventListener<T, ID, M>{
 

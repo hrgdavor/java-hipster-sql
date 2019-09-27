@@ -201,6 +201,7 @@ public class HipsterSql {
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Query buildInsert(IEntityMeta<?, ?> meta, IUpdatable mutable) {
 		
 		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
@@ -208,8 +209,6 @@ public class HipsterSql {
 
 		StringBuilder firstPart = new StringBuilder("("); 
 		Query valuesPart = this.q(")VALUES(");
-		
-		ColumnMeta primaryColumn = meta.getPrimaryColumn();
 		
 		int i=0;
 		int ordinal;
@@ -297,6 +296,7 @@ public class HipsterSql {
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */
+	@SuppressWarnings("rawtypes")
 	public Query buildUpdate(IEntityMeta<?, ?> meta, Object filter, IUpdatable mutable) {
 		
 		if(!meta.getEntityClass().isAssignableFrom(mutable.getClass())) 
@@ -575,7 +575,7 @@ public class HipsterSql {
 		return b;
 	}
 
-	public Query qSelect(EntityMeta meta) {
+	public Query qSelect(EntityMeta<?,?,?,?> meta) {
 		return q("SELECT ").addColumns(meta).add(" FROM ", meta).add(' ');
 	}
 

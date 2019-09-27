@@ -163,7 +163,6 @@ public class EntityDao <T, ID, C extends ColumnMeta, M extends IEntityMeta<T, ID
 		return hc.oneDouble(q("SELECT ", column,	" FROM ",meta, " ").addParts(sql));
 	}
 
-	@SuppressWarnings("unchecked")
 	public ID insert(IUpdatable mutable) {
 		Query insertQuery = hc.getHipster().buildInsert(meta, mutable);
 		return (ID) hc.insert(meta.getPrimaryColumn().getType(), insertQuery);

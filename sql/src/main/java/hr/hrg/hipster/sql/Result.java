@@ -50,7 +50,6 @@ public class Result implements AutoCloseable{
 		prepareForExecution(query, returnGeneratedKeys);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private void prepareForExecution(Query p, boolean returnGeneratedKeys){
 
     	try {

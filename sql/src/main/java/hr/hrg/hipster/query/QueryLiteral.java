@@ -1,7 +1,5 @@
 package hr.hrg.hipster.query;
 
-import hr.hrg.hipster.sql.*;
-
 /** Class that encapsulates simple expressions like NULL or identifiers like column/table names. 
  * 
  * @author hrg

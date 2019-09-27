@@ -2,9 +2,6 @@ package hr.hrg.hipster.dao;
 
 import java.util.*;
 
-import hr.hrg.hipster.dao.*;
-import hr.hrg.hipster.sql.*;
-
 @SuppressWarnings("rawtypes")
 public class ColumnSet<C extends ColumnMeta> implements Iterable<C>{
 
@@ -16,6 +13,7 @@ public class ColumnSet<C extends ColumnMeta> implements Iterable<C>{
 		this(meta, false);
 	}
 
+	@SuppressWarnings("unchecked")
 	public ColumnSet(EntityMeta<?,?,?,?> meta, boolean allElements){
 		this.meta = meta;
 		this.all = (C[]) meta._columnArray;
@@ -126,7 +124,6 @@ public class ColumnSet<C extends ColumnMeta> implements Iterable<C>{
             return left != 0;
         }
 
-        @SuppressWarnings("unchecked")
         public C next() {
             if (left == 0) throw new NoSuchElementException();
 

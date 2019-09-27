@@ -11,6 +11,7 @@ import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.query.*;
 
 @Test
+@SuppressWarnings("rawtypes")
 public class TestQueryRepeat {
 
 	static HipsterSql hip = new HipsterSql();

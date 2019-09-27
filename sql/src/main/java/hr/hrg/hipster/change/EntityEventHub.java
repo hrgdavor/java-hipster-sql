@@ -5,7 +5,6 @@ import java.util.*;
 import org.slf4j.*;
 
 import hr.hrg.hipster.dao.*;
-import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings({"rawtypes","unchecked"})
 public class EntityEventHub {

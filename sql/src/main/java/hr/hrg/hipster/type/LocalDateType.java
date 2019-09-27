@@ -4,8 +4,6 @@ import java.sql.*;
 
 import org.joda.time.*;
 
-import hr.hrg.hipster.sql.*;
-
 public class LocalDateType implements ICustomType<LocalDate>{
 
 	@Override

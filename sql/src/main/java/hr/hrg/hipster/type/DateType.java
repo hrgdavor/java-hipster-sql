@@ -3,8 +3,6 @@ package hr.hrg.hipster.type;
 import java.sql.*;
 import java.util.Date;
 
-import hr.hrg.hipster.sql.*;
-
 public class DateType implements ICustomType<Date>{
 
 	@Override

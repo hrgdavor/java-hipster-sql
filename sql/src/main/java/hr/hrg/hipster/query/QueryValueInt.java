@@ -2,8 +2,6 @@ package hr.hrg.hipster.query;
 
 import java.sql.*;
 
-import hr.hrg.hipster.sql.*;
-
 public final class QueryValueInt implements IQeuryValue{
 	final int value;
 

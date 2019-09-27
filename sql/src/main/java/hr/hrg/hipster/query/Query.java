@@ -204,6 +204,7 @@ public class Query{
 	 * @param value
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public final Query add(ColumnMeta column, CharSequence queryOperationExpr, Object value) {
 		add(column);
 		return add(queryOperationExpr, new QueryValue(value, column.getTypeHandler()));
@@ -431,11 +432,11 @@ public class Query{
 	 * @param value value
 	 * @return this (builder pattern)
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Query withValue(Object value) {
 		return withValue(prepValue(value));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public IQeuryValue prepValue(Object value) {
 		IQeuryValue wrapped = null;
 		if(value == null) {

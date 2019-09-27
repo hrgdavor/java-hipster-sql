@@ -2,8 +2,6 @@ package hr.hrg.hipster.dao;
 
 import java.util.*;
 
-import hr.hrg.hipster.sql.*;
-
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class EntityCopy {
 	int[] indexFrom;

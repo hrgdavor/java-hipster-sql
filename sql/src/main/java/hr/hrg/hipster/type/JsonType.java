@@ -6,8 +6,6 @@ import java.sql.*;
 import com.fasterxml.jackson.core.type.*;
 import com.fasterxml.jackson.databind.*;
 
-import hr.hrg.hipster.sql.*;
-
 public class JsonType<T> implements ICustomType<T>{
 
 	private String clazz;
