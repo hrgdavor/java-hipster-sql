@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
+import hr.hrg.hipster.type.*;
 
 public class LocalColumnMeta<T> extends ColumnMeta<T>{
 

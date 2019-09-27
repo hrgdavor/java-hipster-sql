@@ -3,16 +3,19 @@ package hr.hrg.hipster.sql;
 
 import static org.testng.Assert.*;
 
-import java.util.*;
+import java.sql.*;
 
 import org.testng.annotations.*;
+
+import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.query.*;
 
 @Test
 public class TestQueryRepeat {
 
 	static HipsterSql hip = new HipsterSql();
 
-	EntityMeta.Simple<Object, Long, ColumnMeta> meta = new EntityMeta.Simple<>(0, "users", Object.class);
+	EntityMetaSimple<Object, Long, ColumnMeta,Object> meta = new EntityMetaSimple<>(0, "users", Object.class);
 	ColumnMeta<Long> idColumn = new ColumnMeta<>(0, "id", "userId", "getId", meta, Long.class, null, "", 
 			hip.getTypeSource().getFor(Long.class));
 
@@ -60,6 +63,48 @@ public class TestQueryRepeat {
 		
 		assertEquals(query.getQueryExpression(), "SELECT * FROM \"users\" WHERE \"userId\"=?");
 		assertEquals(query.toString(), "SELECT * FROM \"users\" WHERE \"userId\"=1");
+	}
+	
+
+	public static class EntityMetaSimple<T, ID, C extends ColumnMeta, V> extends EntityMeta<T, ID, C, V> {
+
+		private String entityName;
+
+		public EntityMetaSimple(int ordinal, String tableName, Class<T> entityClass) {
+			super(ordinal, tableName, entityClass);
+			this.entityName = entityClass.getSimpleName();
+		}
+
+		@Override
+		public String getEntityName() {
+			return entityName;
+		}
+
+		@Override
+		public boolean containsColumn(String columnName) {
+			return false;
+		}
+
+		@Override
+		public ColumnMeta<ID> getPrimaryColumn() {
+			return null;
+		}
+
+		@Override
+		public ID entityGetPrimary(T instance) {
+			return null;
+		}
+
+		@Override
+		public IUpdatable mutableCopy(Object v) {
+			return null;
+		}
+
+		@Override
+		public T fromResultSet(ResultSet rs) throws SQLException {
+			return null;
+		}
+
 	}
 	
 }

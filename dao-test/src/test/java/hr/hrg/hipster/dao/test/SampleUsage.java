@@ -1,8 +1,8 @@
 package hr.hrg.hipster.dao.test;
 import javax.persistence.*;
 
-import hr.hrg.hipster.sql.ColumnMeta;
-import hr.hrg.hipster.sql.Key;
+import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.sql.*;
 
 public class SampleUsage {
 

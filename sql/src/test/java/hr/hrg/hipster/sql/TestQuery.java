@@ -4,6 +4,8 @@ import static org.testng.Assert.*;
 
 import org.testng.annotations.*;
 
+import hr.hrg.hipster.query.*;
+
 
 @Test
 public class TestQuery {
@@ -74,7 +76,7 @@ public class TestQuery {
 	@Test(dataProvider="queries")
 	public void testPrepared(String queryString, String preparedStr, Object[]p){
 		Query query = hip.q(p);
-		assertEquals(query.getQueryExpressionBuilder().toString(), preparedStr);
+		assertEquals(query.getQueryExpression().toString(), preparedStr);
 		assertEquals(query.toString(), queryString);
 	}
 

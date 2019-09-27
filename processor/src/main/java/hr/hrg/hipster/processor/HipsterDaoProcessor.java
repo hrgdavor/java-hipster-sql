@@ -165,6 +165,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 				builder = new GenUpdate(jackson, genBuilder,columnMetaBase).gen2(def);
 				write(def.typeUpdate, builder.build(), processingEnv);
         	}
+        	
     		if(def.genMeta){
     			
     			builder = new GenMeta().gen(def,columnMetaBase);
@@ -175,6 +176,10 @@ public class HipsterDaoProcessor extends AbstractProcessor{
     			
 //    			builder = new GenDelta().gen2(def);
 //    			write(def.typeDelta, builder.build(), processingEnv);
+
+    			builder = new GenVisitor().gen2(def);
+    			write(def.typeDelta, builder.build(), processingEnv);
+    			
     		}
         	
 

@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.*;
 
 import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.query.*;
+import hr.hrg.hipster.type.*;
 
 /** Short lived throw away instance that can be used per thread(sql connection) and discarded. 
  * You should not share instance between threads, although the worst that can happen is wrong query reported
@@ -142,95 +144,95 @@ public class HipsterConnectionImpl implements IHipsterConnection {
         return rows;
     }
     
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> void rowsVisit(Object sql, T visitor) {
-		Class<? extends Object> clazz = visitor.getClass();
-		IResultFwdVisitor<T> handler = (IResultFwdVisitor<T>) hipster.getVisitorSource().getFor(clazz);
-		if(handler == null){
-			Class<?>[] interfaces = clazz.getInterfaces();
-			if(interfaces.length == 1){
-				handler = (IResultFwdVisitor<T>) hipster.getVisitorSource().getOrCreate(interfaces[0]);
-				// register the implementation to the same handler so next time it is found on first try
-				if(handler != null) hipster.getVisitorSource().registerFor(handler, clazz);
-			}
-		}
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public <T> void rowsVisit(Object sql, T visitor) {
+//		Class<? extends Object> clazz = visitor.getClass();
+//		IResultFwdVisitor<T> handler = (IResultFwdVisitor<T>) hipster.getVisitorSource().getFor(clazz);
+//		if(handler == null){
+//			Class<?>[] interfaces = clazz.getInterfaces();
+//			if(interfaces.length == 1){
+//				handler = (IResultFwdVisitor<T>) hipster.getVisitorSource().getOrCreate(interfaces[0]);
+//				// register the implementation to the same handler so next time it is found on first try
+//				if(handler != null) hipster.getVisitorSource().registerFor(handler, clazz);
+//			}
+//		}
+//
+//		if(handler == null) throw new HipsterSqlException(this, "Visitor handler not found for "+clazz.getName(), null);
+//    	rowsVisitFwd(sql, handler, visitor);
+//    }
+//    
+//    @Override
+//    public <T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd) {
+//    	
+//    	Query query = prepEntityQuery(Arrays.asList(new QueryLiteral(visitor.getColumnNamesStr())), null, hipster.q(sql));
+//    	
+//    	boolean autoCommit = false;
+//    	try {
+//    		// postgres does not use cursor if autoCommit is on
+//    		autoCommit = sqlConnection.getAutoCommit();
+//    		sqlConnection.setAutoCommit(false);
+//    	} catch (SQLException e) {
+//    		throw new HipsterSqlException(this, "autoCommit", e);
+//    	}
+//    	
+//    	try(Result res = new Result(this);){
+//    		res.setFetchSize(512);
+//    		
+//    		res.executeQuery(query);
+//    		
+//    		while(res.next()){
+//    			visitor.visitResult(res.getResultSet(), fwd);
+//    		}
+//    	}catch (Exception e) {
+//    		throw new HipsterSqlException(this, "visit failed", e);
+//    	}finally {
+//    		try{
+//    			sqlConnection.setAutoCommit(autoCommit);
+//    		} catch (SQLException e) {
+//    			throw new HipsterSqlException(this, "autoCommit", e);
+//    		}
+//    	}
+//    }
+//
+//    @Override
+//    public void rowsVisitResult(Object sql, IResultSetVisitor visitor) {
+//
+//        boolean autoCommit = false;
+//        try {
+//        	// postgres does not use cursor if autoCommit is on
+//			autoCommit = sqlConnection.getAutoCommit();
+//			sqlConnection.setAutoCommit(false);
+//		} catch (SQLException e) {
+//			throw new HipsterSqlException(this, "autoCommit", e);
+//		}
+//
+//        try(Result res = new Result(this);){
+//        	res.setFetchSize(512);
+//
+//        	res.executeQuery(sql);
+//
+//	        while(res.next()){
+//	            visitor.visitResult(res.getResultSet());
+//	        }
+//        }catch (Exception e) {
+//        	throw new HipsterSqlException(this, "visit failed", e);
+//        }finally {
+//        	try{
+//        		sqlConnection.setAutoCommit(autoCommit);
+//    		} catch (SQLException e) {
+//    			throw new HipsterSqlException(this, "autoCommit", e);
+//    		}
+//		}
+//    }
 
-		if(handler == null) throw new HipsterSqlException(this, "Visitor handler not found for "+clazz.getName(), null);
-    	rowsVisitFwd(sql, handler, visitor);
-    }
-    
-    @Override
-    public <T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd) {
-    	
-    	Query query = prepEntityQuery(Arrays.asList(new QueryLiteral(visitor.getColumnNamesStr())), null, hipster.q(sql));
-    	
-    	boolean autoCommit = false;
-    	try {
-    		// postgres does not use cursor if autoCommit is on
-    		autoCommit = sqlConnection.getAutoCommit();
-    		sqlConnection.setAutoCommit(false);
-    	} catch (SQLException e) {
-    		throw new HipsterSqlException(this, "autoCommit", e);
-    	}
-    	
-    	try(Result res = new Result(this);){
-    		res.setFetchSize(512);
-    		
-    		res.executeQuery(query);
-    		
-    		while(res.next()){
-    			visitor.visitResult(res.getResultSet(), fwd);
-    		}
-    	}catch (Exception e) {
-    		throw new HipsterSqlException(this, "visit failed", e);
-    	}finally {
-    		try{
-    			sqlConnection.setAutoCommit(autoCommit);
-    		} catch (SQLException e) {
-    			throw new HipsterSqlException(this, "autoCommit", e);
-    		}
-    	}
-    }
+    public <E extends IQueryLiteral> Query prepEntityQuery(List<? extends ColumnMeta> list, IQueryLiteral table, Query sql) {
 
-    @Override
-    public void rowsVisitResult(Object sql, IResultSetVisitor visitor) {
-
-        boolean autoCommit = false;
-        try {
-        	// postgres does not use cursor if autoCommit is on
-			autoCommit = sqlConnection.getAutoCommit();
-			sqlConnection.setAutoCommit(false);
-		} catch (SQLException e) {
-			throw new HipsterSqlException(this, "autoCommit", e);
-		}
-
-        try(Result res = new Result(this);){
-        	res.setFetchSize(512);
-
-        	res.executeQuery(sql);
-
-	        while(res.next()){
-	            visitor.visitResult(res.getResultSet());
-	        }
-        }catch (Exception e) {
-        	throw new HipsterSqlException(this, "visit failed", e);
-        }finally {
-        	try{
-        		sqlConnection.setAutoCommit(autoCommit);
-    		} catch (SQLException e) {
-    			throw new HipsterSqlException(this, "autoCommit", e);
-    		}
-		}
-    }
-
-    public <E extends IQueryLiteral> Query prepEntityQuery(List<E> columns, IQueryLiteral table, Query sql) {
-
-    	if(columns == null || columns.isEmpty()) return sql; // no need to inject column names
+    	if(list == null || list.isEmpty()) return sql; // no need to inject column names
     	String str = sql.getQueryExpression().toString().toLowerCase();
     	if(str.startsWith("select ") || str.startsWith(" select ")) return sql;
     	
-    	Query columnsQuery = hipster.q("SELECT ").addPartsList(",", columns);
+    	Query columnsQuery = hipster.q("SELECT ").addPartsList(",", list);
 
     	    	
 		if(str.startsWith("from ") || str.startsWith(" from ")){

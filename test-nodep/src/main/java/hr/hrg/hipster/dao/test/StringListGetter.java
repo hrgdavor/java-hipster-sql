@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 import hr.hrg.hipster.sql.*;
+import hr.hrg.hipster.type.*;
 
 class StringListGetter implements ICustomType<List<String>>{
 

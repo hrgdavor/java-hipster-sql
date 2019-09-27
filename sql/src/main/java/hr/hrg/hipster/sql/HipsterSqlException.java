@@ -1,5 +1,7 @@
 package hr.hrg.hipster.sql;
 
+import hr.hrg.hipster.query.*;
+
 public class HipsterSqlException extends RuntimeException{
 
 	private static final long serialVersionUID = 1L;

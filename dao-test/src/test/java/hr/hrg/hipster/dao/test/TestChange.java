@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.*;
 
 import org.testng.annotations.*;
 
-import hr.hrg.hipster.dao.change.*;
+import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.sql.*;
 
 @Test

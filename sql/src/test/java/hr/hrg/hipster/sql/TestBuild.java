@@ -7,6 +7,8 @@ import java.util.*;
 
 import org.testng.annotations.*;
 
+import hr.hrg.hipster.query.*;
+
 @Test
 public class TestBuild {
 
@@ -34,7 +36,7 @@ public class TestBuild {
 		// we create a map for this example, but you might have it already by reading data from somewhere
 		query = hip.buildInsert("user", data);
 		
-		assertEquals(query.getQueryExpressionBuilder().toString(), 
+		assertEquals(query.getQueryExpression().toString(), 
 				"INSERT INTO user(name,gender,age,password)VALUES(?,?,?,PASSWORD(?))");
 		assertEquals(query.toString(), "INSERT INTO user(name,gender,age,password)VALUES('John','M',100,PASSWORD('pwd'))");
 		
@@ -47,7 +49,7 @@ public class TestBuild {
 				"password", hip.q("PASSWORD(",password,")")
 			);
 
-		assertEquals(query.getQueryExpressionBuilder().toString(),
+		assertEquals(query.getQueryExpression().toString(),
 				"INSERT INTO user(name,gender,age,password)VALUES(?,?,?,PASSWORD(?))");
 		assertEquals(query.toString(), "INSERT INTO user(name,gender,age,password)VALUES('John','M',100,PASSWORD('pwd'))");
 
@@ -60,7 +62,7 @@ public class TestBuild {
 		// we can reuse the map from last example
 		query = hip.buildUpdate("user", hip.q("id=",id) ,data);
 		
-		assertEquals(query.getQueryExpressionBuilder().toString(), 
+		assertEquals(query.getQueryExpression().toString(), 
 				"UPDATE \"user\" SET \"name\"=?,\"gender\"=?,\"age\"=?,\"password\"=PASSWORD(?) WHERE id=?");
 		assertEquals(query.toString(), "UPDATE \"user\" SET \"name\"='John',\"gender\"='M',\"age\"=100,\"password\"=PASSWORD('pwd') WHERE id=1");
 		
@@ -73,7 +75,7 @@ public class TestBuild {
 				"password", hip.q("PASSWORD(",password,")")
 			);
 
-		assertEquals(query.getQueryExpressionBuilder().toString(),
+		assertEquals(query.getQueryExpression().toString(),
 				"UPDATE \"user\" SET \"name\"=?,\"gender\"=?,\"age\"=?,\"password\"=PASSWORD(?) WHERE \"id\" = ?");
 		assertEquals(query.toString(), "UPDATE \"user\" SET \"name\"='John',\"gender\"='M',\"age\"=100,\"password\"=PASSWORD('pwd') WHERE \"id\" = 1");
 
@@ -84,21 +86,21 @@ public class TestBuild {
 		query = hip.buildFilter("id",id);
 		// resulting prepared statement
 		// id = ?
-		assertEquals(query.getQueryExpressionBuilder().toString(), "\"id\" = ?");
+		assertEquals(query.getQueryExpression().toString(), "\"id\" = ?");
 
 		// when handling null, this function becomes even more useful as it changes "id = null" to "id IS NULL"
 		query = hip.buildFilter("id",null);
 		// resulting prepared statement
 		// id IS NULL
-		assertEquals(query.getQueryExpressionBuilder().toString(), "\"id\" IS NULL");
+		assertEquals(query.getQueryExpression().toString(), "\"id\" IS NULL");
 		
 		// similar behavior is also with "!=" and "<>" operator and null value
 		query = hip.buildFilter("id","!=",null);
-		assertEquals(query.getQueryExpressionBuilder().toString(), "\"id\" IS NOT NULL");
+		assertEquals(query.getQueryExpression().toString(), "\"id\" IS NOT NULL");
 		query = hip.buildFilter("id","<>",null);
 		// both resulting in same prepared statement
 		// id IS NOT NULL
-		assertEquals(query.getQueryExpressionBuilder().toString(), "\"id\" IS NOT NULL");
+		assertEquals(query.getQueryExpression().toString(), "\"id\" IS NOT NULL");
 
 	}
 	

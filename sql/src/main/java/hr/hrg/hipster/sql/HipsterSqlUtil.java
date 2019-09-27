@@ -7,6 +7,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 
 import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.query.*;
 
 
 public class HipsterSqlUtil {

@@ -5,8 +5,8 @@ import static hr.hrg.javapoet.PoetUtil.*;
 
 import com.squareup.javapoet.*;
 
+import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.dao.*;
-import hr.hrg.hipster.dao.change.*;
 import hr.hrg.hipster.sql.*;
 
 public class GenBuilder {

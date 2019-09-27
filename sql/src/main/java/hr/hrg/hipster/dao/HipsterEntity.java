@@ -11,4 +11,6 @@ public @interface HipsterEntity {
 	public boolean genMeta() default true;
 
 	public boolean genUpdate() default true;
+
+	public boolean genVisitor() default true;
 }

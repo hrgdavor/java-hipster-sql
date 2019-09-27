@@ -1,6 +1,6 @@
 package hr.hrg.hipster.sql;
 
-import static hr.hrg.hipster.sql.QueryLiteral.*;
+import static hr.hrg.hipster.query.QueryLiteral.*;
 
 import java.sql.*;
 import java.sql.Date;
@@ -11,8 +11,10 @@ import java.util.regex.*;
 import org.joda.time.*;
 import org.slf4j.*;
 
+import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.dao.*;
-import hr.hrg.hipster.dao.change.*;
+import hr.hrg.hipster.query.*;
+import hr.hrg.hipster.type.*;
 
 public class HipsterSql {
 	
@@ -29,12 +31,10 @@ public class HipsterSql {
 	private TypeSource typeSource;
 	private EntitySource entitySource;
 	
-	private VisitorSource visitorSource;
 	private EntityEventHub eventHub;
 
 	public HipsterSql() {
 		this.typeSource = new TypeSource();
-		this.visitorSource = new VisitorSource(typeSource);
 		this.entitySource = new EntitySource(this);
 		this.eventHub = new EntityEventHub(entitySource);
 		this.intAllowdOperators();
@@ -56,10 +56,6 @@ public class HipsterSql {
 	
 	public TypeSource getTypeSource() {
 		return typeSource;
-	}
-	
-	public VisitorSource getVisitorSource() {
-		return visitorSource;
 	}
 	
 	public EntityEventHub getEventHub() {
@@ -263,8 +259,8 @@ public class HipsterSql {
 		}
 		valuesPart.add(")");
 		
-		firstPart.append(valuesPart.getQueryExpressionBuilder());
-		return new Query(this, firstPart, valuesPart.size, valuesPart.values);
+		firstPart.append(valuesPart.getQueryExpression());
+		return new Query(this, firstPart, valuesPart.getSize(), valuesPart.getValues());
 	}
 
 	/** build insert QueryOld from vararg paramteters that are pairs (column,value) . Although method accepts objects 
@@ -290,8 +286,8 @@ public class HipsterSql {
 		}
 		valuesPart.add(")");
 
-		firstPart.append(valuesPart.getQueryExpressionBuilder());
-		return new Query(this, firstPart, valuesPart.size, valuesPart.values);		
+		firstPart.append(valuesPart.getQueryExpression());
+		return new Query(this, firstPart, valuesPart.getSize(), valuesPart.getValues());		
 	}
 
 	/** Build update query from an object, with help of entity metadata. Columns that were not changed
@@ -478,6 +474,14 @@ public class HipsterSql {
 //		}
 //	}
 
+	public String getColumQuote1() {
+		return columQuote1;
+	}
+	
+	public String getColumQuote2() {
+		return columQuote2;
+	}
+	
 	/** HipsterSql returns DateTime LocalDate and LocalTime from yoda-time library if it is present in the classpath.<br>
 	 * Otherwise returns java.sql(Date,Time,TimeStamp).<br>
 	 * <br>
@@ -544,9 +548,8 @@ public class HipsterSql {
     /* (non-Javadoc)
 	 * @see hr.hrg.hipster.sql.HipsterConnection#rowsLimit(int, int, java.lang.Object)
 	 */
-	public Query withLimit(int offset, int limit, Object ...sql){
-    	Query query = q(sql);
-    	query.queryExpressionBuilder
+	public Query appendLimit(int offset, int limit, StringBuilder queryExpressionBuilder, Query query){
+    	queryExpressionBuilder
     		.append(" LIMIT ") .append(limit)
     		.append(" OFFSET ").append(offset);
 		return query;
@@ -570,6 +573,10 @@ public class HipsterSql {
 	public static StringBuilder quote(StringBuilder b, String str){
 		b.append('\'').append(str).append('\'');
 		return b;
+	}
+
+	public Query qSelect(EntityMeta meta) {
+		return q("SELECT ").addColumns(meta).add(" FROM ", meta).add(' ');
 	}
 
 	public Query q(Object ...parts) {

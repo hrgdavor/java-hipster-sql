@@ -7,8 +7,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import hr.hrg.hipster.dao.IUpdatable;
-import hr.hrg.hipster.dao.jackson.DirectSerializer;
-import hr.hrg.hipster.dao.jackson.IDirectSerializerReady;
+import hr.hrg.hipster.jackson.*;
 import hr.hrg.hipster.sql.*;
 
 import java.io.IOException;

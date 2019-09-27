@@ -2,7 +2,7 @@ package hr.hrg.hipster.dao;
 
 import java.util.*;
 
-import hr.hrg.hipster.dao.change.*;
+import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings("rawtypes")

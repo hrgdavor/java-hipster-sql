@@ -2,6 +2,8 @@ package hr.hrg.hipster.sql;
 
 import java.lang.annotation.*;
 
+import hr.hrg.hipster.type.*;
+
 /**Alternative to {@link javax.persistence.Column}
  * 
  * @author hrg

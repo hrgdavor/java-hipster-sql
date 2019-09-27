@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.query.*;
+import hr.hrg.hipster.type.*;
 
 public interface IHipsterConnection {
 
@@ -114,12 +116,5 @@ public interface IHipsterConnection {
 
 	<T> List<T> column(Class<T> reader, Object ...sql);
 	<T> List<T> column(ICustomType<T> reader, Object ...sql);
-
-	public <T> void rowsVisit(Object sql, T visitor);
-	
-	<T> void rowsVisitFwd(Object sql, IResultFwdVisitor<T> visitor, T fwd);
-
-	void rowsVisitResult(Object sql, IResultSetVisitor visitor);
-
 	
 }

@@ -9,9 +9,10 @@ import java.util.*;
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.*;
 
+import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.dao.*;
-import hr.hrg.hipster.dao.change.*;
 import hr.hrg.hipster.sql.*;
+import hr.hrg.hipster.type.*;
 
 
 public class GenMeta {
@@ -25,7 +26,7 @@ public class GenMeta {
 		Property primaryProp = def.getPrimaryProp();
 		TypeName primaryType = primaryProp == null ? TypeName.get(Object.class) : primaryProp.type;
 	
-		cp.superclass(parametrized(EntityMeta.class,def.type, primaryType, columnMetaBase));
+		cp.superclass(parametrized(EntityMeta.class,def.type, primaryType, columnMetaBase, def.typeVisitor));
 		
 		// public static final Class<SampleEntity> ENTITY_CLASS = SampleEntity.class;
 		addField(cp, PRIVATE().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
@@ -269,6 +270,22 @@ public class GenMeta {
 		cp.addJavadoc("</pre>\n");
 		cp.addJavadoc("\n");
 		
+		cp.addJavadoc("Example visitor lambda:\n");
+		cp.addJavadoc("<pre>\n");
+		cp.addJavadoc("meta.visitResults(hc, query, (");
+		int i=1;
+		for(Property p:def.getProps()) {
+			if(i>1) cp.addJavadoc(", ");
+			cp.addJavadoc(p.fieldName);
+			i++;
+		}
+		cp.addJavadoc(") -> {\n");
+		cp.addJavadoc("	// your code here\n");
+		cp.addJavadoc("});\n");
+		cp.addJavadoc("</pre>\n");
+		cp.addJavadoc("\n");
+		
+
 	}
 
 	private String getterName(Property p){
@@ -300,8 +317,34 @@ public class GenMeta {
 		method.addParameter(ResultSet.class, "rs");
 		method.addException(java.sql.SQLException.class);
 
-		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(\n",def.typeImmutable);
+		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(",def.typeImmutable);
+		genPrepValueVars(def, method, returnValue);
+		method.addCode("\n");
+		returnValue.add(");");
+		
+		method.addCode(returnValue.build());
+		
+		cp.addMethod(method.build());
 
+	
+		method = methodBuilder(PUBLIC().FINAL(), "visitResult");
+		
+		method.addParameter(ResultSet.class, "rs");
+		method.addParameter(def.typeVisitor, "visitor");
+		method.addException(java.sql.SQLException.class);
+
+		returnValue = CodeBlock.builder().add("visitor.visit(",def.typeImmutable);
+		genPrepValueVars(def, method, returnValue);
+		method.addCode("\n");
+		returnValue.add(");");
+		
+		method.addCode(returnValue.build());
+		
+		cp.addMethod(method.build());
+
+	}
+
+	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue) {
 		int i=1;
 		for(Property p:def.getProps()) {
 			method.addCode("$T $L",p.type, p.fieldName);
@@ -320,13 +363,6 @@ public class GenMeta {
 
 			i++;
 		}
-		
-		returnValue.add(");");
-		
-		method.addCode("\n");
-		method.addCode(returnValue.build());
-		
-		cp.addMethod(method.build());
 	}
 	
 	private void addColumnsDef(com.squareup.javapoet.TypeSpec.Builder cp, Builder constr, EntityDef def, ClassName columnMetaBase) {
@@ -462,11 +498,11 @@ public class GenMeta {
 //		addField(constr,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(columnMetaBase), "COLUMN_ARRAY", 
 //				field->field.initializer(arr.toString()));
 //
-		addField(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class, columnMetaBase), "_columns");
+//		addField(cp,PUBLIC().FINAL(), parametrized(ImmutableList.class, columnMetaBase), "_columns");
 
 		constr.addCode("\n");
 		constr.addCode("_columnArray = new $T[]$L;\n",columnMetaBase, arr.toString());
-		constr.addCode("_columns =  ImmutableList.safe(($T[])_columnArray);\n",columnMetaBase);
+		constr.addCode("_columns =  $T.safe(($T[])_columnArray);\n",ImmutableList.class,columnMetaBase);
 		
 		Collections.sort(enumNames);
 

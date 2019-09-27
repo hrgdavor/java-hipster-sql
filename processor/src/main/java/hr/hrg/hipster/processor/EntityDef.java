@@ -31,6 +31,7 @@ public class EntityDef {
 	public final ClassName typeUpdate;
 	public final ClassName typeMeta;
 	public final ClassName typeDelta;
+	public final ClassName typeVisitor;
 	public final ClassName type;
 
 	public final boolean genMeta;
@@ -62,6 +63,7 @@ public class EntityDef {
 		this.typeUpdate    = ClassName.get(packageName, simpleName+"Update");
 		this.typeMeta      = ClassName.get(packageName, simpleName+"Meta");
 		this.typeDelta     = ClassName.get(packageName, simpleName+"Delta");
+		this.typeVisitor   = ClassName.get(packageName, simpleName+"Visitor");
 		
 	}
 		

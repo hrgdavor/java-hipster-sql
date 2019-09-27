@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 import hr.hrg.hipster.dao.*;
+import hr.hrg.hipster.query.*;
 /**
  * 
  * @author hrg
@@ -62,8 +63,8 @@ public class Result implements AutoCloseable{
 			throw new RuntimeException("Error preparing statement: "+hipConnection.lastQuery+" ERR: "+e.getMessage(), e);
 		}
 		
-		IQeuryValue[] values = p.values;
-		int size = p.size;
+		IQeuryValue[] values = p.getValues();
+		int size = p.getSize();
 		for(int i=0; i<size; i++){
 			try {
 				values[i].set(ps, i+1);

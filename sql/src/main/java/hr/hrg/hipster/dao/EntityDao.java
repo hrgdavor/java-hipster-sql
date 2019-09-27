@@ -2,7 +2,9 @@ package hr.hrg.hipster.dao;
 
 import java.util.*;
 
+import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.sql.*;
+import hr.hrg.hipster.type.*;
 
 @SuppressWarnings("rawtypes")
 public class EntityDao <T, ID, C extends ColumnMeta, M extends IEntityMeta<T, ID>>{

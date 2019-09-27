@@ -3,9 +3,11 @@ package hr.hrg.hipster.dao.test;
 import java.sql.*;
 import java.util.*;
 
+import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
+import hr.hrg.hipster.type.*;
 
-public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta> {
+public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Visitor>{
   private static final Class<User1> ENTITY_CLASS = User1.class;
   
   public final LocalColumnMeta<Long> id;
@@ -44,12 +46,20 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta> {
   }
   
   public final User1 fromResultSet(ResultSet rs) throws SQLException {
-    Long id = rs.getLong(1);
-    List<String> name = (List<String>)_typeHandler[1].get(rs,2);
-    int age = rs.getInt(3);
-
-    return new User1Immutable(
-    id, name, age);}
+	  Long id = rs.getLong(1);
+	  List<String> name = (List<String>)_typeHandler[1].get(rs,2);
+	  int age = rs.getInt(3);
+	  
+	  return new User1Immutable(id, name, age);
+  }
+  
+  public final void visitResult(ResultSet rs, User1Visitor visitor) throws SQLException {
+	  Long id = rs.getLong(1);
+	  List<String> name = (List<String>)_typeHandler[1].get(rs,2);
+	  int age = rs.getInt(3);
+	  
+	  visitor.visit(id, name, age);
+  }
 
   @Override
   public final UserUpdate mutableCopy(Object v) {

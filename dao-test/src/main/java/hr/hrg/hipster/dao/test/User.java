@@ -10,7 +10,6 @@ import hr.hrg.hipster.dao.*;
 import hr.hrg.hipster.sql.*;
 
 @HipsterEntity(table="user_table")
-@HipsterVisitor
 public interface User{
 	
 	@Id

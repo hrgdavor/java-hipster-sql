@@ -10,6 +10,7 @@ import java.util.*;
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.TypeSpec.*;
 
+import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.javapoet.*;
 

@@ -1,11 +1,13 @@
 package hr.hrg.hipster.sql;
 
-import static hr.hrg.hipster.sql.QueryUtil.*;
+import static hr.hrg.hipster.query.QueryUtil.*;
 import static org.testng.Assert.*;
 
 import java.util.*;
 
 import org.testng.annotations.*;
+
+import hr.hrg.hipster.query.*;
 
 @Test
 public class TestMap {

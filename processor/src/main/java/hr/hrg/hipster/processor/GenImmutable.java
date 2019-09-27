@@ -10,7 +10,7 @@ import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.Builder;
 
 import hr.hrg.hipster.dao.*;
-import hr.hrg.hipster.dao.jackson.*;
+import hr.hrg.hipster.jackson.*;
 import hr.hrg.hipster.sql.*;
 
 public class GenImmutable {
