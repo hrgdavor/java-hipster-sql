@@ -109,7 +109,7 @@
 					<compilerArgs>
 						<arg>-Ahipster_proc_jackson=true</arg>
 						<arg>-Ahipster_proc_builder=false</arg>
-                        <arg>-Ahipster_proc_column_meta_class=hr.hrg.hipster.entity.test.LocalColumnMeta</arg>
+                        <arg>-Ahipster_proc_column_meta_class=hr.hrg.hipster.dao.test.LocalColumnMeta</arg>
 					</compilerArgs>
 				</configuration>
 			</plugin>

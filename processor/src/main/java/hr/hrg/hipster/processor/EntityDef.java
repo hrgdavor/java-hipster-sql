@@ -41,6 +41,7 @@ public class EntityDef {
 		isInterface = clazz.getKind().isInterface();
 		this.declaredType = (DeclaredType) clazz.asType();
 
+	
 		String[] entityNamesPrefix = HipsterSqlUtil.entityNamesPrefixArray(clazz);
 		this.packageName = entityNamesPrefix[0];
 		this.simpleName = entityNamesPrefix[1];
@@ -68,7 +69,7 @@ public class EntityDef {
 	}
 		
 	public Property addProp(String name, TypeName typeName, TypeMirror typeMirror, ExecutableElement method, ProcessingEnvironment processingEnv){
-		Property property = new Property(name, typeName, method, this.tableName, processingEnv);
+		Property property = new Property(name, typeName, method, this.tableName, processingEnv, props.size());
 		props.add(property);
 		return property;
 	}

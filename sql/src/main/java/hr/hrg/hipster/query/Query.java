@@ -272,9 +272,13 @@ public class Query{
 	 * @return this (builder pattern)
 	 */
 	public final Query add(IQueryLiteral queryPart){
-		if(queryPart.isIdentifier())  add(hipster.getColumQuote1());
+		if(queryPart.isIdentifier())  
+			add(hipster.getColumQuote1());
+		
 		add(queryPart.getQueryText());
-		if(queryPart.isIdentifier())  add(hipster.getColumQuote2());
+		
+		if(queryPart.isIdentifier())  
+			add(hipster.getColumQuote2());
 		return this;
 	}
 		
@@ -465,7 +469,8 @@ public class Query{
 	}
 
 	public Query withLimit(int offset, int limit) {
-		return hipster.appendLimit(offset, limit, queryExpressionBuilder, this);
+		hipster.appendLimit(offset, limit, queryExpressionBuilder);
+		return this;
 	}
 
 	@Override

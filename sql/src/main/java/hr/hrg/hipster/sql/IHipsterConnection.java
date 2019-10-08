@@ -17,6 +17,9 @@ public interface IHipsterConnection {
 	HipsterSql getHipster();
 
 	Connection getSqlConnection();
+	
+	public Query q(Object ...parts);
+
 
 	/** Get first value from first row and first column. <br>
 	 * Useful for counting and other queries that return single value.<br>
@@ -116,5 +119,7 @@ public interface IHipsterConnection {
 
 	<T> List<T> column(Class<T> reader, Object ...sql);
 	<T> List<T> column(ICustomType<T> reader, Object ...sql);
+
+	void rowsVisitResult(Query sql, IResultSetVisitor visitor);
 	
 }

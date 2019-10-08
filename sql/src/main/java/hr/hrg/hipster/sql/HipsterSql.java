@@ -548,11 +548,10 @@ public class HipsterSql {
     /* (non-Javadoc)
 	 * @see hr.hrg.hipster.sql.HipsterConnection#rowsLimit(int, int, java.lang.Object)
 	 */
-	public Query appendLimit(int offset, int limit, StringBuilder queryExpressionBuilder, Query query){
+	public void appendLimit(int offset, int limit, StringBuilder queryExpressionBuilder){
     	queryExpressionBuilder
     		.append(" LIMIT ") .append(limit)
     		.append(" OFFSET ").append(offset);
-		return query;
     }
 	
 	/* **************************************     UTILITIES FOR PRINTING QUERY TO STRING FOR LOGG AND DEBUG **************************/

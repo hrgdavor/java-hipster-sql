@@ -32,10 +32,12 @@ public class EntityDao <T, ID, C extends ColumnMeta, M extends IEntityMeta<T, ID
 
 	public void init() {
 		selectQuery = HipsterSqlUtil.selectQueryForEntity(hip,meta);
-		selectQueryById = selectQuery.clone()
-				.add("WHERE ")
-				.add(meta.getPrimaryColumn(),"=",0L)
-				.toRepeatable();
+		if(meta.getPrimaryColumn() != null) {			
+			selectQueryById = selectQuery.clone()
+					.add("WHERE ")
+					.add(meta.getPrimaryColumn(),"=",0L)
+					.toRepeatable();
+		}
 	}
 
 	/** 

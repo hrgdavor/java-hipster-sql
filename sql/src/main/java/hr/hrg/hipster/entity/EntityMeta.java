@@ -9,6 +9,8 @@ import hr.hrg.hipster.type.*;
 @SuppressWarnings("rawtypes")
 public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEntityMeta<T,ID>{
 
+	public static final String ERR_ENTITY = "Problem reading entity data for ";
+	
 	protected final int _ordinal;
 	protected final String _tableName;
 	protected final Class<T> _entityClass;
@@ -34,7 +36,11 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 		this._columnCount = columnArray.length;
 		_typeHandler = new ICustomType<?>[_columnCount];
 	}
-
+	
+	public static RuntimeException errEntity(Object id, Class<?> entity, Throwable cause){
+		return new RuntimeException(ERR_ENTITY+entity.getName()+"#"+id,cause);
+	}
+	
 	@Override
 	public final int ordinal() {
 		return _ordinal;

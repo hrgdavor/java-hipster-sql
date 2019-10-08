@@ -37,11 +37,13 @@ class Property {
 	public List<AnnotationSpec> annotations = new ArrayList<>();
 	public List<AnnotationSpec> annotationsWithDefaults = new ArrayList<>();
 	public boolean jsonIgnore;
+	public int ordinal;
 	
-	public Property(String getter, TypeName type, ExecutableElement method, String tableName, ProcessingEnvironment processingEnv){
+	public Property(String getter, TypeName type, ExecutableElement method, String tableName, ProcessingEnvironment processingEnv, int ordinal){
 		this.getterName = getter;
 		this.type = type;
 		this.tableName = tableName;
+		this.ordinal = ordinal;
 		String name = null;
 
 		List<? extends AnnotationMirror> list = method.getAnnotationMirrors();

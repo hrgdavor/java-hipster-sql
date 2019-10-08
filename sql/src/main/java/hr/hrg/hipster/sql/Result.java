@@ -75,8 +75,11 @@ public class Result implements AutoCloseable{
 
 	private Result execute() {
 		try{
-            rs = ps.executeQuery();
-            metaData = rs.getMetaData();
+            boolean hasResults = ps.execute();
+            if(hasResults) {
+            	rs = ps.getResultSet();
+            	metaData = rs.getMetaData();
+            }
             return this;
         }catch (Exception e){
             close(); throw queryError(e);
@@ -111,7 +114,7 @@ public class Result implements AutoCloseable{
     
     public Long fetchLong(){
     	try{
-    		if(!rs.next()) return null;
+    		if(rs == null || !rs.next()) return null;
     		return rs.getLong(1);
     	}catch (Exception e){
     		close(); throw queryError(e);
@@ -120,7 +123,7 @@ public class Result implements AutoCloseable{
     
     public Double fetchDouble(){
     	try{
-    		if(!rs.next()) return null;
+    		if(rs == null || !rs.next()) return null;
     		return rs.getDouble(1);
     	}catch (Exception e){
     		close(); throw queryError(e);
@@ -129,7 +132,7 @@ public class Result implements AutoCloseable{
     
     public Integer fetchInteger(){
     	try{
-    		if(!rs.next()) return null;
+    		if(rs == null || !rs.next()) return null;
     		return rs.getInt(1);
     	}catch (Exception e){
     		close(); throw queryError(e);
@@ -138,7 +141,7 @@ public class Result implements AutoCloseable{
     
     public Float fetchFloat(){
     	try{
-    		if(!rs.next()) return null;
+    		if(rs == null || !rs.next()) return null;
     		return rs.getFloat(1);
     	}catch (Exception e){
     		close(); throw queryError(e);
@@ -147,7 +150,7 @@ public class Result implements AutoCloseable{
     
     public String fetchString(){
         try{
-            if(!rs.next()) return null;
+            if(rs == null || !rs.next()) return null;
             return rs.getString(1);
         }catch (Exception e){
             close(); throw queryError(e);
@@ -160,7 +163,7 @@ public class Result implements AutoCloseable{
      */
     public List<Object> fetchRow(){
         try{
-            if(!rs.next()) return null;
+            if(rs == null || !rs.next()) return null;
             int count = metaData.getColumnCount();
             List<Object> row = new ArrayList<Object>();
             for(int i=1; i<=count; i++){
@@ -175,7 +178,7 @@ public class Result implements AutoCloseable{
     /** @return null (if no more rows) or map of columnName:value.*/
     public Map<Object,Object> fetchAssoc(){
         try{
-            if(!rs.next()) return null;
+            if(rs == null || !rs.next()) return null;
             int count = metaData.getColumnCount();
             Map<Object, Object> row = new LinkedHashMap<>();
             for(int i=1; i<=count; i++){
@@ -190,7 +193,7 @@ public class Result implements AutoCloseable{
     
     public <T,ID> T fetchEntity(IEntityMeta<T,ID> reader){
         try{
-            if(!rs.next()) return null;
+            if(rs == null || !rs.next()) return null;
             return reader.fromResultSet(rs);
         }catch (Exception e){
             close(); throw queryError(e);
@@ -224,7 +227,7 @@ public class Result implements AutoCloseable{
     /** Call ResultSet.next() but throw RuntimeException to avoid polluting calling code with try/catch*/
 	public boolean next() {
 		try {
-			return rs.next();
+			return rs ==null ? false:rs.next();
 		} catch (SQLException e) {
 			throw new HipsterSqlException(hipConnection, "error getting next result", e);
 		}

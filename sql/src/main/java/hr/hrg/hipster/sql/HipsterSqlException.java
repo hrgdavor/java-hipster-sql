@@ -13,13 +13,8 @@ public class HipsterSqlException extends RuntimeException{
 	}
 
 	public HipsterSqlException(IHipsterConnection conn, String message, Throwable cause){
-		super(message+": "+or( conn.getLastQuery(),conn.getLastQuery()), cause);
+		super(message+": "+conn.getLastQuery(), cause);
 		this.lastQuery = conn.getLastQuery();
-	}
-	
-	private static final Object or(Object o1, Object o2){
-		if(o1 != null) return o1;
-		return o2;
 	}
 	
 	public Query getLastQuery() {

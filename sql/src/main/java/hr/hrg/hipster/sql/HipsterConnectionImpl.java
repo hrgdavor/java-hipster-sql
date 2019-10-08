@@ -483,5 +483,40 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 		if(lastQuery != null) return lastQuery.toString();
 		return null;
 	}	
-	    
+
+	@Override
+	public Query q(Object... parts) {
+		return hipster.q(parts);
+	}
+	
+    @Override
+    public void rowsVisitResult(Query sql, IResultSetVisitor visitor) {
+
+        boolean autoCommit = false;
+        try {
+        	// postgres does not use cursor if autoCommit is on
+			autoCommit = sqlConnection.getAutoCommit();
+			sqlConnection.setAutoCommit(false);
+		} catch (SQLException e) {
+			throw new HipsterSqlException(this, "autoCommit", e);
+		}
+
+        try(Result res = new Result(this);){
+        	res.setFetchSize(512);
+
+        	res.executeQuery(sql);
+
+	        while(res.next()){
+	            visitor.visitResult(res.getResultSet());
+	        }
+        }catch (Exception e) {
+        	throw new HipsterSqlException(this, "visit failed", e);
+        }finally {
+        	try{
+        		sqlConnection.setAutoCommit(autoCommit);
+    		} catch (SQLException e) {
+    			throw new HipsterSqlException(this, "autoCommit", e);
+    		}
+		}
+    }	
 }

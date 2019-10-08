@@ -227,6 +227,12 @@ public class GenMeta {
 	
 	private void addComments(com.squareup.javapoet.TypeSpec.Builder cp, EntityDef def, ClassName columnMetaBase) {
 		String typeDao = def.type.simpleName()+"Dao";
+		cp.addJavadoc("Example meta from EntitySource:\n");
+		cp.addJavadoc("<pre>\n");
+		cp.addJavadoc("$T meta = ($T) hip.getEntitySource().getFor($T.class);", def.typeMeta, def.typeMeta, def.type);
+		cp.addJavadoc("</pre>\n");
+		cp.addJavadoc("\n");
+		
 		cp.addJavadoc("Example dao class with proper generic arguments:\n");
 		cp.addJavadoc("<pre>\n");
 		cp.addJavadoc("import hr.hrg.hipster.entity.*;\n");
@@ -312,6 +318,7 @@ public class GenMeta {
 	}
 	
 	private void add_fromResultSet(TypeSpec.Builder cp, EntityDef def) {
+		
 		MethodSpec.Builder method = methodBuilder(PUBLIC().FINAL(), def.type, "fromResultSet");
 		
 		method.addParameter(ResultSet.class, "rs");
@@ -319,50 +326,67 @@ public class GenMeta {
 
 		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(",def.typeImmutable);
 		genPrepValueVars(def, method, returnValue);
-		method.addCode("\n");
-		returnValue.add(");");
-		
-		method.addCode(returnValue.build());
-		
+				
 		cp.addMethod(method.build());
 
-	
-		method = methodBuilder(PUBLIC().FINAL(), "visitResult");
 		
+		
+		method = methodBuilder(PUBLIC().FINAL(), "visitResult");
+
 		method.addParameter(ResultSet.class, "rs");
 		method.addParameter(def.typeVisitor, "visitor");
 		method.addException(java.sql.SQLException.class);
 
 		returnValue = CodeBlock.builder().add("visitor.visit(",def.typeImmutable);
 		genPrepValueVars(def, method, returnValue);
-		method.addCode("\n");
-		returnValue.add(");");
 		
-		method.addCode(returnValue.build());
 		
 		cp.addMethod(method.build());
 
 	}
 
 	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue) {
-		int i=1;
-		for(Property p:def.getProps()) {
-			method.addCode("$T $L",p.type, p.fieldName);
-			
-			String getter = getterName(p);
-			
-			if(getter == null){
-				method.addCode(" = ($T)_typeHandler[$L].get(rs,$L);\n",p.type,i-1, i);
-			}else{
-				method.addCode(" = rs."+getter+"("+i+");\n");
-			}
-			
-			// add to constructor
-			if(i>1) returnValue.add(", ");
-			returnValue.add(p.fieldName);			
-
+		CodeBlock.Builder block = CodeBlock.builder();
+		Property primaryProp = def.getPrimaryProp();
+		int i=0;
+		if(primaryProp != null) {
+			genPrepValue(block, returnValue, primaryProp,i);
 			i++;
 		}
+		block.add("try{\n");
+		block.indent();
+		for(Property p: def.getProps()) {
+			if(primaryProp == null || !p.fieldName.equals(primaryProp.fieldName)) {
+				genPrepValue(block, returnValue, p, i);
+				i++;
+			}
+		}
+		block.add("\n");
+		returnValue.add(");");
+		block.add(returnValue.build());
+		block.unindent();
+		Object fieldnameForCatch = primaryProp == null ? "null" : primaryProp.fieldName;
+		block.add("\n} catch(Throwable e){ throw $T.errEntity($L,ENTITY_CLASS,e); }\n", 
+				EntityMeta.class,
+				fieldnameForCatch
+				);
+		
+		method.addCode(block.build());
+	}
+
+	public void genPrepValue(com.squareup.javapoet.CodeBlock.Builder block, CodeBlock.Builder returnValue, Property p, int i) {
+		block.add("$T $L",p.type, p.fieldName);
+		
+		String getter = getterName(p);
+		
+		if(getter == null){
+			block.add(" = ($T)_typeHandler[$L].get(rs,$L);\n",p.type,p.ordinal, p.ordinal+1);
+		}else{
+			block.add(" = rs."+getter+"("+(p.ordinal+1)+");\n");
+		}
+		
+		if(i>0) returnValue.add(", ");
+		returnValue.add(p.fieldName);
 	}
 	
 	private void addColumnsDef(com.squareup.javapoet.TypeSpec.Builder cp, Builder constr, EntityDef def, ClassName columnMetaBase) {
