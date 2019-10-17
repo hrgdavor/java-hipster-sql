@@ -10,6 +10,7 @@ import hr.hrg.hipster.sql.*;
 public class EntitySource {
 	protected Map<Class<? extends Object>, IEntityMeta<?,?>> registered = new ConcurrentHashMap<>(); 
 	protected Map<String, IEntityMeta<?,?>> named = new ConcurrentHashMap<>();
+	protected Map<Class, IEntityMeta<?,?>> metaInstance = new ConcurrentHashMap<>();
 
 	private int entityIndex = 0;
 	private HipsterSql hip;
@@ -27,7 +28,12 @@ public class EntitySource {
 
 	protected <T> void registerFor(IEntityMeta<T, ?> meta, Class<T> clazz){
 		registered.put(clazz, meta);
+		metaInstance.put(meta.getClass(), meta);
 		named.put(clazz.getSimpleName(), meta);
+	}
+
+	public <T> T getMetaInstance(Class<T> clazz){
+		return (T) metaInstance.get(clazz);
 	}
 
 	@SuppressWarnings("unchecked")

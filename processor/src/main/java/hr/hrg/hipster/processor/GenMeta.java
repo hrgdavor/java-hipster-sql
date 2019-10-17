@@ -9,7 +9,6 @@ import java.util.*;
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.*;
 
-import hr.hrg.hipster.change.*;
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
@@ -306,6 +305,9 @@ public class GenMeta {
 			
 		}else if(isType(p, "double","java.lang.Double")){
 			return "getDouble";
+			
+		}else if(isType(p, "short","java.lang.Short")){
+			return "getShort";
 			
 		}else if(isType(p, "float","java.lang.Float")){
 			return "getFloat";

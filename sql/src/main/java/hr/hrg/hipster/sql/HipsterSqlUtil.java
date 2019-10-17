@@ -2,12 +2,14 @@ package hr.hrg.hipster.sql;
 
 import java.lang.annotation.*;
 import java.lang.reflect.*;
+import java.sql.*;
 import java.util.*;
 
 import javax.lang.model.element.*;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
+import hr.hrg.hipster.type.*;
 
 
 public class HipsterSqlUtil {
@@ -196,5 +198,11 @@ public class HipsterSqlUtil {
         return (A) Proxy.newProxyInstance(annotationType.getClassLoader(),
                 new Class[] { annotationType },
                 new AnnotationInvocationHandler(annotationType,  map));
+    }
+    
+    public static final short getShort(ResultSet rs, int index, ICustomType<?> handler) throws SQLException {
+    	Number num = (Number) handler.get(rs, index);
+    	if(num == null) return 0;
+    	return num.shortValue();
     }
 }
