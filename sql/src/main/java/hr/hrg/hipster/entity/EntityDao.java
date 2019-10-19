@@ -170,6 +170,15 @@ public class EntityDao <T, ID, C extends ColumnMeta, M extends IEntityMeta<T, ID
 		return (ID) hc.insert(meta.getPrimaryColumn().getType(), insertQuery);
 	}
 	
-	
+	@SuppressWarnings("unchecked")
+	public void update(IUpdatable mutable) {
+		Query updateQuery = hc.getHipster().buildUpdate(
+				meta, 
+				q(meta.getPrimaryColumn(),"=",meta.entityGetPrimary((T)mutable)), 
+				mutable
+			);
+		hc.update(updateQuery);
+	}
+
 }
 
