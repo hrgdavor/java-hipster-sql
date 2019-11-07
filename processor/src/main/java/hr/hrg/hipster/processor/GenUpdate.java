@@ -32,8 +32,11 @@ public class GenUpdate {
 			cp.addSuperinterface(def.type);
 			GenBuilder.addInterfaces(def, cp, jackson, columnMetaBase);
 		}
-
-    	addField(cp,PROTECTED(), long.class, "_changeSet");
+		
+		int propCount = def.props.size();
+		for(int i=0; i*64<propCount; i+=1) {
+			addField(cp,PROTECTED(), long.class, "_changeSet"+i);
+		}
 
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
@@ -49,7 +52,8 @@ public class GenUpdate {
 			}
 
 			MethodSpec.Builder bm = methodBuilder(PUBLIC(), def.typeUpdate, prop.name);
-			bm.addCode("this._changeSet |= "+(1L<<i)+"L;\n");
+			int changeSet = i/64;
+			bm.addCode("this._changeSet"+changeSet+" |= "+(1L<<i)+"L;\n");
 			addSetterParameter(bm, prop.type, prop.name, null);
 			bm.addCode("return this;\n");
 			cp.addMethod(bm.build());
@@ -71,7 +75,7 @@ public class GenUpdate {
             if(jackson) GenImmutable.addDirectSerializer(def,cp);
             
         }
-        setValue.addCode("this._changeSet |= (1L<<_ordinal);\n");
+        makeOrdinalExpr(propCount, setValue, "this._changeSet$L |= (1L<<_ordinal);\n");
         cp.addMethod(setValue.build());
 
 
@@ -82,21 +86,26 @@ public class GenUpdate {
 		
         addMethod(cp, PUBLIC(), boolean.class, "isEmpty", method -> {
         	method.addAnnotation(Override.class);
-        	method.addCode("return _changeSet == 0;\n");
+        	method.addCode("return ");
+    		for(int i=0; i*64<propCount; i+=1) {
+    			if(i>0) method.addCode(" && ");
+    			method.addCode("_changeSet"+i+" == 0");
+    		}
+        	method.addCode(";\n");
         });
         
         addMethod(cp, PUBLIC(), boolean.class, "isChanged", method -> {
         	method.addAnnotation(Override.class);
         	method.addTypeVariable(typeT);
         	addParameter(method, typeKey, "column");
-        	method.addCode("return (_changeSet & (1L << column.ordinal())) != 0;\n");
+           	method.addCode("return isChanged(column.ordinal());\n");
         });
         
         addMethod(cp, PUBLIC(), boolean.class, "isChanged", method -> {
 			method.addAnnotation(Override.class);
 			addParameter(method, int.class, "_ordinal");
-			method.addCode("return (_changeSet & (1L << _ordinal)) != 0;\n");
-		});
+	        makeOrdinalExpr(propCount, method, "return (_changeSet$L & (1L << _ordinal)) != 0;\n");
+        });
 
 
         addMethod(cp, PUBLIC(), void.class, "setChanged", method -> {
@@ -112,20 +121,58 @@ public class GenUpdate {
 			addParameter(method, int.class, "_ordinal");
 			addParameter(method, boolean.class, "changed");
 			method.addCode("if(changed) {\n");
-			method.addCode("    this._changeSet |= (1L<<_ordinal);\n");
+	        makeOrdinalExpr(propCount, method, "this._changeSet$L |= (1L<<_ordinal);\n");
 			method.addCode("}else{\n");
-			method.addCode("    this._changeSet &= ~(1L<<_ordinal);\n");
+			makeOrdinalExpr(propCount, method, "this._changeSet$L &= ~(1L<<_ordinal);\n");
 			method.addCode("}\n");
 		});
 
         addMethod(cp, PUBLIC(), void.class, "setChanged", method -> {
 			method.addAnnotation(Override.class);
 			addParameter(method, boolean.class, "changed");
-			method.addCode("_changeSet = changed ? "+((1<<def.props.size())-1)+":0;\n");
+			method.addCode("if(changed){\n");
+    		for(int i=0; i*64<propCount; i+=1) {
+    			method.addCode("\t_changeSet"+i+" = ");
+    			if(((i+1)*64)>=propCount) {    				
+    				method.addCode(""+((1<<propCount)-1)+";\n");
+    			}else {
+    				method.addCode("-1;\n");    				
+    			}
+    		}
+    		method.addCode("}else{\n");
+    		for(int i=0; i*64<propCount; i+=1) {
+    			method.addCode("\t_changeSet"+i+" = 0;\n");
+    		}
+    		method.addCode("}\n");
+			
 		});
         
         return cp;
 	}
+
+	public void makeOrdinalExpr(int propCount, MethodSpec.Builder setValue, String expr) {
+		if(propCount <64) {
+        	setValue.addCode(expr,0);        	
+        }else {
+        	boolean first = true;
+        	for(int i=8; i>=0; i--) {
+        		if(i*64>propCount) continue;
+        		if(first) {
+        			setValue.addCode("if(_ordinal >="+(i*64)+"){\n");        			
+        		}else {
+        			setValue.addCode("}else");
+        			if(i>0) setValue.addCode(" if(_ordinal >="+(i*64)+")");
+        			setValue.addCode("{\n");        			        			
+        		}
+        		setValue.addCode("\t");
+        		setValue.addCode(expr,i);
+        		
+        		first = false;
+        	}
+        	setValue.addCode("}\n");
+        }
+	}
+	
 	
 	
 	public static void genConstrucotrsExt(EntityDef def, TypeSpec.Builder cp, boolean jackson){

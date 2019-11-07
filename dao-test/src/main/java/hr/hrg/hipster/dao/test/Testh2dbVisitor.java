@@ -26,8 +26,14 @@ public class Testh2dbVisitor {
 				.add(" WHERE ",meta.name)
 				.add(" like ","%world%");
 		
-		meta.visitResults(hc, query, (id, name, age) -> {
-			System.out.println("User Visitor #"+id+" "+name+" "+age);
+		meta.visitResults(hc, query, new UserVisitor() {
+			
+			@Override
+			public void visit(Long id, List<String> name, int age) {
+				
+				System.out.println("User Visitor #"+id+" "+name+" "+age);
+		
+			}
 		});
 
 		

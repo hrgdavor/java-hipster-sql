@@ -316,9 +316,9 @@ public class HipsterSql {
 			Object value = mutable.getValue(ordinal);
 			ICustomType<?> customType = meta.getTypeHandler(ordinal);
 			if(i >0){
-				query.addParts(",",column,"=", customType, value);
+				query.addParts(",",column,"=", new QueryValue(value, customType));
 			}else {
-				query.addParts(column,"=", customType, value);
+				query.addParts(column,"=", new QueryValue(value, customType));
 			}
 			i++;
 		}
