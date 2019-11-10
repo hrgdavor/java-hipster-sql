@@ -122,7 +122,8 @@ public class GenMeta {
 //			delta.addCode("return new $T(changeSet, values, $T.COLUMN_ARRAY);\n", returnType,columnMetaBase);			
 //		});
 		
-		if(def.genUpdate){			
+		
+		if(def.genOptions.isGenUpdate()){			
 			//@Override
 			//public final SampleUpdate mutableCopy(Object v){ return new SmapleUpdate((Sample)v); }
 			addMethod(cp,PUBLIC().FINAL(), def.typeUpdate, "mutableCopy", method->{
@@ -275,20 +276,22 @@ public class GenMeta {
 		cp.addJavadoc("</pre>\n");
 		cp.addJavadoc("\n");
 		
-		cp.addJavadoc("Example visitor lambda:\n");
-		cp.addJavadoc("<pre>\n");
-		cp.addJavadoc("meta.visitResults(hc, query, (");
-		int i=1;
-		for(Property p:def.getProps()) {
-			if(i>1) cp.addJavadoc(", ");
-			cp.addJavadoc(p.fieldName);
-			i++;
+		if(def.genOptions.isGenVisitor()) {			
+			cp.addJavadoc("Example visitor lambda:\n");
+			cp.addJavadoc("<pre>\n");
+			cp.addJavadoc("meta.visitResults(hc, query, (");
+			int i=1;
+			for(Property p:def.getProps()) {
+				if(i>1) cp.addJavadoc(", ");
+				cp.addJavadoc(p.fieldName);
+				i++;
+			}
+			cp.addJavadoc(") -> {\n");
+			cp.addJavadoc("	// your code here\n");
+			cp.addJavadoc("});\n");
+			cp.addJavadoc("</pre>\n");
+			cp.addJavadoc("\n");
 		}
-		cp.addJavadoc(") -> {\n");
-		cp.addJavadoc("	// your code here\n");
-		cp.addJavadoc("});\n");
-		cp.addJavadoc("</pre>\n");
-		cp.addJavadoc("\n");
 		
 
 	}
@@ -332,18 +335,18 @@ public class GenMeta {
 		cp.addMethod(method.build());
 
 		
-		
-		method = methodBuilder(PUBLIC().FINAL(), "visitResult");
-
-		method.addParameter(ResultSet.class, "rs");
-		method.addParameter(def.typeVisitor, "visitor");
-		method.addException(java.sql.SQLException.class);
-
-		returnValue = CodeBlock.builder().add("visitor.visit(",def.typeImmutable);
-		genPrepValueVars(def, method, returnValue);
-		
-		
-		cp.addMethod(method.build());
+		if(def.genOptions.isGenVisitor()) {			
+			method = methodBuilder(PUBLIC().FINAL(), "visitResult");
+			
+			method.addParameter(ResultSet.class, "rs");
+			method.addParameter(def.typeVisitor, "visitor");
+			method.addException(java.sql.SQLException.class);
+			
+			returnValue = CodeBlock.builder().add("visitor.visit(",def.typeImmutable);
+			genPrepValueVars(def, method, returnValue);
+			
+			cp.addMethod(method.build());
+		}
 
 	}
 

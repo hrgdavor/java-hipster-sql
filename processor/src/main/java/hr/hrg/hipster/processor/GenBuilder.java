@@ -11,11 +11,9 @@ import hr.hrg.hipster.sql.*;
 
 public class GenBuilder {
 
-	private boolean jackson;
 	private ClassName columnMetaBase;
 
-	public GenBuilder(boolean jackson, ClassName columnMetaBase) {
-		this.jackson = jackson;
+	public GenBuilder(ClassName columnMetaBase) {
 		this.columnMetaBase = columnMetaBase;
 	}
 
@@ -30,7 +28,7 @@ public class GenBuilder {
 			builder.superclass(def.type);
 		}
 
-		addInterfaces(def, builder, jackson, columnMetaBase);
+		addInterfaces(def, builder, columnMetaBase);
         
         CodeBlock.Builder code = CodeBlock.builder().add("return new $T(", def.typeImmutable);
 
@@ -51,28 +49,28 @@ public class GenBuilder {
 			code.add("\t\t"+prop.fieldName+(i == count-1 ? "":","));
         }
         
-        genConstructors(def, builder, jackson);
+        genConstructors(def, builder);
         
         code.add("\t);");
 		
         GenImmutable.addEnumGetter(def, builder,columnMetaBase);
         GenImmutable.addEquals(def, builder);
         builder.addMethod(genEnumSetter(def, builder, columnMetaBase).build());
-        if(jackson) GenImmutable.addDirectSerializer(def,builder);
+        if(def.genOptions.isGenJson()) GenImmutable.addDirectSerializer(def,builder);
         
         return builder;
 	}
 
-	public static void addInterfaces(EntityDef def, TypeSpec.Builder builder, boolean jackson, ClassName columnMetaBase) {
+	public static void addInterfaces(EntityDef def, TypeSpec.Builder builder, ClassName columnMetaBase) {
 		// builder.addSuperinterface(parametrized(IEnumGetter.class, columnMetaBase));
 		builder.addSuperinterface(IUpdatable.class); // includes IEnumGetter (IUpdatable extends it)  
 	}	
 	
-	public static void genConstructors(EntityDef def, TypeSpec.Builder builder, boolean jackson){
+	public static void genConstructors(EntityDef def, TypeSpec.Builder builder){
         // empty default constructor
 		addconstructor(builder, null);
 
-        GenImmutable.genConstructor(def,builder,jackson);
+        GenImmutable.genConstructor(def,builder);
 	}
 
 	

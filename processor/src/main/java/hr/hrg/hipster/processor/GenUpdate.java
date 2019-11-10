@@ -11,13 +11,9 @@ import hr.hrg.hipster.sql.*;
 
 public class GenUpdate {
 
-	private boolean jackson;
-	private boolean genBuilder;
 	private ClassName columnMetaBase;
 
-	public GenUpdate(boolean jackson, boolean genBuilder, ClassName columnMetaBase) {
-		this.jackson = jackson;
-		this.genBuilder = genBuilder;
+	public GenUpdate(ClassName columnMetaBase) {
 		this.columnMetaBase = columnMetaBase;
 	}
 
@@ -26,11 +22,11 @@ public class GenUpdate {
 		TypeSpec.Builder cp = classBuilder(def.typeUpdate);
 		PUBLIC().to(cp);
         
-		if(genBuilder){
+		if(def.genOptions.isGenBuilder()){
 			cp.superclass(def.typeBuilder);			
 		}else{
 			cp.addSuperinterface(def.type);
-			GenBuilder.addInterfaces(def, cp, jackson, columnMetaBase);
+			GenBuilder.addInterfaces(def, cp, columnMetaBase);
 		}
 		
 		int propCount = def.props.size();
@@ -42,7 +38,7 @@ public class GenUpdate {
         for(int i=0; i<count; i++) {
         	Property prop = def.getProps().get(i);
         	
-        	if(!genBuilder){
+        	if(!def.genOptions.isGenBuilder()){
         		addField(cp,PROTECTED(), prop.type, prop.name);
         		MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName);
 				// it would be done there
@@ -60,19 +56,19 @@ public class GenUpdate {
         }
         
         MethodSpec.Builder setValue = null;
-        if(genBuilder){
+        if(def.genOptions.isGenBuilder()){
 			setValue = methodBuilder(PUBLIC(), void.class, "setValue" );
 	        setValue.addAnnotation(Override.class);
 	        addParameter(setValue,int.class, "_ordinal");
 	        addParameter(setValue,Object.class, "value");
 	        setValue.addCode("super.setValue(_ordinal, value);\n");
-	        genConstrucotrsExt(def, cp, jackson);
+	        genConstrucotrsExt(def, cp);
         }else{
         	setValue = GenBuilder.genEnumSetter(def, cp,columnMetaBase);
-        	GenBuilder.genConstructors(def, cp, jackson);
+        	GenBuilder.genConstructors(def, cp);
             GenImmutable.addEnumGetter(def, cp,columnMetaBase);
             GenImmutable.addEquals(def, cp);
-            if(jackson) GenImmutable.addDirectSerializer(def,cp);
+            if(def.genOptions.isGenJson()) GenImmutable.addDirectSerializer(def,cp);
             
         }
         makeOrdinalExpr(propCount, setValue, "this._changeSet$L |= (1L<<_ordinal);\n");
@@ -175,7 +171,7 @@ public class GenUpdate {
 	
 	
 	
-	public static void genConstrucotrsExt(EntityDef def, TypeSpec.Builder cp, boolean jackson){
+	public static void genConstrucotrsExt(EntityDef def, TypeSpec.Builder cp){
         MethodSpec.Builder constr = constructorBuilder(PUBLIC());
         constr.addCode("super();\n");
         cp.addMethod(constr.build());

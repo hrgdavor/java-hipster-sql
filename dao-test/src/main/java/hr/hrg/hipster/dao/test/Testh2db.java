@@ -1,5 +1,7 @@
 package hr.hrg.hipster.dao.test;
 
+import static hr.hrg.hipster.sql.BooleanEnum.*;
+
 import java.sql.*;
 import java.util.*;
 
@@ -129,7 +131,7 @@ public class Testh2db {
 	}
 
 	
-	@HipsterEntity(genUpdate=false, table = "user_table")
+	@HipsterEntity(genUpdate=FALSE, table = "user_table")
 	public interface UserInner{
 		
 		@Id

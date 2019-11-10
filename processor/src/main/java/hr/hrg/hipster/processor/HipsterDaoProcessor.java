@@ -47,11 +47,28 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(HipsterEntity.class);
 		List<EntityDef> defs = new ArrayList<EntityDef>();
 		Map<String,List<EntityDef>> defMap = new HashMap<>();
+
+   		boolean jackson = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
+   		boolean genBuilder = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_builder"));
+   		boolean genVisitor = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_visitor"));
+   		boolean genUpdate = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_update"));
+
+   		GenOptions genOptions = new GenOptions(jackson,true,genVisitor,genUpdate, genBuilder);
+        
 		
 		processingEnv.getMessager().printMessage(Kind.NOTE, "process classes "+elements);
 		for (Element element : elements) {
 			if		(element.getKind() == ElementKind.INTERFACE) {
-				EntityDef def = generateClass((TypeElement) element, processingEnv);
+				GenOptions packageGenOptions = genOptions;
+				
+				TypeElement typeElement = (TypeElement) element;
+				Element parentElement = findPackage(typeElement);
+				if(parentElement != null) {
+					HipsterEntity annotation = parentElement.getAnnotation(HipsterEntity.class);
+					if(annotation != null) packageGenOptions = new GenOptions(genOptions,annotation);
+				}
+				
+				EntityDef def = generateClass(typeElement, processingEnv, packageGenOptions);
 				defs.add(def);
 				List<EntityDef> list = defMap.get(def.packageName);
 				if(list == null) {
@@ -61,7 +78,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 				list.add(def);
 				
 				addClassName(packageClasses, def.packageName,def.type);
-				if(def.genMeta) addClassName(packageMetas, def.packageName,def.typeMeta);
+				if(def.genOptions.isGenMeta()) addClassName(packageMetas, def.packageName,def.typeMeta);
 				
 				
 			}else{
@@ -74,6 +91,17 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		}
 		
 		return false;
+	}
+
+	private Element findPackage(TypeElement typeElement) {
+		Element parentElement = typeElement.getEnclosingElement();
+		int i=0;
+		while(parentElement != null) {
+			if(parentElement.getKind() == ElementKind.PACKAGE) return parentElement;
+			parentElement = typeElement.getEnclosingElement();
+			if(++i>2) break;
+		}
+		return null;
 	}
 
 	private void addClassName(Map<String, List<ClassName>> map, String packageName, ClassName type) {
@@ -127,7 +155,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 //			}
 //		}
 		List<ClassName> list = packageMetas.get(packageName);
-		for(int i=0; i<list.size(); i++) {
+		if(list != null) for(int i=0; i<list.size(); i++) {
 			ClassName cName = list.get(i);
 			if(!first) codeBlock.add(",\n");
 			codeBlock.add("$T.class", cName);
@@ -175,18 +203,14 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		write(className,cp.build(),processingEnv);
 	}
 
-	private EntityDef generateClass(TypeElement clazz, ProcessingEnvironment processingEnv) {
-		
-   		boolean jackson = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
-        boolean genBuilder = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_builder"));
-        
+	private EntityDef generateClass(TypeElement clazz, ProcessingEnvironment processingEnv, GenOptions genOptions) {
+		        
 
         processingEnv.getMessager().printMessage(
                 Diagnostic.Kind.NOTE,
                 "annotated class: " + clazz.getQualifiedName());
         
-        
-        EntityDef def = new EntityDef(clazz, processingEnv.getElementUtils());
+        EntityDef def = new EntityDef(clazz, processingEnv.getElementUtils(), genOptions);
         
         for (Element element : clazz.getEnclosedElements()) {
         	if(element.getKind() == ElementKind.METHOD) {
@@ -223,20 +247,20 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         	String[] className = HipsterProcessorUtil.splitClassName(processingEnv.getOptions().getOrDefault("hipster_proc_column_meta_class",ColumnMeta.class.getName()));
         	ClassName columnMetaBase  = ClassName.get(className[0],className[1]);
         	
-        	Builder builder = new GenImmutable(jackson, columnMetaBase).gen2(def);
+        	Builder builder = new GenImmutable(columnMetaBase).gen2(def);
         	write(def.typeImmutable, builder.build(), processingEnv);
 
-        	if(genBuilder){
-        		builder = new GenBuilder(jackson,columnMetaBase).gen2(def);
+        	if(def.genOptions.isGenBuilder()){
+        		builder = new GenBuilder(columnMetaBase).gen2(def);
         		write(def.typeBuilder, builder.build(), processingEnv);
         	}
 
-        	if(def.genUpdate){
-				builder = new GenUpdate(jackson, genBuilder,columnMetaBase).gen2(def);
+        	if(def.genOptions.isGenUpdate()){
+				builder = new GenUpdate(columnMetaBase).gen2(def);
 				write(def.typeUpdate, builder.build(), processingEnv);
         	}
         	
-    		if(def.genMeta){
+    		if(def.genOptions.isGenMeta()){
     			
     			builder = new GenMeta().gen(def,columnMetaBase);
     			JavaFile javaFile = JavaFile.builder(def.typeDelta.packageName(), builder.build())

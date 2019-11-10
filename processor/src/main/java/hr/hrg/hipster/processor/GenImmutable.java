@@ -15,11 +15,9 @@ import hr.hrg.hipster.sql.*;
 
 public class GenImmutable {
 
-	private boolean jackson;
 	private ClassName columnMetaBase;
 
-	public GenImmutable(boolean jackson, ClassName columnMetaBase) {
-		this.jackson = jackson;
+	public GenImmutable(ClassName columnMetaBase) {
 		this.columnMetaBase = columnMetaBase;
 	}
 
@@ -49,9 +47,9 @@ public class GenImmutable {
        
         addEnumGetter(def, builder, columnMetaBase);
         addEquals(def, builder);
-        genConstructor(def,builder,jackson);
+        genConstructor(def,builder);
         
-		if(jackson) addDirectSerializer(def,builder);
+		if(def.genOptions.isGenJson()) addDirectSerializer(def,builder);
         
 		return builder;
 	}
@@ -176,10 +174,10 @@ public class GenImmutable {
 		});
 	}
 
-	public static void genConstructor(EntityDef def, TypeSpec.Builder cp, boolean jackson){
+	public static void genConstructor(EntityDef def, TypeSpec.Builder cp){
 
         MethodSpec.Builder constr = constructorBuilder(PUBLIC());
-        if(jackson) constr.addAnnotation(CN_JsonCreator);
+        if(def.genOptions.isGenJson()) constr.addAnnotation(CN_JsonCreator);
 		
         MethodSpec.Builder constr2 = constructorBuilder(PUBLIC());
         addParameter(constr2,def.type, "v");
@@ -191,7 +189,7 @@ public class GenImmutable {
         	Property property = def.getProps().get(i);
 
         	addSetterParameter(constr, property.type, property.name, param->{
-        		if(jackson)
+        		if(def.genOptions.isGenJson())
         			param.addAnnotation(annotationSpec(CN_JsonProperty,"value", "$S",property.name));
         	});
         

@@ -1,16 +1,24 @@
 package hr.hrg.hipster.entity;
 
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import static hr.hrg.hipster.sql.BooleanEnum.*;
+
+import java.lang.annotation.*;
+
+import hr.hrg.hipster.sql.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HipsterEntity {
 	public String table() default "";
 
-	public boolean genMeta() default true;
+	public BooleanEnum genMeta() default DEFAULT;
 
-	public boolean genUpdate() default true;
+	public BooleanEnum genUpdate() default DEFAULT;
 
-	public boolean genVisitor() default true;
+	public BooleanEnum genBuilder() default DEFAULT;
+
+	public BooleanEnum genVisitor() default DEFAULT;
+
+	public BooleanEnum genJson() default DEFAULT;
+
 }

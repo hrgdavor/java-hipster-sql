@@ -34,10 +34,9 @@ public class EntityDef {
 	public final ClassName typeVisitor;
 	public final ClassName type;
 
-	public final boolean genMeta;
-	public final boolean genUpdate;
+	GenOptions genOptions;
 	
-	public EntityDef(TypeElement clazz, Elements elements){
+	public EntityDef(TypeElement clazz, Elements elements, GenOptions genOptions){
 		isInterface = clazz.getKind().isInterface();
 		this.declaredType = (DeclaredType) clazz.asType();
 
@@ -54,8 +53,8 @@ public class EntityDef {
 			this.tableName = simpleName;
 		}
 
-		genMeta = hipsterEntity.genMeta();
-		genUpdate = hipsterEntity.genUpdate();
+		this.genOptions = new GenOptions(genOptions, hipsterEntity);
+
 		this.type = ClassName.get(clazz);
 
 //		this.typeEnum      = ClassName.get(packageName, simpleName+"Enum");
