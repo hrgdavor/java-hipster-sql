@@ -1,4 +1,4 @@
-package hr.hrg.hipster.dao.test;
+package hr.hrg.hipster.dao.test.entity;
 
 import java.util.*;
 
@@ -6,8 +6,8 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.*;
 
+import hr.hrg.hipster.dao.test.*;
 import hr.hrg.hipster.entity.*;
-import hr.hrg.hipster.sql.*;
 
 @HipsterEntity(table="user_big_table")
 public interface UserBig{

@@ -3,6 +3,7 @@ package hr.hrg.hipster.dao.test;
 import java.sql.*;
 import java.util.*;
 
+import hr.hrg.hipster.dao.test.entity.*;
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.sql.*;
 
@@ -16,7 +17,7 @@ public class Testh2dbVisitor {
         HipsterSql hip = new HipsterSql();
         hip.getTypeSource().registerFor(new StringListGetter(), List.class, String.class);
 
-        hip.getEntitySource().register(hr.hrg.hipster.dao.test.AllEntitiesInPackage.ALL_META);
+        hip.getEntitySource().register(hr.hrg.hipster.dao.test.entity.AllEntitiesInPackage.ALL_META);
         UserMeta meta = (UserMeta) hip.getEntitySource().getFor(User.class);
 
 

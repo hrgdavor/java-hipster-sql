@@ -3,6 +3,7 @@ package hr.hrg.hipster.dao.test;
 import java.sql.*;
 import java.util.*;
 
+import hr.hrg.hipster.dao.test.entity.*;
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
@@ -62,8 +63,8 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
   }
 
   @Override
-  public final UserUpdate mutableCopy(Object v) {
-    return new UserUpdate((User)v);
+  public final User1Update mutableCopy(Object v) {
+    return new User1Update((User1)v);
   }
 
   @Override

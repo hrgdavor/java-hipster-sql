@@ -36,7 +36,11 @@ public class EntityDef {
 
 	GenOptions genOptions;
 	
+	public TypeElement clazz;
+	public Element packageElement;
+	
 	public EntityDef(TypeElement clazz, Elements elements, GenOptions genOptions){
+		this.clazz = clazz;
 		isInterface = clazz.getKind().isInterface();
 		this.declaredType = (DeclaredType) clazz.asType();
 

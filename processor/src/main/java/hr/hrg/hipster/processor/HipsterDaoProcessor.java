@@ -1,6 +1,5 @@
 package hr.hrg.hipster.processor;
 
-import static com.squareup.javapoet.TypeSpec.classBuilder;
 import static hr.hrg.javapoet.PoetUtil.*;
 
 import java.io.*;
@@ -10,6 +9,7 @@ import java.util.Map.*;
 import javax.annotation.processing.*;
 import javax.lang.model.*;
 import javax.lang.model.element.*;
+import javax.lang.model.util.*;
 import javax.persistence.*;
 import javax.tools.*;
 import javax.tools.Diagnostic.Kind;
@@ -24,10 +24,11 @@ import hr.hrg.hipster.sql.*;
 @SupportedOptions({"hipster_proc_jackson","hipster_proc_builder", "hipster_proc_column_meta_class"})
 public class HipsterDaoProcessor extends AbstractProcessor{
 
-	private static Map<String, List<ClassName>> packageClasses = new HashMap<String, List<ClassName>>();
-	private static Map<String, List<ClassName>> packageMetas = new HashMap<String, List<ClassName>>();
-	
+//	private static Map<String, List<ClassName>> packageMetas = new HashMap<String, List<ClassName>>();
+	private static Map<ClassName, EntityDef> defMap = new HashMap<>();
+
 	static int counter= 0;
+	static GenOptions genOptions;
 	
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -40,179 +41,60 @@ public class HipsterDaoProcessor extends AbstractProcessor{
     public synchronized void init(ProcessingEnvironment processingEnv) {
     	super.init(processingEnv);
 		processingEnv.getMessager().printMessage(Kind.NOTE, "INIT "+(++counter));
+		boolean jackson = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
+		boolean genBuilder = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_builder"));
+		boolean genVisitor = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_visitor"));
+		boolean genUpdate = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_update"));
+		
+		genOptions = new GenOptions(jackson,true,genVisitor,genUpdate, genBuilder);
     }
     
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(HipsterEntity.class);
-		List<EntityDef> defs = new ArrayList<EntityDef>();
-		Map<String,List<EntityDef>> defMap = new HashMap<>();
+		Map<String, Element> packageClasses = new HashMap<>();
 
-   		boolean jackson = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
-   		boolean genBuilder = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_builder"));
-   		boolean genVisitor = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_visitor"));
-   		boolean genUpdate = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_update"));
-
-   		GenOptions genOptions = new GenOptions(jackson,true,genVisitor,genUpdate, genBuilder);
         
 		
 		processingEnv.getMessager().printMessage(Kind.NOTE, "process classes "+elements);
 		for (Element element : elements) {
-			if		(element.getKind() == ElementKind.INTERFACE) {
-				GenOptions packageGenOptions = genOptions;
-				
-				TypeElement typeElement = (TypeElement) element;
-				Element parentElement = findPackage(typeElement);
-				if(parentElement != null) {
-					HipsterEntity annotation = parentElement.getAnnotation(HipsterEntity.class);
-					if(annotation != null) packageGenOptions = new GenOptions(genOptions,annotation);
-				}
-				
-				EntityDef def = generateClass(typeElement, processingEnv, packageGenOptions);
-				defs.add(def);
-				List<EntityDef> list = defMap.get(def.packageName);
-				if(list == null) {
-					list = new ArrayList<>();
-					defMap.put(def.packageName, list);
-				}
-				list.add(def);
-				
-				addClassName(packageClasses, def.packageName,def.type);
-				if(def.genOptions.isGenMeta()) addClassName(packageMetas, def.packageName,def.typeMeta);
-				
-				
+			if (element.getKind() == ElementKind.INTERFACE) {
+				EntityDef def = makeDef(element);
+				if(def.genOptions.isGenMeta() && def.packageElement != null) packageClasses.put(def.packageName, def.packageElement);
+
+				generateClass(def, processingEnv);
+
 			}else{
 				processingEnv.getMessager().printMessage(Kind.NOTE, "skip because not interface "+element);				
 			}
 		}
 		
-		for(Entry<String, List<EntityDef>> entry:defMap.entrySet()) {
+		for(Entry<String, Element> entry: packageClasses.entrySet()) {
 			generateAllEntitiesInPackage(entry.getKey(), entry.getValue(), processingEnv, roundEnv);
 		}
 		
 		return false;
 	}
 
-	private Element findPackage(TypeElement typeElement) {
-		Element parentElement = typeElement.getEnclosingElement();
-		int i=0;
-		while(parentElement != null) {
-			if(parentElement.getKind() == ElementKind.PACKAGE) return parentElement;
-			parentElement = typeElement.getEnclosingElement();
-			if(++i>2) break;
+	public EntityDef makeDef(Element _element) {
+		
+		TypeElement typeElement = (TypeElement) _element;
+		ClassName className = ClassName.get(typeElement);
+		
+		Element parentElement = findPackage(typeElement);
+		if(parentElement != null) {
+			HipsterEntity annotation = parentElement.getAnnotation(HipsterEntity.class);
+			if(annotation != null) genOptions = new GenOptions(genOptions,annotation);
 		}
-		return null;
-	}
-
-	private void addClassName(Map<String, List<ClassName>> map, String packageName, ClassName type) {
-		List<ClassName> list = map.get(packageName);
-		if(list == null) {
-			list = new ArrayList<ClassName>();
-			map.put(packageName, list);
-		}
-		if(!list.contains(type)) {
-			list.add(type);
-		}
-	}
-
-	private void generateAllEntitiesInPackage(String packageName, List<EntityDef> defs, ProcessingEnvironment processingEnv, RoundEnvironment roundEnv) {
-		ClassName className  = ClassName.get(packageName,"AllEntitiesInPackage");
 		
-//		EntityDef entityDef0 = defs.get(0);
-//
-//		PackageElement packageElement = processingEnv.getElementUtils().getPackageElement(packageName);
-//		processingEnv.getMessager().printMessage(Kind.NOTE, "package all: "+packageName+" "+packageElement == null ? "null":packageElement.toString());
-//
-//		if(packageElement == null) {
-//			processingEnv.getMessager().printMessage(Kind.NOTE, "skipping package: "+packageName);
-//			System.err.println("skipping package "+packageName);
-//			return;
-//		}
-//		System.err.println("package: "+packageName+" "+packageElement);
-//		List<? extends Element> enclosedElements = packageElement.getEnclosedElements();
-//		
-//		defs = new ArrayList<EntityDef>();
-//		for(Element element:enclosedElements) {
-//			processingEnv.getMessager().printMessage(Kind.NOTE, "package element add: "+element.getSimpleName());
-//			if(element.getKind() == ElementKind.INTERFACE && element.getAnnotation(HipsterEntity.class) != null) {
-//				EntityDef def = new EntityDef((TypeElement)element, processingEnv.getElementUtils());
-//				defs.add(def);
-//			}
-//		}
-		
-		TypeSpec.Builder cp = classBuilder(PUBLIC(),className);
-
-		com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
-		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
-		codeBlock.indent();
-		boolean first = true;
-//		for(int i=0; i<defs.size(); i++) {
-//			EntityDef entityDef = defs.get(i);
-//			if(entityDef.genMeta) {				
-//				if(!first) codeBlock.add(",\n");
-//				codeBlock.add("$T.class", entityDef.typeMeta);
-//				first = false;
-//			}
-//		}
-		List<ClassName> list = packageMetas.get(packageName);
-		if(list != null) for(int i=0; i<list.size(); i++) {
-			ClassName cName = list.get(i);
-			if(!first) codeBlock.add(",\n");
-			codeBlock.add("$T.class", cName);
-			first = false;
-		}
-		codeBlock.unindent();
-		final CodeBlock code1 = codeBlock.add("\n)").build();
-		
-		// Class<? extends IEntityMeta> ALL_META = HipsterSqlUtil.toArray(...);
-		addField(cp, 
-			ArrayTypeName.of(parametrized(Class.class, WildcardTypeName.subtypeOf(IEntityMeta.class))), 
-			"ALL_META", 
-			field -> {
-				field.addModifiers(PUBLIC().STATIC().FINAL().toArray());
-				field.initializer(code1);
-		} );	
-		
-		codeBlock = CodeBlock.builder();
-		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
-		codeBlock.indent();
-//		for(int i=0; i<defs.size(); i++) {
-//			codeBlock.add("$T.class", defs.get(i).type);
-//			if(i != defs.size()-1) codeBlock.add(",\n");
-//		}
-		first = true;
-		list = packageClasses.get(packageName);
-		for(int i=0; i<list.size(); i++) {
-			ClassName cName = list.get(i);
-			if(!first) codeBlock.add(",\n");
-			codeBlock.add("$T.class", cName);
-			first = false;
-		}
-		codeBlock.unindent();
-		final CodeBlock code2 = codeBlock.add("\n)").build();
-		
-		// Class<? extends IEntityMeta> ALL_ENTITIES = HipsterSqlUtil.toArray(...);
-		addField(cp, 
-			ArrayTypeName.of(Class.class), 
-			"ALL_ENTITIES", 
-			field -> {
-				field.addModifiers(PUBLIC().STATIC().FINAL().toArray());
-				field.initializer(code2);
-		} );
-		
-		write(className,cp.build(),processingEnv);
-	}
-
-	private EntityDef generateClass(TypeElement clazz, ProcessingEnvironment processingEnv, GenOptions genOptions) {
-		        
-
         processingEnv.getMessager().printMessage(
                 Diagnostic.Kind.NOTE,
-                "annotated class: " + clazz.getQualifiedName());
-        
-        EntityDef def = new EntityDef(clazz, processingEnv.getElementUtils(), genOptions);
-        
-        for (Element element : clazz.getEnclosedElements()) {
+                "annotated class: " + typeElement.getQualifiedName());
+
+		EntityDef def = new EntityDef(typeElement, processingEnv.getElementUtils(), genOptions);
+        def.packageElement = parentElement;
+		
+        for (Element element : typeElement.getEnclosedElements()) {
         	if(element.getKind() == ElementKind.METHOD) {
         		ExecutableElement method = (ExecutableElement) element;
         		String name = element.getSimpleName().toString();
@@ -239,7 +121,97 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         		}
         	}
 		}
-        
+		
+		defMap.put(className, def);
+		return def;
+	}
+
+	private Element findPackage(TypeElement typeElement) {
+		Element parentElement = typeElement.getEnclosingElement();
+		int i=0;
+		while(parentElement != null) {
+			if(parentElement.getKind() == ElementKind.PACKAGE) return parentElement;
+			parentElement = typeElement.getEnclosingElement();
+			if(++i>2) break;
+		}
+		return null;
+	}
+
+
+	private void generateAllEntitiesInPackage(String packageName, Element packageElement, ProcessingEnvironment processingEnv, RoundEnvironment roundEnv) {
+		ClassName className  = ClassName.get(packageName,"AllEntitiesInPackage");
+		
+		List<EntityDef> list = new ArrayList<>();
+
+		packageElement.accept(new ElementScanner8<Void, Void>() {
+			@Override
+			public Void visitType(TypeElement e, Void p) {
+				HipsterEntity annotation = e.getAnnotation(HipsterEntity.class);
+				if(annotation != null) {
+					ClassName entityClassName = ClassName.get(e);
+					EntityDef def = defMap.get(entityClassName);
+					if(def == null) def = makeDef(e);
+					
+					if(def.genOptions.isGenMeta())
+						list.add(def);
+				}
+				return super.visitType(e, p);
+			}
+		}, null);
+		
+		TypeSpec.Builder cp = classBuilder(PUBLIC(),className);
+
+		com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
+		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
+		codeBlock.indent();
+		boolean first = true;
+		
+		for(int i=0; i<list.size(); i++) {
+			EntityDef def = list.get(i);
+			if(!first) codeBlock.add(",\n");
+			codeBlock.add("$T.class", def.typeMeta);
+			first = false;
+		}
+		codeBlock.unindent();
+		final CodeBlock code1 = codeBlock.add("\n)").build();
+		
+		// Class<? extends IEntityMeta>[] ALL_META = HipsterSqlUtil.toArray(...);
+		addField(cp, 
+			ArrayTypeName.of(parametrized(Class.class, WildcardTypeName.subtypeOf(IEntityMeta.class))), 
+			"ALL_META", 
+			field -> {
+				field.addModifiers(PUBLIC().STATIC().FINAL().toArray());
+				field.initializer(code1);
+		} );	
+		
+		codeBlock = CodeBlock.builder();
+		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
+		codeBlock.indent();
+
+		first = true;
+		for(int i=0; i<list.size(); i++) {
+			EntityDef def = list.get(i);
+			if(!first) codeBlock.add(",\n");
+			codeBlock.add("$T.class", def.type);
+			first = false;
+		}
+		codeBlock.unindent();
+		final CodeBlock code2 = codeBlock.add("\n)").build();
+		
+		// Class<?>[] ALL_ENTITIES = HipsterSqlUtil.toArray(...);
+		addField(cp, 
+			ArrayTypeName.of(Class.class), 
+			"ALL_ENTITIES", 
+			field -> {
+				field.addModifiers(PUBLIC().STATIC().FINAL().toArray());
+				field.initializer(code2);
+		} );
+		
+		write(className,cp.build(),processingEnv);
+	}
+
+	private EntityDef generateClass(EntityDef def, ProcessingEnvironment processingEnv) {
+
         try {
 //        	Builder builder = new GenEnum().gen2(def);
 //        	write(def.typeEnum.packageName(), builder.build(), processingEnv);
@@ -279,10 +251,11 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 
         	        	
 		} catch (Throwable e) {
-			processingEnv.getMessager().printMessage(Kind.ERROR, e.getMessage()+"\n"+getTrace(e), clazz);
+			processingEnv.getMessager().printMessage(Kind.ERROR, e.getMessage()+"\n"+getTrace(e), def.clazz);
 		}  
         return def;
 	}
+
 	
 	public void write(ClassName type, TypeSpec spec, ProcessingEnvironment processingEnv) {
 		write(type.packageName(), spec, processingEnv);

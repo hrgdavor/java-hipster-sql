@@ -1,9 +1,11 @@
 package hr.hrg.hipster.dao.test;
 
+import hr.hrg.hipster.dao.test.entity.*;
+
 public class TestUpdate32 {
 	
 	public static void main(String[] args) {
-		UserBigUpdate upd = new UserBigUpdate();
+		UserBigUpdate upd = new UserBigUpdate(null);
 		upd.name4("aa");
 		UserBigMeta meta = new UserBigMeta(null,0);
 		

@@ -6,7 +6,7 @@ import java.util.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
-class StringListGetter implements ICustomType<List<String>>{
+public class StringListGetter implements ICustomType<List<String>>{
 	@Override
 	public List<String> get(ResultSet rs, int index) throws SQLException {
 		String string = rs.getString(index);
