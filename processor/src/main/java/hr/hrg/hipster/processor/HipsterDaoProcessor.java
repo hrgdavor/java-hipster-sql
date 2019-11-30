@@ -198,7 +198,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		codeBlock.unindent();
 		final CodeBlock code2 = codeBlock.add("\n)").build();
 		
-		// Class<?>[] ALL_ENTITIES = HipsterSqlUtil.toArray(...);
+		// Class[] ALL_ENTITIES = HipsterSqlUtil.toArray(...);
 		addField(cp, 
 			ArrayTypeName.of(Class.class), 
 			"ALL_ENTITIES", 

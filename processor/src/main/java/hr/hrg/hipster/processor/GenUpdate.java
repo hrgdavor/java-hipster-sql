@@ -47,7 +47,7 @@ public class GenUpdate {
 				cp.addMethod(g.build());
 			}
 
-			MethodSpec.Builder bm = methodBuilder(PUBLIC(), def.typeUpdate, prop.name);
+			MethodSpec.Builder bm = methodBuilder(PUBLIC(), def.typeUpdate, prop.setterName);
 			int changeSet = i/64;
 			bm.addCode("this._changeSet"+changeSet+" |= "+(1L<<i)+"L;\n");
 			addSetterParameter(bm, prop.type, prop.name, null);
