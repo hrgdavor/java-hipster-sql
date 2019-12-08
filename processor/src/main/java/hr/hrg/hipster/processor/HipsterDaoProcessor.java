@@ -168,6 +168,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		
 		for(int i=0; i<list.size(); i++) {
 			EntityDef def = list.get(i);
+			if(!def.genOptions.isGenMeta()) continue;
 			if(!first) codeBlock.add(",\n");
 			codeBlock.add("$T.class", def.typeMeta);
 			first = false;
@@ -191,6 +192,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		first = true;
 		for(int i=0; i<list.size(); i++) {
 			EntityDef def = list.get(i);
+			if(!def.genOptions.isGenMeta()) continue;
 			if(!first) codeBlock.add(",\n");
 			codeBlock.add("$T.class", def.type);
 			first = false;
