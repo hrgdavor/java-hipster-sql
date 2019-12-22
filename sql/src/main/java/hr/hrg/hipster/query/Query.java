@@ -209,6 +209,17 @@ public class Query{
 		add(column);
 		return add(queryOperationExpr, new QueryValue(value, column.getTypeHandler()));
 	}
+	
+	
+	/** Add column, operation
+	 * @param value
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public final Query add(ColumnMeta column, CharSequence queryOperationExpr) {
+		add(column);
+		return add(queryOperationExpr);
+	}
 
 
 	public final void addAsQueryValuePart(Object queryPart, int indexForDebug) {
