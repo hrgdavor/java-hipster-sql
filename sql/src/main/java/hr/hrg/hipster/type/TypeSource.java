@@ -59,7 +59,11 @@ public class TypeSource{
     	instances.put(clazz, handler);
     }
 
-    /** Register as handler for specific class*/
+    /** Register as handler for specific class
+     * 
+     * @param handler handler
+     * @param clazz class
+     */
     public void registerAll(ICustomType handler, Class<?> clazz){
     	registerNamed(handler, handler.getClass().getName());
     	registerFor(handler, clazz);

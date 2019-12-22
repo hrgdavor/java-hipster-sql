@@ -293,6 +293,7 @@ public class HipsterSql {
 	 * will be omitted from query.
 	 * 
 	 * @param meta entity meta-data
+	 * @param filter filter
 	 * @param mutable object with updated values
 	 * @return query ready for inserting
 	 */

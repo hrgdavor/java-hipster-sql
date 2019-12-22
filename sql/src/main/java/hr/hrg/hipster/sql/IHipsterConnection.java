@@ -62,6 +62,7 @@ public interface IHipsterConnection {
 	
 	/**
 	 *  Get first value as parsed by the CustomType from first row and first column. <br>
+	 *  @param <T> column value type
 	 * @param reader CustomType that reads column
 	 * @param sql varargs query
 	 * @return single result double

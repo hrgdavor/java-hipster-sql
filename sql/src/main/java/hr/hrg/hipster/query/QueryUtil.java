@@ -58,7 +58,7 @@ public class QueryUtil {
 	}
 
 	/** Convert varargs to Map &lt;Object,Object&gt;
-	 * 
+	 * @param map existing map 
 	 * @param arr key value pairs
 	 * @return Map key:value
 	 */

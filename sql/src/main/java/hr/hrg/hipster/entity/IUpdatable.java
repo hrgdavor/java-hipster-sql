@@ -23,6 +23,7 @@ public interface IUpdatable extends IEnumGetter{
 
 	/** EntityEventType safe version for coded usage.
 	 * 
+	 * @param <T> type
 	 * @param column Enum for column
 	 * @param value new value
 	 */	

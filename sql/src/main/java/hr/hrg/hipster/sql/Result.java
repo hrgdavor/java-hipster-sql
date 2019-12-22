@@ -25,7 +25,7 @@ public class Result implements AutoCloseable{
     }
 
     /** Execute the provided query
-     * 
+     * @param queryParts query parts 
      * @return self (builder pattern)
      */
     public Result executeQuery(Object ...queryParts){
@@ -224,7 +224,10 @@ public class Result implements AutoCloseable{
 		return rs;
 	}
     
-    /** Call ResultSet.next() but throw RuntimeException to avoid polluting calling code with try/catch*/
+    /** Call ResultSet.next() but throw RuntimeException to avoid polluting calling code with try/catch
+     * 
+     * @return if next is available
+     */
 	public boolean next() {
 		try {
 			return rs ==null ? false:rs.next();

@@ -42,7 +42,7 @@ public class EntityDao <T, ID, C extends ColumnMeta, M extends IEntityMeta<T, ID
 
 	/** 
 	 * 
-	 * @return
+	 * @return connection
 	 */
 	public IHipsterConnection getConnection() {
 		return hc;

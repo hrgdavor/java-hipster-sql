@@ -5,6 +5,8 @@ import hr.hrg.hipster.sql.*;
 public interface IEnumGetter {
 	/** EntityEventType safe version for coded usage.
 	 * 
+	 * @param <T> type
+	 * @param <E> column
 	 * @param column Enum for column
 	 * @return Object value
 	 */	

@@ -36,7 +36,9 @@ public class Query{
 	/** Constructor that directly uses the supplied StringBuilder and ArrayList. 
 	 * Do not reuse them after supplying them here in the constructor.
 	 * 
+	 * @param hipster hister
 	 * @param builder builder
+	 * @param size size
 	 * @param values parameters for place-holders (be aware that reference is used, the array is not copied)
 	 */
 	public Query(HipsterSql hipster, StringBuilder builder, int size, IQeuryValue ... values) {
@@ -173,9 +175,9 @@ public class Query{
 	
 	/**
 	 * 
-	 * @param delim
-	 * @param values
-	 * @return
+	 * @param delim delimiter
+	 * @param values values
+	 * @return query
 	 */
 	public final Query addValues(CharSequence delim, Object ...values) {
 		for(int i=0; i<values.length; i++) {
@@ -201,8 +203,10 @@ public class Query{
 	 * Column definition is used to extract {@link ICustomType} for the value, so
 	 * it matches what would happen in ORM scenario.
 	 * 
-	 * @param value
-	 * @return
+	 * @param column column
+	 * @param queryOperationExpr queryOperationExpr
+	 * @param value value value
+	 * @return query
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public final Query add(ColumnMeta column, CharSequence queryOperationExpr, Object value) {
@@ -212,8 +216,9 @@ public class Query{
 	
 	
 	/** Add column, operation
-	 * @param value
-	 * @return
+	 * @param column column
+	 * @param queryOperationExpr queryOperationExpr
+	 * @return query
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public final Query add(ColumnMeta column, CharSequence queryOperationExpr) {
@@ -233,7 +238,7 @@ public class Query{
 	 *  String here is treated as expression
 	 * 
 	 * @param part to append
-	 * @param indexForDebug
+	 * @param indexForDebug index for debug
 	 * @return true if this is an expression (if called has multiple parts, then next part is a value)
 	 */
 	public final boolean addAsQueryExpressionPart(Object part, int indexForDebug) {
@@ -316,6 +321,7 @@ public class Query{
 	 * Append but only to the size defined. (values array could be larger with values after size not used)
 	 * 
 	 * @param queryExpression query expression
+	 * @param sizeIn max size
 	 * @param valuesIn parameters
 	 * @return self for builder pattern
 	 */
@@ -355,6 +361,7 @@ public class Query{
 	 * Append but only to the size defined. (values array could be larger with values after size not used)
 	 * 
 	 * @param queryExpression query expression
+	 * @param sizeIn max size
 	 * @param valuesIn parameters
 	 * @return self for builder pattern
 	 */
@@ -372,8 +379,8 @@ public class Query{
 	
 	/** Prepend a query
 	 * 
-	 * @param query
-	 * @return
+	 * @param query query
+	 * @return query
 	 */
 	public final Query addAtBegining(Query query){
 		return addAtBegining(query.getQueryExpression(), query.size, query.values);

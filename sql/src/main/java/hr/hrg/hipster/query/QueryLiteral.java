@@ -27,6 +27,7 @@ public final class QueryLiteral implements IQueryLiteral{
 	/** QueryOld literal for identifiers.
 	 *  Identifier wrapped into a QueryLiteral that QueryOld building code will  understand (will add proper quotes)
 	 * @param text name
+	 * @param identifier is the name an identifier
 	 */
 	public QueryLiteral(String text, boolean identifier) {
 		this.text = text;
@@ -37,13 +38,14 @@ public final class QueryLiteral implements IQueryLiteral{
 	 * Identifier wrapped into a QueryLiteral tha QueryOld building code will  understand (will add proper quotes)
 	 * 
 	 * @param identifier name
+	 * @return QueryLiteral
 	 */
 	public static QueryLiteral identifier(String identifier){
 		return new QueryLiteral(identifier,true);
 	}
 	
 	/** query 
-	 * 
+	 * @return query text
 	 */
 	@Override
 	public CharSequence getQueryText(){
