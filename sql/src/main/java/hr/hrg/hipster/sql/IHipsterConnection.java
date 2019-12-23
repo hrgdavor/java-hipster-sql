@@ -105,13 +105,15 @@ public interface IHipsterConnection {
 	/** 
 	 * Execute update and return number of affected rows 
 	 * 
-	 * @param sql varags query
+	 * @param sql query
 	 * @return number of affected rows
 	 */
-	int update(Object ...sql);
+	int update(Query sql);
+	<T,ID> int update(IEntityMeta<T, ID> meta, IUpdatable mutable);
 
 	Object insert(Query sql);
 	<T> T insert(Class<T> primaryColumnType, Query sql);
+	<T,ID> ID insert(IEntityMeta<T, ID> meta, IUpdatable mutable);
 
 	
 	<T,ID> List<T> entities(IEntityMeta<T,ID> reader, Object ...sql);

@@ -443,10 +443,20 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 	 * @see hr.hrg.hipster.sql.HipsterConnection#update(java.lang.Object)
 	 */
     @Override
-	public int update(Object ...sql){
+	public int update(Query sql){
     	try(Result res = new Result(this);){    		
     		return res.update(sql);
     	}
+    }
+    
+    @Override
+    public <T, ID> int update(IEntityMeta<T, ID> meta, IUpdatable mutable) {
+		Query updateQuery = hipster.buildUpdate(
+				meta, 
+				q(meta.getPrimaryColumn(),"=",meta.entityGetPrimary((T)mutable)), 
+				mutable
+			);
+		return update(updateQuery);
     }
 
     /* (non-Javadoc)
@@ -458,6 +468,12 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     		res.executeUpdate(sql);
     		return res.fetchLong();
     	}
+    }
+    
+    @Override
+    public <T, ID> ID insert(IEntityMeta<T, ID> meta, IUpdatable mutable) {
+		Query insertQuery = hipster.buildInsert(meta, mutable);
+		return (ID) insert(meta.getPrimaryColumn().getType(), insertQuery);
     }
     
     @SuppressWarnings("unchecked")
