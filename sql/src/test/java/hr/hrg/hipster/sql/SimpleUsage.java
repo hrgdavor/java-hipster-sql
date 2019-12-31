@@ -28,7 +28,7 @@ public class SimpleUsage {
 
         System.out.println();
         
-        hip.update("update user_table set roles=",new StringListType(),Arrays.asList("a","b","c")," WHERE user_id=",2);
+        hip.update(hip.q("update user_table set roles=",new StringListType(),Arrays.asList("a","b","c")," WHERE user_id=",2));
         
         String filterText = "%world%";
         users = hip.entities(User.class,"from user_table WHERE name like ", filterText);        

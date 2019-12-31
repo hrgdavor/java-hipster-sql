@@ -6,7 +6,7 @@ public class TestUpdate32 {
 	
 	public static void main(String[] args) {
 		UserBigUpdate upd = new UserBigUpdate(null);
-		upd.name4("aa");
+		upd.setName4("aa");
 		UserBigMeta meta = new UserBigMeta(null,0);
 		
 		System.out.println(upd.isChanged(meta.name4));

@@ -24,7 +24,7 @@ import hr.hrg.hipster.sql.*;
 @SupportedOptions({"hipster_proc_jackson","hipster_proc_builder", "hipster_proc_column_meta_class"})
 public class HipsterDaoProcessor extends AbstractProcessor{
 
-//	private static Map<String, List<ClassName>> packageMetas = new HashMap<String, List<ClassName>>();
+	private static Map<String, List<ClassName>> packageMetas = new HashMap<String, List<ClassName>>();
 	private static Map<ClassName, EntityDef> defMap = new HashMap<>();
 
 	static int counter= 0;
@@ -81,9 +81,9 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		TypeElement typeElement = (TypeElement) _element;
 		ClassName className = ClassName.get(typeElement);
 		
-		Element parentElement = findPackage(typeElement);
-		if(parentElement != null) {
-			HipsterEntity annotation = parentElement.getAnnotation(HipsterEntity.class);
+		Element packageElement = findPackage(typeElement);
+		if(packageElement != null) {
+			HipsterEntity annotation = packageElement.getAnnotation(HipsterEntity.class);
 			if(annotation != null) genOptions = new GenOptions(genOptions,annotation);
 		}
 		
@@ -92,7 +92,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
                 "annotated class: " + typeElement.getQualifiedName());
 
 		EntityDef def = new EntityDef(typeElement, processingEnv.getElementUtils(), genOptions);
-        def.packageElement = parentElement;
+        def.packageElement = packageElement;
 		
         for (Element element : typeElement.getEnclosedElements()) {
         	if(element.getKind() == ElementKind.METHOD) {
@@ -122,8 +122,19 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         	}
 		}
 		
-		defMap.put(className, def);
+        addDef(def);
 		return def;
+	}
+	
+	public void addDef(EntityDef def) {
+		List<ClassName> list = packageMetas.get(def.packageName);
+		if(list == null) {
+			list = new ArrayList<>();
+			packageMetas.put(def.packageName, list);
+		}
+		if(!list.contains(def.type)) list.add(def.type);
+		defMap.put(def.type, def);
+		
 	}
 
 	private Element findPackage(TypeElement typeElement) {
@@ -139,9 +150,9 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 
 
 	private void generateAllEntitiesInPackage(String packageName, Element packageElement, ProcessingEnvironment processingEnv, RoundEnvironment roundEnv) {
+		
 		ClassName className  = ClassName.get(packageName,"AllEntitiesInPackage");
 		
-		List<EntityDef> list = new ArrayList<>();
 
 		packageElement.accept(new ElementScanner8<Void, Void>() {
 			@Override
@@ -151,13 +162,18 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 					ClassName entityClassName = ClassName.get(e);
 					EntityDef def = defMap.get(entityClassName);
 					if(def == null) def = makeDef(e);
-					
-					if(def.genOptions.isGenMeta())
-						list.add(def);
 				}
 				return super.visitType(e, p);
 			}
 		}, null);
+		
+		if(packageName == null || !packageMetas.containsKey(packageName)) return;
+
+		List<EntityDef> list = new ArrayList<>();
+		for(ClassName cName: packageMetas.get(packageName)) {
+			EntityDef def = defMap.get(cName);
+			if(def.genOptions.isGenMeta()) list.add(def);
+		}
 		
 		TypeSpec.Builder cp = classBuilder(PUBLIC(),className);
 
