@@ -76,9 +76,9 @@ class Property {
 		
 		HipsterColumn hipsterColumn = method.getAnnotation(HipsterColumn.class);
 		if(hipsterColumn != null){
-			if(!hipsterColumn.name().isEmpty()) this.columnName = columnAnnotation.name();
+			if(!hipsterColumn.name().isEmpty()) this.columnName = hipsterColumn.name();
 			this.sql = hipsterColumn.sql();
-			if(!hipsterColumn.table().isEmpty()) this.tableName = columnAnnotation.table();
+			if(!hipsterColumn.table().isEmpty()) this.tableName = hipsterColumn.table();
 			try {
 				if(hipsterColumn.customType() != ICustomType.class) {
 					this.customType = ClassName.get(hipsterColumn.customType());// will likely always throw error					
