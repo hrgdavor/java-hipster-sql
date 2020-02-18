@@ -13,7 +13,7 @@ public class QueryRepeat extends Query{
 	 * @param queryString query expression
 	 * @param values parameters for place-holders (be aware that reference is used, the array is not copied)
 	 */
-	public QueryRepeat(HipsterSql hipster, String queryString, IQeuryValue ... values) {
+	public QueryRepeat(HipsterSql hipster, String queryString, IQueryValue ... values) {
 		super(hipster, null, values.length, values);
 		this.queryString = queryString;
 	}
@@ -36,8 +36,8 @@ public class QueryRepeat extends Query{
 		queryString = query.queryExpressionBuilder.toString();
 	}
 
-	public static IQeuryValue[] toSize(IQeuryValue[] values, int size) {
-		IQeuryValue[] ret = new IQeuryValue[size];
+	public static IQueryValue[] toSize(IQueryValue[] values, int size) {
+		IQueryValue[] ret = new IQueryValue[size];
 		System.arraycopy(values, 0, ret, 0, size);
 		return ret;
 	}

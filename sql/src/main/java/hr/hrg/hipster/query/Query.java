@@ -15,7 +15,7 @@ public class Query{
 
 	
 	protected StringBuilder queryExpressionBuilder;
-	protected IQeuryValue[] values;
+	protected IQueryValue[] values;
 	protected int size = 0;
 
 	
@@ -30,7 +30,23 @@ public class Query{
 	public Query(HipsterSql hipster, StringBuilder builder, int initalCapacity) {
 		this.hipster = hipster;
 		this.queryExpressionBuilder = builder;
-		this.values = new IQeuryValue[initalCapacity];
+		this.values = new IQueryValue[initalCapacity];
+	}
+
+	/** Constructor that directly uses the supplied StringBuilder and ArrayList. 
+	 * Do not reuse them after supplying them here in the constructor. Size parameter
+	 * is used when values array is larger than needed, and only subset is used in the query
+	 * 
+	 * @param hipster hister
+	 * @param builder builder
+	 * @param size size
+	 * @param values parameters for place-holders (be aware that reference is used, the array is not copied)
+	 */
+	public Query(HipsterSql hipster, StringBuilder builder, int size, IQueryValue ... values) {
+		this(hipster);
+		this.queryExpressionBuilder = builder;
+		this.values = values;
+		this.size = size;
 	}
 
 	/** Constructor that directly uses the supplied StringBuilder and ArrayList. 
@@ -38,17 +54,16 @@ public class Query{
 	 * 
 	 * @param hipster hister
 	 * @param builder builder
-	 * @param size size
 	 * @param values parameters for place-holders (be aware that reference is used, the array is not copied)
 	 */
-	public Query(HipsterSql hipster, StringBuilder builder, int size, IQeuryValue ... values) {
+	public Query(HipsterSql hipster, StringBuilder builder,  IQueryValue ... values) {
 		this(hipster);
 		this.queryExpressionBuilder = builder;
 		this.values = values;
-		this.size = size;
+		this.size = values.length;
 	}
 
-	public IQeuryValue[] getValues() {
+	public IQueryValue[] getValues() {
 		return values;
 	}
 	
@@ -58,8 +73,8 @@ public class Query{
 	 */
 	public void resize(int newSize) {
 		if(newSize < size) throw new ArrayIndexOutOfBoundsException(newSize);
-		IQeuryValue[] tmp = values;
-		values = new IQeuryValue[newSize];
+		IQueryValue[] tmp = values;
+		values = new IQueryValue[newSize];
 		System.arraycopy(tmp, 0, values, 0, size);
 	}
 
@@ -274,8 +289,13 @@ public class Query{
 			return true;// query part
 		}
 		
-		if(queryPart instanceof IQeuryValue) {
-			this.add((IQeuryValue) queryPart);
+		if(queryPart instanceof IQueryPart) {
+			this.add((IQueryPart) queryPart);
+			return true;// query part
+		}
+		
+		if(queryPart instanceof IQueryValue) {
+			this.add((IQueryValue) queryPart);
 			return true;// query part
 		}
 		
@@ -303,11 +323,23 @@ public class Query{
 	 * @param value value
 	 * @return this (builder pattern)
 	 */
-	public final Query add(IQeuryValue value){
+	public final Query add(IQueryValue value){
 		add("?");
 		return withValue(value);
 	}
 	
+	/** Append a value.
+	 * 
+	 * @param part value
+	 * @return this (builder pattern)
+	 */
+	public final Query add(IQueryPart part){
+		if(part.isEmpty()) return this;
+		
+		IQueryValue[] v = part.getValues();
+		return add(part.getQueryExpression(hipster), v.length, v);
+	}
+
 	/** Append another query.
 	 * 
 	 * @param query query
@@ -325,7 +357,7 @@ public class Query{
 	 * @param valuesIn parameters
 	 * @return self for builder pattern
 	 */
-	public final Query add(CharSequence queryExpression, int sizeIn, IQeuryValue ...valuesIn){
+	public final Query add(CharSequence queryExpression, int sizeIn, IQueryValue ...valuesIn){
 		this.add(queryExpression);
 		if(sizeIn > 0) {				
 			if(this.size + sizeIn > this.values.length) {
@@ -353,7 +385,7 @@ public class Query{
 	 * @param valuesIn parameters
 	 * @return self for builder pattern
 	 */
-	public final Query add(CharSequence queryExpression, IQeuryValue ...valuesIn){
+	public final Query add(CharSequence queryExpression, IQueryValue ...valuesIn){
 		return this.add(queryExpression, valuesIn.length, valuesIn);
 	}
 	
@@ -365,7 +397,7 @@ public class Query{
 	 * @param valuesIn parameters
 	 * @return self for builder pattern
 	 */
-	public final Query addAtBegining(CharSequence queryExpression, int sizeIn, IQeuryValue ...valuesIn){
+	public final Query addAtBegining(CharSequence queryExpression, int sizeIn, IQueryValue ...valuesIn){
 		this.addAtBegining(queryExpression);
 		if(sizeIn > 0){
 			if(this.size + sizeIn > this.values.length) {
@@ -459,13 +491,14 @@ public class Query{
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public IQeuryValue prepValue(Object value) {
-		IQeuryValue wrapped = null;
+	public IQueryValue prepValue(Object value) {
+		IQueryValue wrapped = null;
 		if(value == null) {
-			wrapped = IQeuryValue.NULL;
-		}else if(value instanceof IQeuryValue){
-			wrapped = (IQeuryValue) value;
+			wrapped = IQueryValue.NULL;
+		}else if(value instanceof IQueryValue){
+			wrapped = (IQueryValue) value;
 		}else {
+			if(hipster == null) throw new RuntimeException("Query without hipster can not add values as TypeSource is not available then");
 			ICustomType type = hipster.getTypeSource().getFor(value.getClass());
 			if(type == null) throw new HipsterSqlException(this, " value type for not supported "+value.getClass().getName(), null);
 			wrapped = new QueryValue(value, type);
@@ -473,9 +506,9 @@ public class Query{
 		return wrapped;
 	}
 
-	public Query withValue(IQeuryValue value) {
+	public Query withValue(IQueryValue value) {
 		if(value == null) {
-			value = IQeuryValue.NULL;
+			value = IQueryValue.NULL;
 		}
 
 		if(size >= values.length) {

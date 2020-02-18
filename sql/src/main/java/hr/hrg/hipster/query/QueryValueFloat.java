@@ -2,7 +2,7 @@ package hr.hrg.hipster.query;
 
 import java.sql.*;
 
-public final class QueryValueFloat implements IQeuryValue{
+public final class QueryValueFloat implements IQueryValue{
 	final float value;
 
 	public QueryValueFloat(float value) {

@@ -2,7 +2,7 @@ package hr.hrg.hipster.query;
 
 import java.sql.*;
 
-public final class QueryValueDouble implements IQeuryValue{
+public final class QueryValueDouble implements IQueryValue{
 	final double value;
 
 	public QueryValueDouble(double value) {

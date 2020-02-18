@@ -62,7 +62,7 @@ public class Result implements AutoCloseable{
 			throw new RuntimeException("Error preparing statement: "+hipConnection.lastQuery+" ERR: "+e.getMessage(), e);
 		}
 		
-		IQeuryValue[] values = p.getValues();
+		IQueryValue[] values = p.getValues();
 		int size = p.getSize();
 		for(int i=0; i<size; i++){
 			try {

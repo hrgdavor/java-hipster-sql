@@ -4,7 +4,7 @@ import java.sql.*;
 
 import hr.hrg.hipster.type.*;
 
-public final class QueryValue<T> implements IQeuryValue{
+public final class QueryValue<T> implements IQueryValue{
 	final T value;
 	final ICustomType<T> type;
 

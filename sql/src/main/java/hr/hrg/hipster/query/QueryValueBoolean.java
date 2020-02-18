@@ -2,7 +2,7 @@ package hr.hrg.hipster.query;
 
 import java.sql.*;
 
-public final class QueryValueBoolean implements IQeuryValue{
+public final class QueryValueBoolean implements IQueryValue{
 	final boolean value;
 
 	public QueryValueBoolean(boolean value) {

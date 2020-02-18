@@ -2,14 +2,14 @@ package hr.hrg.hipster.query;
 
 import java.sql.*;
 
-public interface IQeuryValue {
+public interface IQueryValue {
 
 
 	public void set(PreparedStatement ps, int index) throws SQLException;
 	
 
 	
-	public static final IQeuryValue NULL = new IQeuryValue() {
+	public static final IQueryValue NULL = new IQueryValue() {
 		@Override
 		public final void set(PreparedStatement ps, int index) throws SQLException {
 			ps.setNull(index, Types.INTEGER);

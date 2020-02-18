@@ -105,6 +105,31 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 		return this;
 	}
 	
+	public QueryColumnAndValue op(CharSequence op, T value) {
+		return new QueryColumnAndValue(this, String.format("%s?",op), new QueryValue<T>(value, (ICustomType<T>) typeHandler));
+	}
+	
+	public QueryColumnAndValue in(T ...values) {
+		return in("", values);
+	}
+	
+	public QueryColumnAndValue inIfNotEmpty(CharSequence prefix, T ...values) {
+		if(values.length == 0) return QueryColumnAndValue.EMPTY;
+		return in("", values);
+	}
+
+	public QueryColumnAndValue in(CharSequence prefix, T ...values) {
+		QueryValue[] valuesForQ = new QueryValue[values.length];
+		StringBuilder b = new StringBuilder().append(" IN(");
+		for(int i=0; i<values.length; i++) {
+			if(i>0) b.append(",");
+			valuesForQ[i] = new QueryValue(values[i], (ICustomType<T>) typeHandler);
+		}
+		b.append(")");
+		
+		return new QueryColumnAndValue(prefix, this, b, valuesForQ);
+	}
+
 	@SuppressWarnings("unchecked")
 	public <A extends Annotation> A getAnnotation(Class<A> clazz){
 		if(annotations == null) {			

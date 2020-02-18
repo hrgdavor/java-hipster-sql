@@ -2,14 +2,13 @@ package hr.hrg.hipster.query;
 
 import java.util.*;
 
-import hr.hrg.hipster.type.*;
+import hr.hrg.hipster.sql.*;
 
 public interface IQueryPart {
 
 	public boolean isEmpty();
 	
-	@SuppressWarnings("rawtypes")
-	public List getQueryParameters();
+	public CharSequence getQueryExpression(HipsterSql hipster);
 
-	public List<ICustomType<?>> getQuerySetters();
+	public IQueryValue[] getValues();
 }
