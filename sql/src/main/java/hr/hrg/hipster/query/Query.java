@@ -147,7 +147,7 @@ public class Query{
 		return this;
 	}
 	
-	public final Query add(CharSequence queryExpression, Object value) {
+	public final <T> Query add(CharSequence queryExpression, T value) {
 		add(queryExpression);
 		if(!addAndCheckIfQueryPart(value)) {			
 			add('?');
@@ -194,7 +194,8 @@ public class Query{
 	 * @param values values
 	 * @return query
 	 */
-	public final Query addValues(CharSequence delim, Object ...values) {
+	@SafeVarargs
+	public final <T> Query addValues(CharSequence delim, T ...values) {
 		for(int i=0; i<values.length; i++) {
 			if(i > 0) add(delim);
 			add('?');
