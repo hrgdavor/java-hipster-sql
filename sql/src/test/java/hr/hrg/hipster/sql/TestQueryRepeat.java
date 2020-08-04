@@ -16,7 +16,7 @@ public class TestQueryRepeat {
 
 	static HipsterSql hip = new HipsterSql();
 
-	EntityMetaSimple<Object, Long, ColumnMeta,Object> meta = new EntityMetaSimple<>(0, "users", Object.class);
+	EntityMetaSimple<Object, Long, ColumnMeta,Object> meta = new EntityMetaSimple<>(0, "users", Object.class, hip);
 	ColumnMeta<Long> idColumn = new ColumnMeta<>(0, "id", "userId", "getId", meta, Long.class, null, "", 
 			hip.getTypeSource().getFor(Long.class));
 
@@ -71,8 +71,8 @@ public class TestQueryRepeat {
 
 		private String entityName;
 
-		public EntityMetaSimple(int ordinal, String tableName, Class<T> entityClass) {
-			super(ordinal, tableName, entityClass);
+		public EntityMetaSimple(int ordinal, String tableName, Class<T> entityClass, HipsterSql hipster) {
+			super(ordinal, tableName, entityClass, hipster);
 			this.entityName = entityClass.getSimpleName();
 		}
 
@@ -104,6 +104,12 @@ public class TestQueryRepeat {
 		@Override
 		public T fromResultSet(ResultSet rs) throws SQLException {
 			return null;
+		}
+
+		@Override
+		public boolean containsField(String columnName) {
+			// TODO Auto-generated method stub
+			return false;
 		}
 
 	}

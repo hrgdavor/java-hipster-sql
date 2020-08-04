@@ -21,4 +21,10 @@ public @interface HipsterEntity {
 
 	public BooleanEnum genJson() default DEFAULT;
 
+	public BooleanEnum genMongo() default DEFAULT;
+
+	public BooleanEnum mongoSkipNull() default DEFAULT;
+	
+	public BooleanEnum genSql() default DEFAULT;
+
 }

@@ -36,5 +36,9 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 	ID entityGetPrimary(T instance);
 
 	IUpdatable mutableCopy(Object v);
-	T fromResultSet(ResultSet rs) throws SQLException;	
+	T fromResultSet(ResultSet rs) throws SQLException;
+
+	ColumnMeta getField(String columnName);
+	boolean containsField(String columnName);
+	int getFieldOrdinal(String columnName);	
 }

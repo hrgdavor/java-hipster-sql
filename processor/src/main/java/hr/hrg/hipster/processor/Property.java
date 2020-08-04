@@ -37,11 +37,19 @@ class Property {
 	public List<AnnotationSpec> annotations = new ArrayList<>();
 	public List<AnnotationSpec> annotationsWithDefaults = new ArrayList<>();
 	public boolean jsonIgnore;
+	public boolean array;
+	public boolean collection;
 	public int ordinal;
+	public TypeMirror typeMirror;
+	public TypeName componentType;
+	public List<TypeName> typeArguments;
+	public boolean parametrized;
+	public ClassName parameterizedOuterRaw;
 	
-	public Property(String getter, TypeName type, ExecutableElement method, String tableName, ProcessingEnvironment processingEnv, int ordinal){
+	public Property(String getter, TypeName type, TypeMirror typeMirror, ExecutableElement method, String tableName, ProcessingEnvironment processingEnv, int ordinal){
 		this.getterName = getter;
 		this.type = type;
+		this.typeMirror = typeMirror;
 		this.tableName = tableName;
 		this.ordinal = ordinal;
 		String name = null;
@@ -91,7 +99,6 @@ class Property {
 			this.customTypeKey = hipsterColumn.customTypeKey();
 		}
 
-		
 		List<? extends AnnotationMirror> annotationMirrors = method.getAnnotationMirrors();
 		for (AnnotationMirror mirror : annotationMirrors) {
 			AnnotationSpec annotationSpec = getAnnotation(mirror, processingEnv);
@@ -100,7 +107,20 @@ class Property {
 				annotations.add(AnnotationSpec.get(mirror));
 			}
 		}
+				
+		if(type instanceof ParameterizedTypeName) {
+			ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) type;
+			this.parametrized = true;
+			parameterizedOuterRaw = parameterizedTypeName.rawType;
+			typeArguments = parameterizedTypeName.typeArguments;
+			componentType = typeArguments.get(0);
+		}
 		
+		if(type instanceof ArrayTypeName) {
+			ArrayTypeName arrayTypeName = (ArrayTypeName) type;
+			this.array = true;
+			componentType = arrayTypeName.componentType;
+		}
 		
 	}
 

@@ -1,6 +1,6 @@
 package hr.hrg.hipster.processor;
 
-import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.*;
 
 public class HipsterProcessorUtil {
 
@@ -13,11 +13,21 @@ public class HipsterProcessorUtil {
 	public static final ClassName CN_JsonSerialize = ClassName.get("com.fasterxml.jackson.databind.annotation","JsonSerialize");
 
 	public static boolean isType(Property p, String string, String string2) {
-		return string.equals(p.type.toString()) || string2.equals(p.type.toString());
+		String string3 = p.type.toString();
+		return string.equals(string3) || string2.equals(string3);
 	}
-
+	
 	public static boolean isType(Property p, String string) {
 		return string.equals(p.type.toString());
+	}
+	
+	public static boolean isType(TypeName p, String string, String string2) {
+		String string3 = p.toString();
+		return string.equals(string3) || string2.equals(string3);
+	}
+
+	public static boolean isType(TypeName p, String string) {
+		return string.equals(p.toString());
 	}
 	
 	public static final String[] splitClassName(String className){

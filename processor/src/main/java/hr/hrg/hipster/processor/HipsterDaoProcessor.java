@@ -41,12 +41,15 @@ public class HipsterDaoProcessor extends AbstractProcessor{
     public synchronized void init(ProcessingEnvironment processingEnv) {
     	super.init(processingEnv);
 		processingEnv.getMessager().printMessage(Kind.NOTE, "INIT "+(++counter));
-		boolean jackson = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
+		boolean jackson    = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
 		boolean genBuilder = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_builder"));
 		boolean genVisitor = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_visitor"));
-		boolean genUpdate = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_update"));
+		boolean genUpdate  = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_update"));
+		boolean genMongo   = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_mongo"));
+		boolean mongoSkipNull     = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_mongo_skip_null"));
+		boolean genSql     = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_sql"));
 		
-		genOptions = new GenOptions(jackson,true,genVisitor,genUpdate, genBuilder);
+		genOptions = new GenOptions(jackson,true, genVisitor, genUpdate, genBuilder, genSql, genMongo, mongoSkipNull);
     }
     
 	@Override
@@ -261,8 +264,10 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 //    			builder = new GenDelta().gen2(def);
 //    			write(def.typeDelta, builder.build(), processingEnv);
 
-    			builder = new GenVisitor().gen2(def);
-    			write(def.typeDelta, builder.build(), processingEnv);
+    			if(genOptions.isGenVisitor()) {    				
+    				builder = new GenVisitor().gen2(def);
+    				write(def.typeDelta, builder.build(), processingEnv);
+    			}
     			
     		}
         	

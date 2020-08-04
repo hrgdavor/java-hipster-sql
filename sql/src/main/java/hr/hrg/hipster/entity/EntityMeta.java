@@ -19,20 +19,29 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	protected ICustomType<?>[] _typeHandler;
 	protected int _columnCount;
 	protected C[] _columnArray;
+	
 	protected C[] _columnArraySorted;
 	protected String[] _columnArraySortedStr;
 
-	public EntityMeta(int ordinal, String tableName, Class<T> entityClass) {
+	protected C[] _fieldArraySorted;
+	protected String[] _fieldArraySortedStr;
+
+	protected HipsterSql _hip;
+
+	public EntityMeta(int ordinal, String tableName, Class<T> entityClass, HipsterSql hipster) {
 		this._ordinal = ordinal;
 		this._tableName = tableName;
 		this._entityClass = entityClass;
+		this._hip = hipster;
 	}
 
-	public EntityMeta(int ordinal, String tableName, Class<T> entityClass, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted) {
-		this(ordinal, tableName, entityClass);
+	public EntityMeta(int ordinal, String tableName, Class<T> entityClass, C[] columnArray, String[] columnArraySortedStr, C[] columnArraySorted, String[] fieldArraySortedStr, C[] fieldArraySorted, HipsterSql hipster) {
+		this(ordinal, tableName, entityClass, hipster);
 
 		this._columnArraySorted = columnArraySorted;
 		this._columnArraySortedStr = columnArraySortedStr;
+		this._fieldArraySorted = fieldArraySorted;
+		this._fieldArraySortedStr = fieldArraySortedStr;
 		this._columnCount = columnArray.length;
 		_typeHandler = new ICustomType<?>[_columnCount];
 	}
@@ -65,6 +74,17 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	public int getColumnCount() {
 		return _columnCount;
 	}
+	
+	@Override
+	public final C getField(String columnName) {
+		int pos = Arrays.binarySearch(_fieldArraySortedStr, columnName);
+		return pos < 0 ? null : _fieldArraySorted[pos];
+	}	
+
+	@Override
+	public final int getFieldOrdinal(String columnName) {
+		return Arrays.binarySearch(_fieldArraySortedStr, columnName);
+	}	
 	
 	@Override
 	public final C getColumn(String columnName) {
@@ -139,6 +159,10 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	}
 
 	public void visitResult(ResultSet rs, V visitor) throws SQLException{
+		throw new UnsupportedOperationException();
+	}
+	
+	public T fromResultSet(ResultSet rs) throws SQLException{
 		throw new UnsupportedOperationException();
 	}	
 	

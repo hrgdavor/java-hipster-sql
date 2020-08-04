@@ -72,7 +72,7 @@ public class EntityDef {
 	}
 		
 	public Property addProp(String name, TypeName typeName, TypeMirror typeMirror, ExecutableElement method, ProcessingEnvironment processingEnv){
-		Property property = new Property(name, typeName, method, this.tableName, processingEnv, props.size());
+		Property property = new Property(name, typeName, typeMirror, method, this.tableName, processingEnv, props.size());
 		props.add(property);
 		return property;
 	}

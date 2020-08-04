@@ -9,7 +9,7 @@ public final class QueryValue<T> implements IQueryValue{
 	final ICustomType<T> type;
 
 	public QueryValue(T value, ICustomType<T> type){
-		if(type == null) throw new NullPointerException("EntityEventType can not be null");
+		if(type == null) throw new NullPointerException("CustomType can not be null");
 		this.value = value;
 		this.type = type;
 	}

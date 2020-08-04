@@ -3,13 +3,19 @@ package hr.hrg.hipster.processor;
 import static hr.hrg.hipster.processor.HipsterProcessorUtil.*;
 import static hr.hrg.javapoet.PoetUtil.*;
 
+import java.io.*;
 import java.sql.*;
 import java.util.*;
+
+import org.bson.*;
+import org.bson.codecs.*;
+import org.bson.codecs.configuration.*;
 
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.*;
 
 import hr.hrg.hipster.entity.*;
+import hr.hrg.hipster.jackson.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
@@ -25,7 +31,8 @@ public class GenMeta {
 		Property primaryProp = def.getPrimaryProp();
 		TypeName primaryType = primaryProp == null ? TypeName.get(Object.class) : primaryProp.type;
 	
-		cp.superclass(parametrized(EntityMeta.class,def.type, primaryType, columnMetaBase, def.typeVisitor));
+		Class<?> entityMetaClass = def.genOptions.isGenMongo() ? MongoEntityMeta.class : EntityMeta.class;
+		cp.superclass(parametrized(entityMetaClass,def.type, primaryType, columnMetaBase, def.genOptions.isGenVisitor() ? def.typeVisitor : TypeName.OBJECT));
 		
 		// public static final Class<SampleEntity> ENTITY_CLASS = SampleEntity.class;
 		addField(cp, PRIVATE().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
@@ -61,47 +68,51 @@ public class GenMeta {
 
 		MethodSpec.Builder constr = constructorBuilder(PUBLIC());
 		addParameter(constr, HipsterSql.class, "hipster");
-		constr.addCode("super(_ordinal, $S, ENTITY_CLASS);\n", def.tableName);
+		constr.addCode("super(_ordinal, $S, ENTITY_CLASS, hipster);\n", def.tableName);
 		addSetterParameter(constr, ordinalField, null);
 		int i=0;
 		
 		
-		constr.addCode("_typeHandler = new $T<?>[COLUMN_COUNT];\n", ICustomType.class);
+		if(def.genOptions.isGenMongo()) constr.addCode("_codecs = new $T<?>[COLUMN_COUNT];\n", Codec.class);
 		
-		CodeBlock.Builder typeHandlersBlock = CodeBlock.builder();
-		typeHandlersBlock.add("if(hipster != null){\n");
-		typeHandlersBlock.indent();
-		typeHandlersBlock.add("$T _typeSource = hipster.getTypeSource();\n", TypeSource.class);
-		boolean hasGetters = false;
-		
-		for(Property p:def.getProps()) {
-			ParameterizedTypeName parametrizedCustomType = parametrized(ICustomType.class, p.type.box());
-			if(p.customType != null) {
-				typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);\n", parametrizedCustomType, p.customType);				
-			}else if(!p.customTypeKey.isEmpty()){
-				typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getNamedRequired($S);\n", parametrizedCustomType, p.customTypeKey);
-			}else {				
-				typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getForRequired(", parametrizedCustomType);
-				hasGetters = true;
-				if(p.type instanceof ParameterizedTypeName){
-					ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)p.type;
-					typeHandlersBlock.add("$T.class",parameterizedTypeName.rawType);
-					for(TypeName ta: parameterizedTypeName.typeArguments){
-						typeHandlersBlock.add(",$T.class",ta);					
+		if(def.genOptions.isGenSql()) {			
+			constr.addCode("_typeHandler = new $T<?>[COLUMN_COUNT];\n", ICustomType.class);
+
+			CodeBlock.Builder typeHandlersBlock = CodeBlock.builder();
+			typeHandlersBlock.add("if(hipster != null){\n");
+			typeHandlersBlock.indent();
+			typeHandlersBlock.add("$T _typeSource = hipster.getTypeSource();\n", TypeSource.class);
+			boolean hasGetters = false;
+			
+			for(Property p:def.getProps()) {
+				ParameterizedTypeName parametrizedCustomType = parametrized(ICustomType.class, p.type.box());
+				if(p.customType != null) {
+					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);\n", parametrizedCustomType, p.customType);				
+				}else if(!p.customTypeKey.isEmpty()){
+					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getNamedRequired($S);\n", parametrizedCustomType, p.customTypeKey);
+				}else {				
+					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getForRequired(", parametrizedCustomType);
+					hasGetters = true;
+					if(p.type instanceof ParameterizedTypeName){
+						ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)p.type;
+						typeHandlersBlock.add("$T.class",parameterizedTypeName.rawType);
+						for(TypeName ta: parameterizedTypeName.typeArguments){
+							typeHandlersBlock.add(",$T.class",ta);					
+						}
+						typeHandlersBlock.add(");\n");
+					}else{
+						typeHandlersBlock.add("$T.class);\n", p.type.box());
 					}
-					typeHandlersBlock.add(");\n");
-				}else{
-					typeHandlersBlock.add("$T.class);\n", p.type.box());
 				}
+				
+				i++;
 			}
 			
-			i++;
+			typeHandlersBlock.unindent();
+			typeHandlersBlock.add("}\n");
+			
+			constr.addCode(typeHandlersBlock.build());
 		}
-		
-		typeHandlersBlock.unindent();
-		typeHandlersBlock.add("}\n");
-		
-		constr.addCode(typeHandlersBlock.build());
 
 		addColumnsDef(cp, constr, def, columnMetaBase);
 		
@@ -113,7 +124,7 @@ public class GenMeta {
 		
 		cp.addMethod(constr.build());
 		
-		add_fromResultSet(cp, def);
+		if(def.genOptions.isGenSql()) add_fromResultSet(cp, def);
 
 //		TypeName returnType = parametrized(EnumArrayUpdateDelta.class,columnMetaBase);
 //		addMethod(cp,PRIVATE().STATIC().FINAL(), returnType, "delta", delta->{
@@ -154,7 +165,7 @@ public class GenMeta {
 			method.addAnnotation(Override.class);
 			method.addCode("return $S;\n", def.simpleName);
 		});
-
+		
 		//@Override
 		//public final String getColumnNamesStr(){ return EntityEnum.COLUMNS_STR; }
 //		addMethod(cp,PUBLIC().FINAL(), String.class, "getColumnNamesStr", method->{
@@ -172,6 +183,13 @@ public class GenMeta {
 		addMethod(cp,PUBLIC().FINAL(), boolean.class, "containsColumn", method->{
 			addParameter(method, String.class, "columnName");
 			method.addCode("return $T.binarySearch(COLUMN_ARRAY_SORTED_STR, columnName) > -1;\n",Arrays.class);
+		});		
+
+		//@Override
+		//public final boolean containsColumn(){ return EntityEnum.COLUMN_NAMES.contains(columnName); }
+		addMethod(cp,PUBLIC().FINAL(), boolean.class, "containsField", method->{
+			addParameter(method, String.class, "columnName");
+			method.addCode("return $T.binarySearch(FIELD_ARRAY_SORTED_STR, columnName) > -1;\n",Arrays.class);
 		});		
 		
 		//@Override
@@ -220,6 +238,33 @@ public class GenMeta {
 				method.addAnnotation(Override.class);
 				method.addCode("return instance."+primaryProp.getterName+"();\n");
 			});
+		}
+		
+
+		if(def.genOptions.isGenMongo()) {
+			addMethod(cp,PUBLIC().FINAL(), parametrized(Class.class, def.type), "getEncoderClass", method->{
+				method.addAnnotation(Override.class);
+				method.addCode("return $L.class;\n", def.simpleName);
+			});
+			
+			addMethod(cp,PUBLIC().FINAL(), void.class, "setCodecRegistry", method->{
+				method.addAnnotation(Override.class);
+				method.addParameter(CodecRegistry.class, "registry");
+				method.addCode("super.setCodecRegistry(registry);\n\n", def.simpleName);
+				
+				for(Property p: def.getProps()) {
+					TypeName type = p.componentType != null ? p.componentType : p.type;
+					String getterNameMongo = getterNameMongo(type);
+					if(getterNameMongo == null) {
+						method.addCode("_codecs[$L] = registry.get($T.class);\n",p.ordinal, type);
+					}
+				}
+			});
+			
+			add_decode_mongo(cp, def);
+			
+			add_encode_mongo(cp, def);
+			
 		}
 		
 		return cp;
@@ -321,6 +366,319 @@ public class GenMeta {
 
 		return null;
 	}
+
+	private String getterNameMongo(TypeName p){
+		if(isType(p, "int","java.lang.Integer")){
+			return "readInt32";
+		
+		}else if(isType(p, "boolean","java.lang.Boolean")){
+			return "readBoolean";
+		
+		}else if(isType(p, "long","java.lang.Long")){
+			return "readInt64";
+			
+		}else if(isType(p, "double","java.lang.Double")){
+			return "readDouble";
+			
+		}else if(isType(p, "short","java.lang.Short")){
+			return "readInt32";
+			
+		}else if(isType(p, "float","java.lang.Float")){
+			return "readDouble";
+
+		}else if(isType(p, "java.lang.String")){
+			return "readString";
+		}
+
+		return null;
+	}
+	
+	private void add_decode_mongo(TypeSpec.Builder cp, EntityDef def) {
+		
+		MethodSpec.Builder method = methodBuilder(PUBLIC().FINAL(), def.type, "decode");
+		method.addAnnotation(Override.class);
+		
+		method.addParameter(BsonReader.class, "reader");
+		method.addParameter(DecoderContext.class, "decoderContext");
+
+		method.addCode("if(reader.getCurrentBsonType() == BsonType.NULL){ reader.readNull(); return null;}\n");
+		method.addCode("\n");
+		
+		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(",def.typeImmutable);
+		int i=0;
+		for(Property p: def.getProps()) {
+			method.addCode("$T $L",p.type, p.fieldName);
+			if(p.isPrimitive()) {
+				TypeName unboxed = p.type.unbox();
+				if(TypeName.BOOLEAN.equals(unboxed)) {					
+					method.addCode(" = false;\n");
+				}else {
+					method.addCode(" = 0;\n");					
+				}
+			}else {
+				method.addCode(" = null;\n");				
+			}
+
+			if(i>0) returnValue.add(", ");
+			returnValue.add(p.fieldName);
+			i++;
+		}
+		
+		method.addCode("\n");
+		method.addCode("reader.readStartDocument();\n");
+		method.addCode("while (reader.readBsonType() != $T.END_OF_DOCUMENT) {\n",BsonType.class);
+		method.addCode("\tString fieldName = reader.readName();\n");
+		method.addCode("\tColumnMeta<?> column = getColumn(fieldName);// we consider mongo databhase, so column name is used\n");
+//		method.addCode("if(column == null && \"_id\".equals(fieldName)) column = getColumn(\"id\");\n");
+		method.addCode("\n");
+		method.addCode("\tif(column != null) {\n");
+		method.addCode("\t\tswitch (column.ordinal()) {\n");
+		for(Property p: def.getProps()) {
+			String getterNameMongo = getterNameMongo(p.type);
+			method.addCode("\t\t\tcase $L: ", p.ordinal);
+			if(getterNameMongo != null) {
+				method.addCode("$L = reader.$L();",p.fieldName, getterNameMongo);
+			}else if(p.componentType != null) {
+				TypeName type = p.componentType;
+				boolean primitive = type.isBoxedPrimitive();
+				TypeName unboxed = primitive ? type.unbox(): type;
+				String typeStr = p.type.toString();
+
+				String decodeMethod = "";
+				if(TypeName.INT.equals(unboxed)) {
+					decodeMethod = "Integer";
+				}else if(TypeName.LONG.equals(unboxed)) {
+					decodeMethod = "Long";
+				}else if(TypeName.FLOAT.equals(unboxed)) {
+					decodeMethod = "Float";
+				}else if(TypeName.DOUBLE.equals(unboxed)) {
+					decodeMethod = "Double";
+				}else if(TypeName.SHORT.equals(unboxed)) {
+					decodeMethod = "Short";
+				}else if(TypeName.BOOLEAN.equals(unboxed)) {
+					decodeMethod = "Boolean";
+				}else if(typeStr.equals("java.lang.String")) {
+					decodeMethod = "String";
+				}
+				
+				boolean withCodec = decodeMethod.isEmpty();
+				if(p.array) {
+					decodeMethod = "decodeArray"+decodeMethod;
+				}else {
+					decodeMethod = "decodeList"+decodeMethod;
+				}
+				if(withCodec) {
+					method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);",
+							p.fieldName, MongoDecode.class, decodeMethod, Codec.class, p.componentType,p.ordinal);									
+				}else {
+					if(type.isPrimitive()) decodeMethod += "Primitive";
+					method.addCode("$L = $T.$L(reader, decoderContext);",
+							p.fieldName, MongoDecode.class, decodeMethod);									
+				}
+			}else {
+				method.addCode("$L = (($T<$T>)_codecs[$L]).decode(reader, decoderContext);",p.fieldName,Codec.class, p.type,p.ordinal);				
+			}
+			method.addCode("break;\n");
+		}
+		method.addCode("\n");
+		method.addCode("\t\t\tdefault: reader.skipValue();\n");
+		method.addCode("\t\t}\n");
+		method.addCode("\t}else{\n");
+		method.addCode("\t\treader.skipValue();\n");
+		method.addCode("\t}\n");
+		
+		method.addCode("\n");
+		method.addCode("}\n");// end while loop
+		
+		method.addCode("reader.readEndDocument();\n");
+		
+		
+		returnValue.add(");\n");
+
+		method.addCode(returnValue.build());
+		
+		cp.addMethod(method.build());
+	}
+	
+	public static void add_encode_mongo(TypeSpec.Builder builder, EntityDef def){
+		
+		addMethod(builder, PUBLIC(), void.class, "encode", method -> {		
+			method.addAnnotation(Override.class);
+			
+			addParameter(method, BsonWriter.class, "writer");
+			addParameter(method, def.type, "value");
+			method.addParameter(EncoderContext.class, "encoderContext");
+					
+			method.addCode("if(value == null) {\n");
+			method.addCode("\twriter.writeNull();\n");
+			method.addCode("\treturn;\n");
+			method.addCode("}\n\n");
+
+			method.addCode("writer.writeStartDocument();\n\n");
+			
+			int count = def.getProps().size();
+			for (int i = 0; i < count; i++) {
+				Property prop = def.getProps().get(i);
+				
+				if(prop.jsonIgnore) continue;
+				
+				String typeStr = prop.type.toString();
+				boolean primitive = prop.type.isPrimitive();
+				
+				if(prop.array) {
+					ArrayTypeName arrayTypeName = (ArrayTypeName)prop.type;
+					addWriteArrayMongo(method, prop, arrayTypeName, def);
+				}else if(prop.parametrized){
+					ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
+					method.addCode("// $L $T<",prop.fieldName, prop.parameterizedOuterRaw);
+					for(TypeName arg:prop.typeArguments)
+						method.addCode("$T,",arg);
+					method.addCode(">\n");
+					addWriteListMongo(method, prop, def);
+					
+					//					typeHandlersBlock.add("$T.class",parameterizedTypeName.rawType);
+//					for(TypeName ta: parameterizedTypeName.typeArguments){
+//						typeHandlersBlock.add(",$T.class",ta);					
+//					}
+//					typeHandlersBlock.add(");\n");
+				}else if(primitive || prop.type.isBoxedPrimitive()){
+					TypeName unboxed = prop.type.unbox();
+					if(TypeName.INT.equals(unboxed) 
+							|| TypeName.SHORT.equals(unboxed)
+							|| TypeName.BYTE.equals(unboxed)
+							){
+						addWriteMongo(method, "writeInt32", prop, !primitive, def);
+					}else if(TypeName.LONG.equals(unboxed)){
+						addWriteMongo(method, "writeInt64", prop, !primitive, def);						
+					}else if(TypeName.INT.equals(unboxed)){
+						addWriteMongo(method, "writeInt32", prop, !primitive, def);						
+					}else if(TypeName.DOUBLE.equals(unboxed) || TypeName.FLOAT.equals(unboxed)){
+						addWriteMongo(method, "writeDouble", prop, !primitive, def);						
+					}else if(TypeName.BOOLEAN.equals(unboxed)){
+						addWriteMongo(method, "writeBoolean", prop, !primitive, def);						
+					}else if(TypeName.CHAR.equals(unboxed)){
+						if(!primitive){
+							method.addCode("if (value.$L() == null)\n",prop.getterName);
+							method.addCode("\tjgen.writeNull();\n");
+							method.addCode("else\n");
+							method.addCode("\t");
+						}
+						method.addCode("writer.writeString(new char[]{value.$L()},0,1);\n",prop.getterName);
+					}
+				} else if(typeStr.equals("java.lang.String")){
+					addWriteMongo(method, "writeString", prop, true, def);
+				} else {
+					addWriteMongo(method, null, prop, true, def);
+				}
+				method.addCode("\n");
+			}
+			
+			method.addCode("writer.writeEndDocument();\n");
+			
+		});
+	}	
+	
+	public static void addWriteArrayMongo(Builder method, Property prop, ArrayTypeName arrayTypeName, EntityDef def) {
+		TypeName type = arrayTypeName.componentType;
+		boolean primitive = type.isBoxedPrimitive();
+		TypeName unboxed = primitive ? type.unbox(): type;
+		String typeStr = prop.type.toString();
+		String prefix = "";
+		if(def.genOptions.isMongoSkipNull()) {
+			prefix = "\t";
+			method.addCode("if(value.$L() != null){\n", prop.getterName);			
+		}
+		method.addCode(prefix+"writer.writeName($S);\n", prop.columnName);
+		if(TypeName.INT.equals(unboxed)
+				|| TypeName.SHORT.equals(unboxed)
+				|| TypeName.INT.equals(unboxed)
+				|| TypeName.LONG.equals(unboxed)
+				|| TypeName.DOUBLE.equals(unboxed)
+				|| TypeName.FLOAT.equals(unboxed)
+				|| TypeName.BOOLEAN.equals(unboxed)
+				|| typeStr.equals("java.lang.String")){
+			method.addCode(prefix+"$T.encodeArray(writer,value.$L());\n", MongoEncode.class, prop.getterName);			
+		}else {
+			method.addCode(prefix+"$T.encodeArray(($T<$T>)_codecs[$L],writer,value.$L(), encoderContext);\n", MongoEncode.class,Codec.class, type, prop.ordinal, prop.getterName);						
+		}
+		if(def.genOptions.isMongoSkipNull()) {
+			method.addCode("}\n");			
+		}
+
+	}
+
+	public static void addWriteListMongo(Builder method, Property prop, EntityDef def) {
+		TypeName type = prop.componentType;
+		boolean primitive = type.isBoxedPrimitive();
+		TypeName unboxed = primitive ? type.unbox(): type;
+		String typeStr = prop.type.toString();
+
+		String prefix = "";
+		if(def.genOptions.isMongoSkipNull()) {
+			prefix = "\t";
+			method.addCode("if(value.$L() != null){\n", prop.getterName);			
+		}
+		method.addCode(prefix+"writer.writeName($S);\n", prop.columnName);
+		String encodeMethod = null; 
+		if(TypeName.INT.equals(unboxed)) {
+			encodeMethod = "encodeListInteger";
+		}else if(TypeName.LONG.equals(unboxed)) {
+			encodeMethod = "encodeListLong";
+		}else if(TypeName.FLOAT.equals(unboxed)) {
+			encodeMethod = "encodeListFloat";
+		}else if(TypeName.DOUBLE.equals(unboxed)) {
+			encodeMethod = "encodeListDouble";
+		}else if(TypeName.SHORT.equals(unboxed)) {
+			encodeMethod = "encodeListShort";
+		}else if(TypeName.BOOLEAN.equals(unboxed)) {
+			encodeMethod = "encodeListBoolean";
+		}else if(typeStr.equals("java.lang.String")) {
+			encodeMethod = "encodeListString";
+		}
+		
+		if(encodeMethod == null) {
+			method.addCode(prefix+"$T.encodeList(($T<$T>)_codecs[$L],writer,value.$L(), encoderContext);\n", MongoEncode.class,Codec.class, type, prop.ordinal, prop.getterName);						
+		} else {
+			method.addCode(prefix+"$T.$L(writer,value.$L(), encoderContext);\n", MongoEncode.class, encodeMethod, prop.getterName);			
+		}
+		if(def.genOptions.isMongoSkipNull()) {
+			method.addCode("}\n");			
+		}
+
+	}
+	
+	public static void addWriteMongo(Builder method, String jgenMethod, Property prop, boolean nullCheck, EntityDef def) {
+		String prefix = "\t";
+		
+		boolean separateName = nullCheck || jgenMethod == null; 
+		
+		
+		if(nullCheck) {
+			if(def.genOptions.isMongoSkipNull()) {
+				method.addCode("if (value.$L() != null){\n",prop.getterName);				
+				if(separateName) method.addCode("\twriter.writeName($S);\n", prop.columnName);
+			}else {				
+				// name written already
+				if(separateName) method.addCode("writer.writeName($S);\n", prop.columnName);
+				method.addCode("if (value.$L() == null)\n",prop.getterName);
+				method.addCode("\twriter.writeNull();\n");
+				method.addCode("else{\n");
+			}
+		} else {			
+			prefix = "";
+		}
+		
+		if(jgenMethod == null) {
+			method.addCode(prefix+"(($T<$T>)_codecs[$L]).encode(writer, value.$L(),encoderContext);\n",Codec.class,prop.type,prop.ordinal, prop.getterName);
+		}else {
+			if(nullCheck)// name written already
+				method.addCode(prefix+"writer.$L(value.$L());\n",jgenMethod,prop.getterName);
+			else
+				method.addCode(prefix+"writer.$L($S, value.$L());\n",jgenMethod,prop.columnName,prop.getterName);
+		}
+		
+		if(nullCheck) method.addCode("}\n");
+	}
 	
 	private void add_fromResultSet(TypeSpec.Builder cp, EntityDef def) {
 		
@@ -335,7 +693,7 @@ public class GenMeta {
 		cp.addMethod(method.build());
 
 		
-		if(def.genOptions.isGenVisitor()) {			
+		if(def.genOptions.isGenVisitor()) {
 			method = methodBuilder(PUBLIC().FINAL(), "visitResult");
 			
 			method.addParameter(ResultSet.class, "rs");
@@ -349,7 +707,7 @@ public class GenMeta {
 		}
 
 	}
-
+	
 	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue) {
 		CodeBlock.Builder block = CodeBlock.builder();
 		Property primaryProp = def.getPrimaryProp();
@@ -366,13 +724,15 @@ public class GenMeta {
 				i++;
 			}
 		}
+
 		block.add("\n");
 		returnValue.add(");");
 		block.add(returnValue.build());
 		block.unindent();
 		Object fieldnameForCatch = primaryProp == null ? "null" : primaryProp.fieldName;
+		Class<?> entityMetaClass = def.genOptions.isGenMongo() ? MongoEntityMeta.class : EntityMeta.class;
 		block.add("\n} catch(Throwable e){ throw $T.errEntity($L,ENTITY_CLASS,e); }\n", 
-				EntityMeta.class,
+				entityMetaClass,
 				fieldnameForCatch
 				);
 		
@@ -397,7 +757,9 @@ public class GenMeta {
 	private void addColumnsDef(com.squareup.javapoet.TypeSpec.Builder cp, Builder constr, EntityDef def, ClassName columnMetaBase) {
 		List<String> colNames = new ArrayList<>();
 		List<String> enumNames = new ArrayList<>();
+		Map<String, String> colMap = new HashMap<>();
 		for(Property p:def.props) {
+			colMap.put(p.columnName, p.fieldName);
 			colNames.add(p.columnName);
 			enumNames.add(p.fieldName);
 		}
@@ -414,7 +776,7 @@ public class GenMeta {
 		}
 		arrStr.append(")");
 
-		final StringBuffer arr = new StringBuffer("{")  ;
+		StringBuffer arr = new StringBuffer("{")  ;
 		delim = "";
 		for (String col : enumNames) {
 			arr.append(delim);
@@ -450,7 +812,10 @@ public class GenMeta {
 				codeBlock.add(",null");
 			
 			codeBlock.add(",$S",prop.sql);
-			codeBlock.add(",_typeHandler[$L]",ordinal);
+			if(def.genOptions.isGenSql())
+				codeBlock.add(",_typeHandler[$L]",ordinal);
+			else
+				codeBlock.add(",null");
 
 			// type parameters if any
 			if(prop.type instanceof ParameterizedTypeName){				
@@ -534,6 +899,7 @@ public class GenMeta {
 		constr.addCode("_columns =  $T.safe(($T[])_columnArray);\n",ImmutableList.class,columnMetaBase);
 		
 		Collections.sort(enumNames);
+		Collections.sort(colNames);
 
 		arr.setLength(0);
 		str.setLength(0);
@@ -541,9 +907,9 @@ public class GenMeta {
 		str.append("{");
 
 		delim = "";
-		for (String col : enumNames) {
+		for (String col : colNames) {
 			arr.append(delim); str.append(delim);
-			arr.append(col);
+			arr.append(colMap.get(col));
 			str.append('"').append(col).append('"');
 			delim = ",";
 		}
@@ -558,6 +924,27 @@ public class GenMeta {
 //				field->field.initializer(arr.toString()));
 //		
 		addField(cp,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(String.class), "COLUMN_ARRAY_SORTED_STR", 
+				field->field.initializer(str.toString()));
+
+		
+		arr = new StringBuffer();
+		str.setLength(0);
+		arr.append("{");
+		str.append("{");
+
+		delim = "";
+		for (String col : enumNames) {
+			arr.append(delim); str.append(delim);
+			arr.append(col);
+			str.append('"').append(col).append('"');
+			delim = ",";
+		}
+		arr.append("}");
+		str.append("}");
+		
+		constr.addCode("_fieldArraySorted = new $T[]$L;\n",columnMetaBase, arr);
+		constr.addCode("_fieldArraySortedStr = FIELD_ARRAY_SORTED_STR;\n");
+		addField(cp,PRIVATE().STATIC().FINAL(), ArrayTypeName.of(String.class), "FIELD_ARRAY_SORTED_STR", 
 				field->field.initializer(str.toString()));
 
 	}	

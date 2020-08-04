@@ -23,7 +23,7 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
 
 
   public User1Meta(HipsterSql hipster, int ordinal) {
-	  super(ordinal, "user_table", ENTITY_CLASS);
+	  super(ordinal, "user_table", ENTITY_CLASS, hipster);
   
     _typeHandler = new ICustomType<?>[COLUMN_COUNT];
 

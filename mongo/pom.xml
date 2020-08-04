@@ -1,62 +1,54 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<name>Java hipster SQL library</name>
+	<name>Java hipster Mongo library</name>
 
 	<description>
-	
+
 	</description>
 	<url>http://github.com/hrgdavor/java-hipster-sql</url>
 
 	<groupId>hr.hrg</groupId>
-	<artifactId>hipster-sql</artifactId>
+	<artifactId>java-hipster-mongo</artifactId>
 	<version>1.1.0-SNAPSHOT</version>
-	
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-		
+
 	<dependencies>
 
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-api</artifactId>
-		    <version>1.7.21</version>
-			<scope>provided</scope>
-			<optional>true</optional>
+			<groupId>hr.hrg</groupId>
+			<artifactId>hipster-sql</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 
-        <!-- OPTIONAL -->
 		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>persistence-api</artifactId>
-			<version>1.0</version>
-			<scope>provided</scope>
-			<optional>true</optional>
+		    <groupId>org.mongodb</groupId>
+		    <artifactId>mongodb-driver-sync</artifactId>
+		    <version>4.0.0</version>
 		</dependency>
 
         <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.9.7</version>
-			<scope>provided</scope>
-			<optional>true</optional>
+            <groupId>hr.hrg</groupId>
+            <artifactId>hipster-sql</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.8.6</version>
-            <scope>provided</scope>
+            <groupId>javax.persistence</groupId>
+            <artifactId>persistence-api</artifactId>
+            <version>1.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-core</artifactId>
-            <version>4.0.0</version>
-            <scope>provided</scope>
+            <groupId>hr.hrg</groupId>
+            <artifactId>hipster-processor</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
-        
+
 		<!-- TEST deps -->
 		<dependency>
 			<groupId>org.testng</groupId>
@@ -65,13 +57,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.196</version>
-			<scope>test</scope>
-		</dependency>
-		
 	</dependencies>
 
 	<licenses>
@@ -91,9 +76,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com/hrgdavor/java-hipster-sql.git</connection>
-		<developerConnection>scm:git:ssh://github.com:hrgdavor/java-hipster-sql.git</developerConnection>
-		<url>http://github.com/hrgdavor/java-hipster-sql/tree/master</url>
+		<connection>scm:git:git://github.com/hrgdavor/java-hipster-sql-test-nodep.git</connection>
+		<developerConnection>scm:git:ssh://github.com:hrgdavor/java-hipster-sql-test-nodep.git</developerConnection>
+		<url>http://github.com/hrgdavor/java-hipster-sql-test-nodep/tree/master</url>
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
@@ -104,7 +89,7 @@
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
-  	</distributionManagement>
+	</distributionManagement>
 	<build>
 		<plugins>
 			<plugin>
@@ -113,10 +98,33 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
-					<optimize>true</optimize>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
+					<generatedSourcesDirectory>target/generated/java</generatedSourcesDirectory>
+					<compilerArgs>
+						<arg>-Ahipster_proc_jackson=false</arg>
+						<arg>-Ahipster_proc_builder=false</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
-		
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<minimizeJar>true</minimizeJar>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>min</shadedClassifierName>                    
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -143,7 +151,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
@@ -167,7 +175,7 @@
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
-			</plugin -->
+			</plugin>
 		</plugins>
 	</build>
 

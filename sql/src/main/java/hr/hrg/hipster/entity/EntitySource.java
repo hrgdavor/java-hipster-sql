@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 import hr.hrg.hipster.sql.*;
 
 @SuppressWarnings("rawtypes")
-public class EntitySource {
+public class EntitySource implements Iterable<IEntityMeta<?,?>>{
 	protected Map<Class<? extends Object>, IEntityMeta<?,?>> registered = new ConcurrentHashMap<>(); 
 	protected Map<String, IEntityMeta<?,?>> named = new ConcurrentHashMap<>();
 	protected Map<Class, IEntityMeta<?,?>> metaInstance = new ConcurrentHashMap<>();
@@ -26,6 +26,10 @@ public class EntitySource {
 		registerFor(meta, meta.getEntityClass());
 	}
 
+	public Iterator<IEntityMeta<?,?>> iterator(){
+		return metaInstance.values().iterator();
+	}
+	
 	protected <T> void registerFor(IEntityMeta<T, ?> meta, Class<T> clazz){
 		registered.put(clazz, meta);
 		metaInstance.put(meta.getClass(), meta);
