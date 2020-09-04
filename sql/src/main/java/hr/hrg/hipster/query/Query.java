@@ -500,8 +500,7 @@ public class Query{
 			wrapped = (IQueryValue) value;
 		}else {
 			if(hipster == null) throw new RuntimeException("Query without hipster can not add values as TypeSource is not available then");
-			ICustomType type = hipster.getTypeSource().getFor(value.getClass());
-			if(type == null) throw new HipsterSqlException(this, " value type for not supported "+value.getClass().getName(), null);
+			ICustomType type = hipster.getTypeSource().getForRequired(value.getClass());
 			wrapped = new QueryValue(value, type);
 		}
 		return wrapped;
