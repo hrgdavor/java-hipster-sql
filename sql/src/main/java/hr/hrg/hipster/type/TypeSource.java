@@ -86,9 +86,6 @@ public class TypeSource{
 	@SuppressWarnings("unchecked")
 	public ICustomType getForRequired(Class<?> clazz, Class<?> ...classParams) {
 		ICustomType for1 = getFor(clazz, classParams);
-		if(for1 == null && clazz.isEnum()) {
-			for1 = new EnumType(clazz);
-		}
 		if(for1 == null) {
 			throw new RuntimeException("Handler not found for "+clazz.getName()+"<"+HipsterSqlUtil.joinClassNames(",", classParams)+">");
 		}
@@ -97,7 +94,11 @@ public class TypeSource{
 	
 	public ICustomType getFor(Class<?> clazz, Class<?> ...classParams) {
 		if(classParams.length == 0){			
-			return (ICustomType) registered.get(clazz);
+			ICustomType type = (ICustomType) registered.get(clazz);
+			if(type == null && clazz.isEnum()) {
+				type = new EnumType(clazz);
+			}	
+			return type;
 		}else{
 			GenericEntry<ICustomType<?>> genericEntry = registeredGeneric.get(clazz);
 			if(genericEntry != null){
