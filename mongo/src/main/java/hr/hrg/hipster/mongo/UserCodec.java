@@ -78,6 +78,7 @@ public class UserCodec implements Codec<User>{
 	    Address address = null;
 	    List<Address> addressList = null;
 	    Address[] addressArr = null;
+	    
 	    if(reader.getCurrentBsonType() == BsonType.NULL) return null;
         reader.readStartDocument();
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
