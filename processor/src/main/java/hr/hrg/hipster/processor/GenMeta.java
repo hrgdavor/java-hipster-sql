@@ -437,7 +437,11 @@ public class GenMeta {
 			String getterNameMongo = getterNameMongo(p.type);
 			method.addCode("\t\t\tcase $L: ", p.ordinal);
 			if(getterNameMongo != null) {
-				method.addCode("$L = reader.$L();",p.fieldName, getterNameMongo);
+				if(isType(p.type, "short","java.lang.Short")) {
+					method.addCode("$L = (short) reader.$L();",p.fieldName, getterNameMongo);					
+				}else {					
+					method.addCode("$L = reader.$L();",p.fieldName, getterNameMongo);
+				}
 			}else if(p.componentType != null) {
 				TypeName type = p.componentType;
 				boolean primitive = type.isBoxedPrimitive();
