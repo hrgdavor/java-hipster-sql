@@ -41,6 +41,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
     public synchronized void init(ProcessingEnvironment processingEnv) {
     	super.init(processingEnv);
 		processingEnv.getMessager().printMessage(Kind.NOTE, "INIT "+(++counter));
+		boolean anno    = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_annotations"));
 		boolean jackson    = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_jackson"));
 		boolean genBuilder = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_builder"));
 		boolean genVisitor = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_visitor"));
@@ -49,7 +50,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		boolean mongoSkipNull     = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_mongo_skip_null"));
 		boolean genSql     = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_sql"));
 		
-		genOptions = new GenOptions(jackson,true, genVisitor, genUpdate, genBuilder, genSql, genMongo, mongoSkipNull);
+		genOptions = new GenOptions(anno, jackson,true, genVisitor, genUpdate, genBuilder, genSql, genMongo, mongoSkipNull);
     }
     
 	@Override

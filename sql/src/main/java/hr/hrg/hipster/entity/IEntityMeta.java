@@ -13,6 +13,9 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 	int ordinal();
 
 	Class<T> getEntityClass();
+
+	Class[] getImplClasses();
+	
 	String getEntityName();
 
 	String getTableName();

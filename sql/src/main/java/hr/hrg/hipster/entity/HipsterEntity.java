@@ -11,6 +11,10 @@ import hr.hrg.hipster.sql.*;
 public @interface HipsterEntity {
 	public String table() default "";
 
+    boolean defaultColumnsRequired() default false;	
+    
+	public BooleanEnum genAnnotations() default DEFAULT;
+
 	public BooleanEnum genMeta() default DEFAULT;
 
 	public BooleanEnum genUpdate() default DEFAULT;

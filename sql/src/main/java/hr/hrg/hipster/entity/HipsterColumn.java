@@ -2,6 +2,7 @@ package hr.hrg.hipster.entity;
 
 import java.lang.annotation.*;
 
+import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
 /**Alternative to {@link javax.persistence.Column}
@@ -46,6 +47,8 @@ public @interface HipsterColumn {
 
     String customTypeKey() default "";
 
+    BooleanEnum required() default BooleanEnum.DEFAULT;
+    
     
     /**
      * Should this method be skipped

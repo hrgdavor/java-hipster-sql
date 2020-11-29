@@ -8,13 +8,17 @@ import javax.persistence.*;
 
 import hr.hrg.hipster.entity.*;
 
-@HipsterEntity(table="user_table", genMongo = TRUE, mongoSkipNull = TRUE)
+@HipsterEntity(table="user_table", 
+genMongo = TRUE,
+genAnnotations = TRUE,
+mongoSkipNull = TRUE)
 public interface User{
 
 	@Id
 	@Column(name="_id")
 	public Long getId();
 	
+	@JoinColumn(name="xxx")
 	public String getName();
 
 	public int getAge();

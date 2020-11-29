@@ -13,6 +13,7 @@ public class GenOptions {
 	BooleanEnum genVisitor  = DEFAULT;
 	BooleanEnum genSql  	= DEFAULT;
 	BooleanEnum genMongo  	= DEFAULT;
+	BooleanEnum genAnnotations	= DEFAULT;
 	BooleanEnum mongoSkipNull 	= DEFAULT;
 	GenOptions parent;
 	
@@ -30,8 +31,10 @@ public class GenOptions {
 		}
 	}
 	
-	public GenOptions(boolean genJson, boolean genMeta, boolean genVisitor, boolean genUpdate, boolean genBuilder, boolean genSql, boolean genMongo, boolean mongoSkipNull){
+	public GenOptions(boolean genAnno, boolean genJson, boolean genMeta, boolean genVisitor, boolean genUpdate, boolean genBuilder, boolean genSql, boolean genMongo, boolean mongoSkipNull){
 		this(null, null);
+		this.genAnnotations = genAnno ? TRUE:FALSE;
+		
 		this.genJson     = genJson     ? TRUE:FALSE;
 		this.genMeta     = genMeta     ? TRUE:FALSE;
 		this.genVisitor  = genVisitor  ? TRUE:FALSE;

@@ -6,6 +6,7 @@ import static hr.hrg.javapoet.PoetUtil.*;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.Map.*;
 
 import org.bson.*;
 import org.bson.codecs.*;
@@ -154,11 +155,15 @@ public class GenMeta {
 		}
 
 		//@Override
-		//public final Class<Sample> getEntityClass(){ return ENTITY_CLASS; }
-//		addMethod(cp,PUBLIC().FINAL(), parametrized(Class.class, def.type), "getEntityClass", method->{
-//			method.addAnnotation(Override.class);
-//			method.addCode("return ENTITY_CLASS;\n");
-//		});
+//		public final Class[] getImplClasses(){ return new Class[]{}; }
+		addMethod(cp,PUBLIC().FINAL(), ArrayTypeName.of(Class.class), "getImplClasses", method->{
+			method.addAnnotation(Override.class);
+			method.addCode("return new Class[]{\n");
+			if(def.genOptions.isGenUpdate())  method.addCode("$T.class,\n", def.typeUpdate);
+			method.addCode("$T.class\n", def.typeImmutable);
+			method.addCode("};\n");
+		});
+		
 		//@Override
 		//public final String getEntityName(){ return "Sample"; }
 		addMethod(cp,PUBLIC().FINAL(), String.class, "getEntityName", method->{
@@ -805,6 +810,7 @@ public class GenMeta {
 			codeBlock.add("$L = new $T<$T>($L, $S", prop.fieldName, columnMetaBase, rawType.box(), ordinal, prop.name);
 			codeBlock.add(",$S",prop.columnName);
 			codeBlock.add(",$S",prop.getterName);
+			codeBlock.add(",$L",prop.required ? "true":"false");
 			codeBlock.add(",this");
 			
 			
@@ -833,7 +839,7 @@ public class GenMeta {
 			if(prop.annotationsWithDefaults.size() == 0) {
 				// CASE: Reflection
 				// force initialisation of "annotations" field in ColumnMeta to empty array, 
-				// (we know there ar non, so reflection can be skipped for this one)
+				// (we know there are none, so reflection can be skipped for this one)
 				codeBlock.add(".withAnnotations()");
 				
 
@@ -844,38 +850,39 @@ public class GenMeta {
 			}else if(prop.annotationsWithDefaults.size() > 0) {
 				// CASE: Generated (no reflection)
 				// - uncomment all lines in this block
-
-//				codeBlock.add(".withAnnotations(");
-//				int i=0;
-//				codeBlock.indent();
-//				codeBlock.indent();
-//				for(AnnotationSpec spec: prop.annotationsWithDefaults) {
-//					if(i>0) codeBlock.add(", ");
-//					
-//					codeBlock.add("\nannotation($T.class", spec.type);
-//					int j=0;
-//					for(Entry<String, List<CodeBlock>> elem:spec.members.entrySet()) {
-//						codeBlock.add(", ");
-//						
-//						codeBlock.add("$S,",elem.getKey());
-//						if(elem.getValue().size() == 1) {
-//							codeBlock.add(elem.getValue().get(0));							
-//						}else {
-//							codeBlock.add("new Object[]{");
-//							for(int k=0; k<elem.getValue().size(); k++) {
-//								if(k>0) codeBlock.add(", ");
-//								codeBlock.add(elem.getValue().get(k));
-//							}
-//							codeBlock.add("}");
-//						}
-//						j++;
-//					}
-//					codeBlock.add(")");
-//					i++;
-//				}
-//				codeBlock.add(")");				
-//				codeBlock.unindent();
-//				codeBlock.unindent();
+				if(def.genOptions.genAnnotations == BooleanEnum.TRUE) {					
+					codeBlock.add(".withAnnotations(");
+					int i=0;
+					codeBlock.indent();
+					codeBlock.indent();
+					for(AnnotationSpec spec: prop.annotationsWithDefaults) {
+						if(i>0) codeBlock.add(", ");
+						
+						codeBlock.add("\nannotation($T.class", spec.type);
+						int j=0;
+						for(Entry<String, List<CodeBlock>> elem:spec.members.entrySet()) {
+							codeBlock.add(", ");
+							
+							codeBlock.add("$S,",elem.getKey());
+							if(elem.getValue().size() == 1) {
+								codeBlock.add(elem.getValue().get(0));							
+							}else {
+								codeBlock.add("new Object[]{");
+								for(int k=0; k<elem.getValue().size(); k++) {
+									if(k>0) codeBlock.add(", ");
+									codeBlock.add(elem.getValue().get(k));
+								}
+								codeBlock.add("}");
+							}
+							j++;
+						}
+						codeBlock.add(")");
+						i++;
+					}
+					codeBlock.add(")");				
+					codeBlock.unindent();
+					codeBlock.unindent();
+				}
 
 			}
 			codeBlock.add(";\n");

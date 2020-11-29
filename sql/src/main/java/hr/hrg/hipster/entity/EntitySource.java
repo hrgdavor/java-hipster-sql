@@ -24,13 +24,17 @@ public class EntitySource implements Iterable<IEntityMeta<?,?>>{
 	
 	protected <T> void registerFor(IEntityMeta<T, ?> meta){
 		registerFor(meta, meta.getEntityClass());
+		
+		for(Class clazz:meta.getImplClasses()) {
+			registerFor(meta, clazz);
+		}
 	}
 
 	public Iterator<IEntityMeta<?,?>> iterator(){
 		return metaInstance.values().iterator();
 	}
 	
-	protected <T> void registerFor(IEntityMeta<T, ?> meta, Class<T> clazz){
+	public <T> void registerFor(IEntityMeta<T, ?> meta, Class<T> clazz){
 		registered.put(clazz, meta);
 		metaInstance.put(meta.getClass(), meta);
 		named.put(clazz.getSimpleName(), meta);

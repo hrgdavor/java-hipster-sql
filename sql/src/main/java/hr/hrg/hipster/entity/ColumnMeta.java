@@ -22,12 +22,14 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 	protected final int hashCode;
 	protected Annotation[] annotations;
 	private ICustomType<?> typeHandler;
+	protected boolean required;
 
 	public ColumnMeta(
 			int ordinal, 
 			String _name, 
 			String _columnName, 
 			String _getterName,
+			boolean _required,
 			IEntityMeta meta,
 			Class<T> _type,
 			Class<?> _primitiveType, 
@@ -38,6 +40,7 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 		this.name = _name;
 		this.columnName = _columnName;
 		this.getterName = _getterName;
+		this.required = _required;
 		this.meta = meta;
 		this.type = _type;
 		this.typeHandler = typeHandler;
@@ -198,6 +201,8 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 		return columnName;
 	}
 	
+	public boolean isRequired() {
+		return required;
+	}
 
-	
 }

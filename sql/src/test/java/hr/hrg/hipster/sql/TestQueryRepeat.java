@@ -17,7 +17,7 @@ public class TestQueryRepeat {
 	static HipsterSql hip = new HipsterSql();
 
 	EntityMetaSimple<Object, Long, ColumnMeta,Object> meta = new EntityMetaSimple<>(0, "users", Object.class, hip);
-	ColumnMeta<Long> idColumn = new ColumnMeta<>(0, "id", "userId", "getId", meta, Long.class, null, "", 
+	ColumnMeta<Long> idColumn = new ColumnMeta<>(0, "id", "userId", "getId", false, meta, Long.class, null, "", 
 			hip.getTypeSource().getFor(Long.class));
 
 	volatile Query query = new Query(hip,1);// throw-away instance to 
@@ -110,6 +110,11 @@ public class TestQueryRepeat {
 		public boolean containsField(String columnName) {
 			// TODO Auto-generated method stub
 			return false;
+		}
+
+		@Override
+		public Class[] getImplClasses() {
+			return new Class[] {};
 		}
 
 	}

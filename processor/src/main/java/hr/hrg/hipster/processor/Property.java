@@ -26,6 +26,7 @@ class Property {
 	public String name;
 	public String fieldName;
 	public String getterName;
+	public boolean required;
 	public String setterName;
 	public String columnName;
 	public String tableName = "";
@@ -46,12 +47,13 @@ class Property {
 	public boolean parametrized;
 	public ClassName parameterizedOuterRaw;
 	
-	public Property(String getter, TypeName type, TypeMirror typeMirror, ExecutableElement method, String tableName, ProcessingEnvironment processingEnv, int ordinal){
+	public Property(String getter, TypeName type, TypeMirror typeMirror, ExecutableElement method, String tableName, boolean defaultColumnsRequired, ProcessingEnvironment processingEnv, int ordinal){
 		this.getterName = getter;
 		this.type = type;
 		this.typeMirror = typeMirror;
 		this.tableName = tableName;
 		this.ordinal = ordinal;
+		this.required = defaultColumnsRequired;
 		String name = null;
 
 		List<? extends AnnotationMirror> list = method.getAnnotationMirrors();
@@ -84,6 +86,7 @@ class Property {
 		
 		HipsterColumn hipsterColumn = method.getAnnotation(HipsterColumn.class);
 		if(hipsterColumn != null){
+			if(hipsterColumn.required() != BooleanEnum.DEFAULT) required = hipsterColumn.required() == BooleanEnum.TRUE; 
 			if(!hipsterColumn.name().isEmpty()) this.columnName = hipsterColumn.name();
 			this.sql = hipsterColumn.sql();
 			if(!hipsterColumn.table().isEmpty()) this.tableName = hipsterColumn.table();

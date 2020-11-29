@@ -33,6 +33,7 @@ public class EntityDef {
 	public final ClassName typeDelta;
 	public final ClassName typeVisitor;
 	public final ClassName type;
+	public final boolean defaultColumnsRequired;
 
 	GenOptions genOptions;
 	
@@ -53,8 +54,10 @@ public class EntityDef {
 		
 		if(hipsterEntity != null && hipsterEntity.table() != null && !hipsterEntity.table().isEmpty()) {
 			this.tableName = hipsterEntity.table();
+			defaultColumnsRequired = hipsterEntity.defaultColumnsRequired();
 		} else {
 			this.tableName = simpleName;
+			defaultColumnsRequired = false;
 		}
 
 		this.genOptions = new GenOptions(genOptions, hipsterEntity);
@@ -72,7 +75,7 @@ public class EntityDef {
 	}
 		
 	public Property addProp(String name, TypeName typeName, TypeMirror typeMirror, ExecutableElement method, ProcessingEnvironment processingEnv){
-		Property property = new Property(name, typeName, typeMirror, method, this.tableName, processingEnv, props.size());
+		Property property = new Property(name, typeName, typeMirror, method, this.tableName, defaultColumnsRequired, processingEnv, props.size());
 		props.add(property);
 		return property;
 	}

@@ -89,5 +89,12 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
   public final Long entityGetPrimary(User1 instance) {
     return instance.getId();
   }
+  
+  @Override
+	public Class[] getImplClasses() {
+		return new Class[] {
+				User1Immutable.class
+		};
+	}
 
 }
