@@ -14,14 +14,19 @@ import hr.hrg.hipster.type.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HipsterColumn {
 
-    /**
-     * (Optional) The name of the column. Defaults to 
-     * the property or field name.
-     * @return name 
-     */
-    String name() default "";
+	/**
+	 * (Optional) The name of the column. Defaults to 
+	 * the property or field name.
+	 * @return name 
+	 */
+	String name() default "";
 
-    /**
+	/** Description
+	 * @return description 
+	 */
+	String descr() default "";
+
+	/**
      * (Optional) sql expression for the column. If defined the column name 
      * is added as alias after the expression.
      * @return sql 
@@ -31,7 +36,7 @@ public @interface HipsterColumn {
     /**
      * (Optional) The name of the _table that contains the column. 
      * If absent the column is assumed to be in the primary _table.
-     * @return _table 
+     * @return table 
      */
     String table() default "";
     
@@ -39,14 +44,22 @@ public @interface HipsterColumn {
     /**
      * (Optional) The class of ICustomType that converts the column 
      * from database to entity and vice versa
-     * @return _table 
+     * @return custom type
      */
     @SuppressWarnings("rawtypes")
 	Class<? extends ICustomType> customType() default ICustomType.class;
 
 
+    /**
+     * (Optional) The class of ICustomType that converts the column 
+     * from database to entity and vice versa
+     * @return custom type
+     */
     String customTypeKey() default "";
 
+    /** is the column required  
+     * @return custom type
+     */
     BooleanEnum required() default BooleanEnum.DEFAULT;
     
     
