@@ -433,7 +433,8 @@ public class GenMeta {
 		method.addCode("reader.readStartDocument();\n");
 		method.addCode("while (reader.readBsonType() != $T.END_OF_DOCUMENT) {\n",BsonType.class);
 		method.addCode("\tString fieldName = reader.readName();\n");
-		method.addCode("\tColumnMeta<?> column = getColumn(fieldName);// we consider mongo databhase, so column name is used\n");
+		method.addCode("\tColumnMeta<?> column = getColumn(fieldName);// we consider mongo database, so field name is used\n");
+		method.addCode("\tif(column == null && \"_id\".equals(fieldName)) column = getColumn(\"id\");// check _id\n");
 //		method.addCode("if(column == null && \"_id\".equals(fieldName)) column = getColumn(\"id\");\n");
 		method.addCode("\n");
 		method.addCode("\tif(column != null) {\n");
