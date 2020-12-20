@@ -54,7 +54,7 @@ public class MongoEncode {
 	
 	/* **** Boolean ***** */	
 	
-	public static final void encodeListBoolean(BsonWriter writer, Iterable<Boolean>list) {
+	public static final void encodeListBoolean(BsonWriter writer, Iterable<Boolean>list, EncoderContext encoderContext) {
 		if(list == null) {
 			writer.writeNull();
 		}else {
@@ -86,7 +86,7 @@ public class MongoEncode {
 	
 	/* **** Float ***** */
 	
-	public static final void encodeListFloat(BsonWriter writer, Iterable<Float>list) {
+	public static final void encodeListFloat(BsonWriter writer, Iterable<Float>list, EncoderContext encoderContext) {
 		if(list == null) {
 			writer.writeNull();
 		}else {
@@ -118,7 +118,7 @@ public class MongoEncode {
 
 	/* **** Double ***** */
 	
-	public static final void encodeListDouble(BsonWriter writer, Iterable<Double>list) {
+	public static final void encodeListDouble(BsonWriter writer, Iterable<Double>list, EncoderContext encoderContext) {
 		if(list == null) {
 			writer.writeNull();
 		}else {
@@ -150,7 +150,7 @@ public class MongoEncode {
 
 	/* **** Long ***** */
 	
-	public static final void encodeListLong(BsonWriter writer, Iterable<Long>list) {
+	public static final void encodeListLong(BsonWriter writer, Iterable<Long>list, EncoderContext encoderContext) {
 		if(list == null) {
 			writer.writeNull();
 		}else {
@@ -182,7 +182,7 @@ public class MongoEncode {
 
 	/* **** Integer ***** */
 	
-	public static final void encodeListInteger(BsonWriter writer, Iterable<Integer>list) {
+	public static final void encodeListInteger(BsonWriter writer, Iterable<Integer>list, EncoderContext encoderContext) {
 		if(list == null) {
 			writer.writeNull();
 		}else {

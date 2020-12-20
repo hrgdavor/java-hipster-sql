@@ -260,7 +260,8 @@ public class GenMeta {
 				for(Property p: def.getProps()) {
 					TypeName type = p.componentType != null ? p.componentType : p.type;
 					String getterNameMongo = getterNameMongo(type);
-					if(getterNameMongo == null) {
+//					if(getterNameMongo == null) {
+					if(!type.isPrimitive()) {
 						method.addCode("_codecs[$L] = registry.get($T.class);\n",p.ordinal, type);
 					}
 				}
@@ -452,7 +453,7 @@ public class GenMeta {
 				TypeName type = p.componentType;
 				boolean primitive = type.isBoxedPrimitive();
 				TypeName unboxed = primitive ? type.unbox(): type;
-				String typeStr = p.type.toString();
+				String typeStr = p.componentType.toString();
 
 				String decodeMethod = "";
 				if(TypeName.INT.equals(unboxed)) {
@@ -467,6 +468,8 @@ public class GenMeta {
 					decodeMethod = "Short";
 				}else if(TypeName.BOOLEAN.equals(unboxed)) {
 					decodeMethod = "Boolean";
+				}else if(typeStr.equals("String")) {
+					decodeMethod = "String";
 				}else if(typeStr.equals("java.lang.String")) {
 					decodeMethod = "String";
 				}
