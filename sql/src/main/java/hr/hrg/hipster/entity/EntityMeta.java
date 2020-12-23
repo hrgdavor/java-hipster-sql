@@ -57,12 +57,12 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 
 	@Override
 	public final ICustomType<?> getTypeHandler(ColumnMeta column) {
-		return _typeHandler[column.ordinal()];
+		return _typeHandler == null ? null: _typeHandler[column.ordinal()];
 	}
 
 	@Override
 	public final ICustomType<?> getTypeHandler(int ordinal) {
-		return _typeHandler[ordinal];
+		return _typeHandler == null ? null: _typeHandler[ordinal];
 	} 
 
 	@Override

@@ -13,9 +13,11 @@ public class EntityEventHub {
 	private EntitySource entitySource;
 
 	private volatile List<IEntityEventListener>[][] listeners = new List[128][];
+	private volatile List<IEntityEventListener>[] listenersGlobal;
 	
 	public EntityEventHub(EntitySource entitySource) {
-		this.entitySource = entitySource;		
+		this.entitySource = entitySource;
+		listenersGlobal = makeListenersList();
 	}
 	
 	private List<IEntityEventListener>[] makeListenersList(){
@@ -31,6 +33,10 @@ public class EntityEventHub {
 	}
 	
 	public boolean hasListener(EntityEventType type, IEntityMeta meta) {
+		// check global
+		if(listenersGlobal[type.ordinal()].size() > 0) return true;
+		
+		// check specific if global not present
 		List<IEntityEventListener> list = getListeners(type, meta);
 		return list == null ? false : list.size() > 0;
 	}
@@ -44,6 +50,10 @@ public class EntityEventHub {
 	
 	public <T, ID, M extends IEntityMeta<T, ID>> void addListener(Class<T> klass, IEntityEventListener<T, ID, M> listener, EntityEventType ...types) {
 		addListenerByMeta((M)entitySource.getForRequired(klass), listener, types);
+	}
+
+	public void addListenerGlobal(IEntityEventListener<?, ?, ?> listener, EntityEventType ...types) {
+		_add(listener, listenersGlobal, types);
 	}
 	
 	public <T, ID, M extends IEntityMeta<T, ID>> void addListenerByMeta(M meta, IEntityEventListener<T, ID, M> listener, EntityEventType ...types) {
@@ -63,6 +73,11 @@ public class EntityEventHub {
 			}
 		}
 		
+		_add(listener, perType, types);
+	}
+
+	public <T, ID, M extends IEntityMeta<T, ID>> void _add(IEntityEventListener<T, ID, M> listener,
+			List<IEntityEventListener>[] perType, EntityEventType... types) {
 		if(types.length == 0) {
 			for(int i=0; i<perType.length; i++) {
 				perType[i].add(listener);
@@ -75,14 +90,29 @@ public class EntityEventHub {
 	}
 
 	public <T, ID, M extends IEntityMeta<T, ID>> void fireEvent(EntityEventType type, ID id, T old, T updated, IUpdatable delta, M meta, long batchId) {
+		_fire(type, id, old, updated, delta, meta, batchId, listenersGlobal[type.ordinal()]);
+		
 		List<IEntityEventListener> list = getListeners(type, meta);
 		if(list != null) {
-			for(IEntityEventListener<T,ID,M> listener: list) {
-				try {
-					listener.entityEvent(type, id, old, updated, delta, meta, batchId);
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
+			_fire(type, id, old, updated, delta, meta, batchId, list);
+		}
+	}
+
+	public <M extends IEntityMeta<T, ID>, ID, T> void _fire(
+			EntityEventType type, 
+			ID id, 
+			T old, 
+			T updated,	
+			IUpdatable delta, 
+			M meta, 
+			long batchId, 
+			List<IEntityEventListener> list) {
+		
+		for(IEntityEventListener<T,ID,M> listener: list) {
+			try {
+				listener.entityEvent(type, id, old, updated, delta, meta, batchId);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
 			}
 		}
 	}
