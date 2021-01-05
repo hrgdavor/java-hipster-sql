@@ -44,7 +44,11 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add(reader.readString());
+			if(reader.getCurrentBsonType() == BsonType.STRING) {
+				list.add(reader.readString());				
+			}else {
+				reader.skipValue();
+			}
 		}
 		reader.readEndArray();
 		
@@ -74,7 +78,11 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add(reader.readBoolean());
+			if(reader.getCurrentBsonType() == BsonType.BOOLEAN) {
+				list.add(reader.readBoolean());				
+			}else {
+				reader.skipValue();
+			}			
 		}
 		reader.readEndArray();
 		
@@ -119,7 +127,17 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add((float)reader.readDouble());
+			BsonType bsonType = reader.getCurrentBsonType();
+			if(bsonType == BsonType.INT32) 
+				list.add((float) reader.readInt32());
+			else if(bsonType == BsonType.INT64)
+				list.add((float) reader.readInt64());
+			else if(bsonType == BsonType.STRING)
+				list.add(Float.parseFloat(reader.readString()));
+			else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+				list.add((float)reader.readDouble());
+			else
+				reader.skipValue();
 		}
 		reader.readEndArray();
 		
@@ -163,7 +181,17 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add((Double)reader.readDouble());
+			BsonType bsonType = reader.getCurrentBsonType();
+			if(bsonType == BsonType.INT32) 
+				list.add((double) reader.readInt32());
+			else if(bsonType == BsonType.INT64)
+				list.add((double) reader.readInt64());
+			else if(bsonType == BsonType.STRING)
+				list.add(Double.parseDouble(reader.readString()));
+			else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+				list.add(reader.readDouble());
+			else
+				reader.skipValue();
 		}
 		reader.readEndArray();
 		
@@ -210,7 +238,15 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add(reader.readInt64());
+			BsonType bsonType = reader.getCurrentBsonType();
+			if(bsonType == BsonType.INT32) 
+				list.add((long) reader.readInt32());
+			else if(bsonType == BsonType.STRING)
+				list.add(Long.parseLong(reader.readString()));
+			else if(reader.getCurrentBsonType() == BsonType.INT64)
+				list.add(reader.readInt64());
+			else
+				reader.skipValue();
 		}
 		reader.readEndArray();
 		
@@ -256,7 +292,15 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add(reader.readInt32());
+			BsonType bsonType = reader.getCurrentBsonType();
+			if(bsonType == BsonType.INT64) 
+				list.add((int) reader.readInt64());
+			else if(bsonType == BsonType.STRING)
+				list.add(Integer.parseInt(reader.readString()));
+			else if(reader.getCurrentBsonType() == BsonType.INT32)
+				list.add(reader.readInt32());
+			else
+				reader.skipValue();
 		}
 		reader.readEndArray();
 		
@@ -301,7 +345,15 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			list.add((short)reader.readInt32());
+			BsonType bsonType = reader.getCurrentBsonType();
+			if(bsonType == BsonType.INT64) 
+				list.add((short) reader.readInt64());
+			else if(bsonType == BsonType.STRING)
+				list.add(Short.parseShort(reader.readString()));
+			else if(reader.getCurrentBsonType() == BsonType.INT32)
+				list.add((short)reader.readInt32());
+			else
+				reader.skipValue();
 		}
 		reader.readEndArray();
 		
