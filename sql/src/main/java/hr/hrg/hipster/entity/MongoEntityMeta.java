@@ -36,4 +36,12 @@ public abstract class MongoEntityMeta<T,ID, C extends ColumnMeta, V> extends Ent
 		this._codecRegistry = _registry;	
 	}
 
+	public Codec<?> getCodec(int ordinal) {
+		return _codecs[ordinal];
+	}
+	
+	public Codec<?> getCodec(C column) {
+		return _codecs[column.ordinal];
+	}
+
 }
