@@ -6,6 +6,8 @@ import java.util.*;
 import org.bson.*;
 import org.bson.codecs.*;
 
+import hr.hrg.hipster.sql.*;
+
 public class MongoDecode {
 
 	public static final <T1> List<T1> decodeListMutable(Codec<T1> codec, BsonReader reader, DecoderContext decoderContext) {
@@ -23,9 +25,13 @@ public class MongoDecode {
 	}
 
 	public static final <T1> List<T1> decodeList(Codec<T1> codec, BsonReader reader, DecoderContext decoderContext) {
-		return decodeListMutable(codec, reader, decoderContext); // TODO immutable		
+		return decodeListImmutable(codec, reader, decoderContext);		
 	}
 
+	public static final <T1> ImmutableList<T1> decodeListImmutable(Codec<T1> codec, BsonReader reader, DecoderContext decoderContext) {
+		return new ImmutableList<>(decodeListMutable(codec, reader, decoderContext));
+	}
+	
 	public static final <T1> T1[] decodeArray(Codec<T1> codec, BsonReader reader, DecoderContext decoderContext) {
 		
 		List<T1> list = decodeListMutable(codec, reader, decoderContext);
