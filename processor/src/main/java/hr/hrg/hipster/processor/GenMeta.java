@@ -481,7 +481,7 @@ public class GenMeta {
 					decodeMethod = "decodeList"+decodeMethod;
 				}
 				if(withCodec) {
-					if("hr.hrg.hipster.sql.ImmutableList".equals(typeStr)) {
+					if("hr.hrg.hipster.sql.ImmutableList".equals(p.type.toString())) {
 						method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);",
 								p.fieldName, MongoDecode.class, "decodeListImmutable", Codec.class, p.componentType,p.ordinal);						
 					}else {
