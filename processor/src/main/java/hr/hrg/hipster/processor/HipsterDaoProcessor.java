@@ -9,6 +9,7 @@ import java.util.Map.*;
 import javax.annotation.processing.*;
 import javax.lang.model.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 import javax.persistence.*;
 import javax.tools.*;
@@ -98,7 +99,27 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		EntityDef def = new EntityDef(typeElement, processingEnv.getElementUtils(), genOptions);
         def.packageElement = packageElement;
 		
-        for (Element element : typeElement.getEnclosedElements()) {
+        makeProps(typeElement, def);
+		
+        addDef(def);
+		return def;
+	}
+
+	public void makeProps(TypeElement typeElement, EntityDef def) {
+		List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
+		for (TypeMirror typeMirror : interfaces) {
+			TypeElement typeElement2 = (TypeElement) processingEnv.getTypeUtils().asElement(typeMirror);
+			HipsterEntity hipsterEntity = typeElement2.getAnnotation(HipsterEntity.class);
+
+			if(hipsterEntity != null) {
+				processingEnv.getMessager().printMessage(
+						Diagnostic.Kind.NOTE,
+						"annotated class: " + typeElement.getQualifiedName()+" with interface "+typeMirror.toString());
+				makeProps(typeElement2, def);
+			}
+		}
+		
+		for (Element element : typeElement.getEnclosedElements()) {
         	if(element.getKind() == ElementKind.METHOD) {
         		ExecutableElement method = (ExecutableElement) element;
         		String name = element.getSimpleName().toString();
@@ -125,9 +146,6 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         		}
         	}
 		}
-		
-        addDef(def);
-		return def;
 	}
 	
 	public void addDef(EntityDef def) {
