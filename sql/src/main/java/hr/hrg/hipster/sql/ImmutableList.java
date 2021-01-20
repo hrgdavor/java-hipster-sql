@@ -1,10 +1,18 @@
 package hr.hrg.hipster.sql;
 
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.annotation.*;
 
-public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
+import hr.hrg.hipster.jackson.*;
+
+
+@JsonSerialize(using=DirectSerializer.class)
+public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess, IDirectSerializerReady{
 	private final T[] items;
 
 	
@@ -303,5 +311,20 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess{
 			b.append(items[i]);
 		}
 		return b.toString();
+	}
+
+	@Override
+	public void serialize(JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonGenerationException {
+		jgen.writeStartArray();
+		
+		for (T t : items) {
+			try {
+				jgen.writeObject(t);
+			}catch(StackOverflowError e) {
+				throw new RuntimeException("Stack overflow serializing "+t.getClass().getName());
+			}
+		}
+		
+		jgen.writeEndArray();
 	}
 }

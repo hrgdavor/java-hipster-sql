@@ -481,12 +481,12 @@ public class GenMeta {
 					decodeMethod = "decodeList"+decodeMethod;
 				}
 				if(withCodec) {
-					if("hr.hrg.hipster.sql.ImmutableList".equals(p.type.toString())) {
+					if(p.type.toString().startsWith("hr.hrg.hipster.sql.ImmutableList")) {
 						method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);",
 								p.fieldName, MongoDecode.class, "decodeListImmutable", Codec.class, p.componentType,p.ordinal);						
 					}else {
-						method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);",
-								p.fieldName, MongoDecode.class, decodeMethod, Codec.class, p.componentType,p.ordinal);									
+						method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);/* $L */",
+								p.fieldName, MongoDecode.class, decodeMethod, Codec.class, p.componentType,p.ordinal,p.type.toString());									
 					}
 				}else {
 					if(type.isPrimitive()) decodeMethod += "Primitive";
