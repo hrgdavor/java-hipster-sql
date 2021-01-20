@@ -446,6 +446,9 @@ public class GenMeta {
 			if(getterNameMongo != null) {
 				if(isType(p.type, "short","java.lang.Short")) {
 					method.addCode("$L = (short) reader.$L();",p.fieldName, getterNameMongo);					
+				}else if(isType(p, "java.lang.String")){					
+					method.addCode("$L = $T.decodeString(reader, decoderContext);",
+							p.fieldName, MongoDecode.class);					
 				}else {					
 					method.addCode("$L = reader.$L();",p.fieldName, getterNameMongo);
 				}

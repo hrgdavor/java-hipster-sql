@@ -50,11 +50,7 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			if(reader.getCurrentBsonType() == BsonType.STRING) {
-				list.add(reader.readString());				
-			}else {
-				reader.skipValue();
-			}
+			list.add(decodeString(reader, decoderContext));				
 		}
 		reader.readEndArray();
 		
@@ -394,6 +390,31 @@ public class MongoDecode {
 		return arr;
 	}
 
-	
-	
+    public static String decodeString(BsonReader reader, DecoderContext decoderContext) {
+    	BsonType currentBsonType = reader.getCurrentBsonType();
+    	switch (currentBsonType) {
+		case BOOLEAN: return reader.readBoolean() ? "true":"false";
+		case DATE_TIME: return Long.toString( reader.readDateTime() );
+		case DB_POINTER: reader.skipValue(); return null;
+		case DECIMAL128: return reader.readDecimal128().toString();
+		case DOUBLE: return Double.toString(reader.readDouble());
+		case INT32: return Integer.toString(reader.readInt32());
+		case INT64: return Long.toString(reader.readInt64());
+		case JAVASCRIPT: reader.skipValue(); return null;
+		case JAVASCRIPT_WITH_SCOPE: return null;
+		case MAX_KEY: reader.skipValue(); return null;
+		case MIN_KEY: reader.skipValue(); return null;
+		case NULL: reader.skipValue(); return null;
+		case OBJECT_ID: return reader.readObjectId().toString();
+		case REGULAR_EXPRESSION: return reader.readRegularExpression().toString();
+		case STRING: return reader.readString();
+		case SYMBOL: return reader.readSymbol().toString();
+		case TIMESTAMP: return reader.readTimestamp().asNumber().toString();
+		case UNDEFINED: reader.skipValue(); return null;
+		case END_OF_DOCUMENT:
+		default:
+			throw new RuntimeException("Invalid state "+currentBsonType.name());
+		}
+    }
+
 }
