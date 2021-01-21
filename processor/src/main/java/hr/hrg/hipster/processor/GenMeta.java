@@ -36,8 +36,9 @@ public class GenMeta {
 		cp.superclass(parametrized(entityMetaClass,def.type, primaryType, columnMetaBase, def.genOptions.isGenVisitor() ? def.typeVisitor : TypeName.OBJECT));
 		
 		// public static final Class<SampleEntity> ENTITY_CLASS = SampleEntity.class;
-		addField(cp, PRIVATE().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
-		
+		addField(cp, PUBLIC().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
+		addField(cp, PUBLIC().STATIC().FINAL(), String.class, "ENTITY_NAME", "$S",def.entityName);	
+
 		int ordinal = 0;
 		for(Property prop: def.getProps()){
 			// type or raw type
@@ -163,6 +164,20 @@ public class GenMeta {
 			method.addCode("$T.class\n", def.typeImmutable);
 			method.addCode("};\n");
 		});
+
+//		public final Class getImmutableClass(){  }
+		addMethod(cp,PUBLIC().FINAL(), Class.class, "getImmutableClass", method->{
+			method.addAnnotation(Override.class);
+			method.addCode("return $T.class;\n",def.typeImmutable);
+		});
+
+		if(def.genOptions.isGenUpdate()) {			
+//		public final Class getUpdateClass(){  }
+			addMethod(cp,PUBLIC().FINAL(), Class.class, "getUpdateClass", method->{
+				method.addAnnotation(Override.class);
+				method.addCode("return $T.class;\n",def.typeUpdate);
+			});
+		}
 		
 		//@Override
 		//public final String getEntityName(){ return "Sample"; }

@@ -9,6 +9,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.*;
 
+import com.fasterxml.jackson.annotation.*;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
@@ -19,6 +20,7 @@ public class EntityDef {
 
 	public final String packageName;
 	public final String simpleName;
+	public final String entityName;
 	public final DeclaredType declaredType;
 
     List<Property> props = new ArrayList<>();
@@ -39,6 +41,7 @@ public class EntityDef {
 	
 	public TypeElement clazz;
 	public Element packageElement;
+	public JsonTypeInfo jsonTypeInfo;
 	
 	public EntityDef(TypeElement clazz, Elements elements, GenOptions genOptions){
 		this.clazz = clazz;
@@ -60,10 +63,14 @@ public class EntityDef {
 			defaultColumnsRequired = false;
 		}
 
+		jsonTypeInfo = clazz.getAnnotation(JsonTypeInfo.class);
+		
 		this.genOptions = new GenOptions(genOptions, hipsterEntity);
 
 		this.type = ClassName.get(clazz);
 
+		this.entityName = simpleName;
+		
 //		this.typeEnum      = ClassName.get(packageName, simpleName+"Enum");
 		this.typeImmutable = ClassName.get(packageName, simpleName+"Immutable");
 		this.typeBuilder   = ClassName.get(packageName, simpleName+"Builder");

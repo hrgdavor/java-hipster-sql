@@ -165,5 +165,14 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	public T fromResultSet(ResultSet rs) throws SQLException{
 		throw new UnsupportedOperationException();
 	}	
+
+	@Override
+	public Class<T> getImmutableClass() {
+		throw new UnsupportedOperationException();
+	}
 	
+	@Override
+	public Class<T> getUpdateClass() {
+		throw new UnsupportedOperationException();
+	}
 }

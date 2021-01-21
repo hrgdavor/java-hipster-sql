@@ -85,6 +85,8 @@ public final class User1Immutable implements User1, IEnumGetter, IDirectSerializ
       JsonGenerationException {
     jgen.writeStartObject();
 
+    jgen.writeStringField("@type", User1Meta.ENTITY_NAME);
+    
     jgen.writeFieldName("id");
     if (id == null)
     	jgen.writeNull();

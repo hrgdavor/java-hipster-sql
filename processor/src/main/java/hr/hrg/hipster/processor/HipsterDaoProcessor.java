@@ -15,6 +15,7 @@ import javax.persistence.*;
 import javax.tools.*;
 import javax.tools.Diagnostic.Kind;
 
+import com.fasterxml.jackson.annotation.*;
 import com.squareup.javapoet.*;
 import com.squareup.javapoet.TypeSpec.*;
 
@@ -98,7 +99,8 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 
 		EntityDef def = new EntityDef(typeElement, processingEnv.getElementUtils(), genOptions);
         def.packageElement = packageElement;
-		
+
+        
         makeProps(typeElement, def);
 		
         addDef(def);

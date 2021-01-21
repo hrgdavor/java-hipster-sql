@@ -75,6 +75,15 @@ public class GenImmutable {
 			
 			method.addCode("jgen.writeStartObject();\n\n");
 			
+			// TODO more by spec
+			if(def.jsonTypeInfo != null) {
+				
+				if(def.genOptions.isGenMeta())
+					method.addCode("jgen.writeStringField(\"@type\", $T.ENTITY_NAME);\n", def.typeMeta);
+				else
+					method.addCode("jgen.writeStringField(\"@type\", $S);\n", def.entityName);
+			}
+			
 			int count = def.getProps().size();
 			for (int i = 0; i < count; i++) {
 				Property prop = def.getProps().get(i);

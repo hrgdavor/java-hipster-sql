@@ -43,5 +43,8 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 
 	ColumnMeta getField(String columnName);
 	boolean containsField(String columnName);
-	int getFieldOrdinal(String columnName);	
+	int getFieldOrdinal(String columnName);
+	
+	Class<T> getImmutableClass();
+	Class<T> getUpdateClass();
 }

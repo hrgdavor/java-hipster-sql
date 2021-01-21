@@ -9,7 +9,8 @@ import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
 public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Visitor>{
-  private static final Class<User1> ENTITY_CLASS = User1.class;
+  public static final Class<User1> ENTITY_CLASS = User1.class;
+  public static final String ENTITY_NAME = "User1";
   
   public final LocalColumnMeta<Long> id;
   public final LocalColumnMeta<List> name;
@@ -95,6 +96,11 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
 		return new Class[] {
 				User1Immutable.class
 		};
+	}
+
+	@Override
+	public boolean containsField(String columnName) {
+		return false;
 	}
 
 }
