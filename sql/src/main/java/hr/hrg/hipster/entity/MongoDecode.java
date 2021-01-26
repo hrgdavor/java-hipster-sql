@@ -41,11 +41,11 @@ public class MongoDecode {
 		return list.toArray((T1[]) Array.newInstance(codec.getEncoderClass(), list.size()));
 	}
 	
-	public float decodeFloat(BsonReader reader) {
+	public static final float decodeFloat(BsonReader reader) {
 		return decodeFloat(reader, 0);
 	}
 	
-	public float decodeFloat(BsonReader reader, float def) {
+	public static final float decodeFloat(BsonReader reader, float def) {
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return (float) reader.readInt32();
@@ -63,11 +63,11 @@ public class MongoDecode {
 		return def;
 	}
 
-	public Float decodeFloatObject(BsonReader reader){
+	public static final Float decodeFloatObject(BsonReader reader){
 		return decodeFloatObject(reader, null);
 	}
 	
-	public Float decodeFloatObject(BsonReader reader, Float def){
+	public static final Float decodeFloatObject(BsonReader reader, Float def){
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return (float) reader.readInt32();
@@ -85,11 +85,11 @@ public class MongoDecode {
 		return def;
 	}	
 	
-	public double decodeDouble(BsonReader reader) {
+	public static final double decodeDouble(BsonReader reader) {
 		return decodeDouble(reader, 0d);
 	}
 	
-	public double decodeDouble(BsonReader reader, double def) {
+	public static final double decodeDouble(BsonReader reader, double def) {
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return (double) reader.readInt32();
@@ -107,11 +107,11 @@ public class MongoDecode {
 		return def;
 	}
 
-	public Double decodeDoubleObject(BsonReader reader){
+	public static final Double decodeDoubleObject(BsonReader reader){
 		return decodeDoubleObject(reader, null);
 	}
 	
-	public Double decodeDoubleObject(BsonReader reader, Double def){
+	public static final Double decodeDoubleObject(BsonReader reader, Double def){
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return (double) reader.readInt32();
@@ -129,10 +129,10 @@ public class MongoDecode {
 		return def;
 	}
 
-	public int decodeInt(BsonReader reader) {
+	public static final int decodeInt(BsonReader reader) {
 		return decodeInt(reader, 0);
 	}
-	public int decodeInt(BsonReader reader, int def) {
+	public static final int decodeInt(BsonReader reader, int def) {
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return reader.readInt32();
@@ -150,11 +150,11 @@ public class MongoDecode {
 		return def;
 	}
 
-	public Integer decodeIntObject(BsonReader reader){
+	public static final Integer decodeIntObject(BsonReader reader){
 		return decodeIntObject(reader, null);
 	}
 	
-	public Integer decodeIntObject(BsonReader reader, Integer def){
+	public static final Integer decodeIntObject(BsonReader reader, Integer def){
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return reader.readInt32();
@@ -171,10 +171,10 @@ public class MongoDecode {
 	}
 	
 
-	public short decodeShort(BsonReader reader) {
+	public static final short decodeShort(BsonReader reader) {
 		return decodeShort(reader, (short) 0);
 	}
-	public short decodeShort(BsonReader reader, short def) {
+	public static final short decodeShort(BsonReader reader, short def) {
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return (short) reader.readInt32();
@@ -192,11 +192,11 @@ public class MongoDecode {
 		return def;
 	}
 
-	public Short decodeShortObject(BsonReader reader){
+	public static final Short decodeShortObject(BsonReader reader){
 		return decodeShortObject(reader, null);
 	}
 	
-	public Short decodeShortObject(BsonReader reader, Short def){
+	public static final Short decodeShortObject(BsonReader reader, Short def){
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return (short) reader.readInt32();
@@ -215,10 +215,10 @@ public class MongoDecode {
 	}
 	
 
-	public long decodeLong(BsonReader reader) {
+	public static final long decodeLong(BsonReader reader) {
 		return decodeLong(reader, 0);
 	}
-	public long decodeLong(BsonReader reader, long def) {
+	public static final long decodeLong(BsonReader reader, long def) {
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return reader.readInt32();
@@ -236,11 +236,11 @@ public class MongoDecode {
 		return def;
 	}
 
-	public Long decodeLongObject(BsonReader reader){
+	public static final Long decodeLongObject(BsonReader reader){
 		return decodeLongObject(reader, null);
 	}
 	
-	public Long decodeLongObject(BsonReader reader, Long def){
+	public static final Long decodeLongObject(BsonReader reader, Long def){
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(bsonType == BsonType.INT32) 
 			return Long.valueOf(reader.readInt32());
@@ -256,11 +256,11 @@ public class MongoDecode {
 		return def;
 	}	
 	
-	public boolean decodeBoolean(BsonReader reader) {
+	public static final boolean decodeBoolean(BsonReader reader) {
 		return decodeBoolean(reader, false);
 	}
 	
-	public boolean decodeBoolean(BsonReader reader, boolean def) {
+	public static final boolean decodeBoolean(BsonReader reader, boolean def) {
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
 			return reader.readBoolean();
@@ -278,10 +278,10 @@ public class MongoDecode {
 		return def;
 	}
 
-	public Boolean decodeBooleanObject(BsonReader reader){
+	public static final Boolean decodeBooleanObject(BsonReader reader){
 		return decodeBooleanObject(reader, null);
 	}
-	public Boolean decodeBooleanObject(BsonReader reader, Boolean def){
+	public static final Boolean decodeBooleanObject(BsonReader reader, Boolean def){
 		BsonType bsonType = reader.getCurrentBsonType();
 		if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
 			return reader.readBoolean();

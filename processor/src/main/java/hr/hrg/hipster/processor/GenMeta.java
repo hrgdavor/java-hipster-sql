@@ -405,7 +405,7 @@ public class GenMeta {
 		if("double".equals(typeName)) return "decodeDouble";
 		if("java.lang.Double".equals(typeName)) return "decodeDoubleObject";
 		
-		if("Short".equals(typeName)) return "decodeShort";
+		if("short".equals(typeName)) return "decodeShort";
 		if("java.lang.Short".equals(typeName)) return "decodeShortObject";
 		
 		if("java.lang.String".equals(typeName)) return "decodeString";
