@@ -41,6 +41,265 @@ public class MongoDecode {
 		return list.toArray((T1[]) Array.newInstance(codec.getEncoderClass(), list.size()));
 	}
 	
+	public float decodeFloat(BsonReader reader) {
+		return decodeFloat(reader, 0);
+	}
+	
+	public float decodeFloat(BsonReader reader, float def) {
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return (float) reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (float) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Float.parseFloat(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (float) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1.0f:0.0f;
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	public Float decodeFloatObject(BsonReader reader){
+		return decodeFloatObject(reader, null);
+	}
+	
+	public Float decodeFloatObject(BsonReader reader, Float def){
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return (float) reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (float) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Float.parseFloat(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (float) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1.0f:0.0f;
+		else
+			reader.skipValue();
+		
+		return def;
+	}	
+	
+	public double decodeDouble(BsonReader reader) {
+		return decodeDouble(reader, 0d);
+	}
+	
+	public double decodeDouble(BsonReader reader, double def) {
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return (double) reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (double) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Double.parseDouble(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1.0:0.0;
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	public Double decodeDoubleObject(BsonReader reader){
+		return decodeDoubleObject(reader, null);
+	}
+	
+	public Double decodeDoubleObject(BsonReader reader, Double def){
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return (double) reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (double) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Double.parseDouble(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1.0:0.0;
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	public int decodeInt(BsonReader reader) {
+		return decodeInt(reader, 0);
+	}
+	public int decodeInt(BsonReader reader, int def) {
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (int) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Integer.parseInt(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (int) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1:0;
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	public Integer decodeIntObject(BsonReader reader){
+		return decodeIntObject(reader, null);
+	}
+	
+	public Integer decodeIntObject(BsonReader reader, Integer def){
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (int) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Integer.parseInt(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (int) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1:0;
+		
+		return def;
+	}
+	
+
+	public short decodeShort(BsonReader reader) {
+		return decodeShort(reader, (short) 0);
+	}
+	public short decodeShort(BsonReader reader, short def) {
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return (short) reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (short) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Short.parseShort(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (short) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return (short) (reader.readBoolean() ? 1:0);
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	public Short decodeShortObject(BsonReader reader){
+		return decodeShortObject(reader, null);
+	}
+	
+	public Short decodeShortObject(BsonReader reader, Short def){
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return (short) reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return (short) reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Short.parseShort(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (short) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return (short) (reader.readBoolean() ? 1:0);
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+	
+
+	public long decodeLong(BsonReader reader) {
+		return decodeLong(reader, 0);
+	}
+	public long decodeLong(BsonReader reader, long def) {
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return reader.readInt32();
+		else if(bsonType == BsonType.INT64)
+			return reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Long.parseLong(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (long) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1L:0L;
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	public Long decodeLongObject(BsonReader reader){
+		return decodeLongObject(reader, null);
+	}
+	
+	public Long decodeLongObject(BsonReader reader, Long def){
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(bsonType == BsonType.INT32) 
+			return Long.valueOf(reader.readInt32());
+		else if(bsonType == BsonType.INT64)
+			return reader.readInt64();
+		else if(bsonType == BsonType.STRING)
+			return Long.parseLong(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return (long) reader.readDouble();
+		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean() ? 1L:0L;
+		
+		return def;
+	}	
+	
+	public boolean decodeBoolean(BsonReader reader) {
+		return decodeBoolean(reader, false);
+	}
+	
+	public boolean decodeBoolean(BsonReader reader, boolean def) {
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean();
+		else if(bsonType == BsonType.INT32) 
+			return reader.readInt32() != 0;
+		else if(bsonType == BsonType.INT64)
+			return (int) reader.readInt64() != 0;
+		else if(bsonType == BsonType.STRING)
+			return "true".equalsIgnoreCase(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return reader.readDouble() != 0.0;
+		else
+			reader.skipValue();
+	
+		return def;
+	}
+
+	public Boolean decodeBooleanObject(BsonReader reader){
+		return decodeBooleanObject(reader, null);
+	}
+	public Boolean decodeBooleanObject(BsonReader reader, Boolean def){
+		BsonType bsonType = reader.getCurrentBsonType();
+		if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
+			return reader.readBoolean();
+		else if(bsonType == BsonType.INT32) 
+			return reader.readInt32() != 0;
+		else if(bsonType == BsonType.INT64)
+			return (int) reader.readInt64() != 0;
+		else if(bsonType == BsonType.STRING)
+			return "true".equalsIgnoreCase(reader.readString());
+		else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
+			return reader.readDouble() != 0.0;
+		else
+			reader.skipValue();
+		
+		return def;
+	}
+
+	
 	/* **** String ***** */
 	
 	public static final  List<String> decodeListStringMutable(BsonReader reader, DecoderContext decoderContext) {
@@ -183,17 +442,7 @@ public class MongoDecode {
 		
 		reader.readStartArray();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-			BsonType bsonType = reader.getCurrentBsonType();
-			if(bsonType == BsonType.INT32) 
-				list.add((double) reader.readInt32());
-			else if(bsonType == BsonType.INT64)
-				list.add((double) reader.readInt64());
-			else if(bsonType == BsonType.STRING)
-				list.add(Double.parseDouble(reader.readString()));
-			else if(reader.getCurrentBsonType() == BsonType.DOUBLE)
-				list.add(reader.readDouble());
-			else
-				reader.skipValue();
+
 		}
 		reader.readEndArray();
 		
@@ -388,6 +637,10 @@ public class MongoDecode {
 			if(value != null) arr[i] = value; 
 		}
 		return arr;
+	}
+
+	public static String decodeString(BsonReader reader) {
+		return decodeString(reader, null);
 	}
 
     public static String decodeString(BsonReader reader, DecoderContext decoderContext) {

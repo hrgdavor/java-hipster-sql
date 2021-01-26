@@ -389,28 +389,27 @@ public class GenMeta {
 	}
 
 	private String getterNameMongo(TypeName p){
-		if(isType(p, "int","java.lang.Integer")){
-			return "readInt32";
+		String typeName = p.toString();
+		if("int".equals(typeName)) return "decodeInt";
+		if("java.lang.Integer".equals(typeName)) return "decodeIntObject";
 		
-		}else if(isType(p, "boolean","java.lang.Boolean")){
-			return "readBoolean";
+		if("boolean".equals(typeName)) return "decodeBoolean";
+		if("java.lang.Boolean".equals(typeName)) return "decodeBooleanObject";
 		
-		}else if(isType(p, "long","java.lang.Long")){
-			return "readInt64";
-			
-		}else if(isType(p, "double","java.lang.Double")){
-			return "readDouble";
-			
-		}else if(isType(p, "short","java.lang.Short")){
-			return "readInt32";
-			
-		}else if(isType(p, "float","java.lang.Float")){
-			return "readDouble";
+		if("long".equals(typeName)) return "decodeLong";
+		if("java.lang.Long".equals(typeName)) return "decodeLongObject";
 
-		}else if(isType(p, "java.lang.String")){
-			return "readString";
-		}
-
+		if("float".equals(typeName)) return "decodeFloat";
+		if("java.lang.Float".equals(typeName)) return "decodeFloatObject";
+		
+		if("double".equals(typeName)) return "decodeDouble";
+		if("java.lang.Double".equals(typeName)) return "decodeDoubleObject";
+		
+		if("Short".equals(typeName)) return "decodeShort";
+		if("java.lang.Short".equals(typeName)) return "decodeShortObject";
+		
+		if("java.lang.String".equals(typeName)) return "decodeString";
+		
 		return null;
 	}
 	
@@ -459,14 +458,7 @@ public class GenMeta {
 			String getterNameMongo = getterNameMongo(p.type);
 			method.addCode("\t\t\tcase $L: ", p.ordinal);
 			if(getterNameMongo != null) {
-				if(isType(p.type, "short","java.lang.Short")) {
-					method.addCode("$L = (short) reader.$L();",p.fieldName, getterNameMongo);					
-				}else if(isType(p, "java.lang.String")){					
-					method.addCode("$L = $T.decodeString(reader, decoderContext);",
-							p.fieldName, MongoDecode.class);					
-				}else {					
-					method.addCode("$L = reader.$L();",p.fieldName, getterNameMongo);
-				}
+				method.addCode("$L = $T.$L(reader);",p.fieldName, MongoDecode.class, getterNameMongo);
 			}else if(p.componentType != null) {
 				TypeName type = p.componentType;
 				boolean primitive = type.isBoxedPrimitive();
