@@ -133,8 +133,15 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         		
         		// only getters (getSth, isSth)
         		if(method.getParameters().size()> 0) continue;
-        		boolean getter = name.startsWith("get") || (name.startsWith("is") && (typeNameStr == "boolean" || typeNameStr == "java.lang.Boolean")) ;
-        		if(!getter) continue;
+        		if(method.isDefault()) continue;
+
+        		boolean getter = name.startsWith("get") || (name.startsWith("is") && ("boolean".equals(typeNameStr)  || "java.lang.Boolean".equals(typeNameStr) )) ;
+        		if(!getter) {
+    				processingEnv.getMessager().printMessage(
+    						Diagnostic.Kind.NOTE,
+    						"not a getter " + typeElement.getQualifiedName()+"."+name+":"+typeNameStr);
+        			continue;
+        		}
 
         		
         		HipsterColumn hipsterColumn = element.getAnnotation(HipsterColumn.class);
@@ -281,7 +288,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         	
     		if(def.genOptions.isGenMeta()){
     			
-    			builder = new GenMeta().gen(def,columnMetaBase);
+    			builder = new GenMeta().gen(def,columnMetaBase, processingEnv);
     			JavaFile javaFile = JavaFile.builder(def.typeDelta.packageName(), builder.build())
     					.addStaticImport(HipsterSqlUtil.class,"annotation")
     					.build();

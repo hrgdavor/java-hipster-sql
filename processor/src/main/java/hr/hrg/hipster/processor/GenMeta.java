@@ -3,10 +3,12 @@ package hr.hrg.hipster.processor;
 import static hr.hrg.hipster.processor.HipsterProcessorUtil.*;
 import static hr.hrg.javapoet.PoetUtil.*;
 
-import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Map.*;
+
+import javax.annotation.processing.*;
+import javax.tools.*;
 
 import org.bson.*;
 import org.bson.codecs.*;
@@ -16,14 +18,13 @@ import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.*;
 
 import hr.hrg.hipster.entity.*;
-import hr.hrg.hipster.jackson.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 
 
 public class GenMeta {
 
-	public TypeSpec.Builder gen(EntityDef def, ClassName columnMetaBase) {
+	public TypeSpec.Builder gen(EntityDef def, ClassName columnMetaBase, ProcessingEnvironment processingEnv) {
 		
 		TypeSpec.Builder cp = classBuilder(PUBLIC(), def.typeMeta);
 
@@ -273,8 +274,11 @@ public class GenMeta {
 				method.addCode("super.setCodecRegistry(registry);\n\n", def.simpleName);
 				
 				for(Property p: def.getProps()) {
-					TypeName type = p.componentType != null ? p.componentType : p.type;
-					String getterNameMongo = getterNameMongo(type);
+					TypeName type = isList(p.type) ? p.componentType : p.type;
+					if(type instanceof ParameterizedTypeName) {
+						type = ((ParameterizedTypeName)type).rawType;
+					}
+					String getterNameMongo = getterNameMongo(type.toString());
 //					if(getterNameMongo == null) {
 					if(!type.isPrimitive()) {
 						method.addCode("_codecs[$L] = registry.get($T.class);\n",p.ordinal, type);
@@ -282,9 +286,9 @@ public class GenMeta {
 				}
 			});
 			
-			add_decode_mongo(cp, def);
+			add_decode_mongo(cp, def, processingEnv);
 			
-			add_encode_mongo(cp, def);
+			add_encode_mongo(cp, def, processingEnv);
 			
 		}
 		
@@ -388,8 +392,7 @@ public class GenMeta {
 		return null;
 	}
 
-	private String getterNameMongo(TypeName p){
-		String typeName = p.toString();
+	private String getterNameMongo(String typeName){
 		if("int".equals(typeName)) return "decodeInt";
 		if("java.lang.Integer".equals(typeName)) return "decodeIntObject";
 		
@@ -413,7 +416,7 @@ public class GenMeta {
 		return null;
 	}
 	
-	private void add_decode_mongo(TypeSpec.Builder cp, EntityDef def) {
+	private void add_decode_mongo(TypeSpec.Builder cp, EntityDef def, ProcessingEnvironment processingEnv) {
 		
 		MethodSpec.Builder method = methodBuilder(PUBLIC().FINAL(), def.type, "decode");
 		method.addAnnotation(Override.class);
@@ -455,15 +458,22 @@ public class GenMeta {
 		method.addCode("\tif(column != null) {\n");
 		method.addCode("\t\tswitch (column.ordinal()) {\n");
 		for(Property p: def.getProps()) {
-			String getterNameMongo = getterNameMongo(p.type);
+			String typeName = p.type.toString();
+			String getterNameMongo = getterNameMongo(typeName);
 			method.addCode("\t\t\tcase $L: ", p.ordinal);
+//			if(getterNameMongo == null && p.componentType != null) {
+//				processingEnv.getMessager().printMessage(
+//						Diagnostic.Kind.NOTE,
+//						"isList "+isList(p.type)+" "+def.entityName+"."+p.name+":" + typeName);
+//				
+//			}
 			if(getterNameMongo != null) {
 				method.addCode("$L = $T.$L(reader);",p.fieldName, MongoDecode.class, getterNameMongo);
-			}else if(p.componentType != null) {
+			}else if(p.componentType != null && (p.array || isList(p.type))) {
 				TypeName type = p.componentType;
 				boolean primitive = type.isBoxedPrimitive();
 				TypeName unboxed = primitive ? type.unbox(): type;
-				String typeStr = p.componentType.toString();
+				String typeInnerName = p.componentType.toString();
 
 				String decodeMethod = "";
 				if(TypeName.INT.equals(unboxed)) {
@@ -478,25 +488,25 @@ public class GenMeta {
 					decodeMethod = "Short";
 				}else if(TypeName.BOOLEAN.equals(unboxed)) {
 					decodeMethod = "Boolean";
-				}else if(typeStr.equals("String")) {
+				}else if(typeInnerName.equals("String")) {
 					decodeMethod = "String";
-				}else if(typeStr.equals("java.lang.String")) {
+				}else if(typeInnerName.equals("java.lang.String")) {
 					decodeMethod = "String";
 				}
 				
 				boolean withCodec = decodeMethod.isEmpty();
 				if(p.array) {
 					decodeMethod = "decodeArray"+decodeMethod;
-				}else {
+				}else if(isList(typeName)){
 					decodeMethod = "decodeList"+decodeMethod;
 				}
 				if(withCodec) {
-					if(p.type.toString().startsWith("hr.hrg.hipster.sql.ImmutableList")) {
+					if(typeName.startsWith("hr.hrg.hipster.sql.ImmutableList")) {
 						method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);",
 								p.fieldName, MongoDecode.class, "decodeListImmutable", Codec.class, p.componentType,p.ordinal);						
 					}else {
 						method.addCode("$L = $T.$L(($T<$T>)_codecs[$L], reader, decoderContext);/* $L */",
-								p.fieldName, MongoDecode.class, decodeMethod, Codec.class, p.componentType,p.ordinal,p.type.toString());									
+								p.fieldName, MongoDecode.class, decodeMethod, Codec.class, p.componentType,p.ordinal,typeName);									
 					}
 				}else {
 					if(type.isPrimitive()) decodeMethod += "Primitive";
@@ -528,7 +538,14 @@ public class GenMeta {
 		cp.addMethod(method.build());
 	}
 	
-	public static void add_encode_mongo(TypeSpec.Builder builder, EntityDef def){
+	private static boolean isList(TypeName type) {
+		return isList(type.toString());
+	}
+	private static boolean isList(String typeName) {
+		return typeName.startsWith("java.util.List") || typeName.startsWith("hr.hrg.hipster.sql.ImmutableList");
+	}
+
+	public static void add_encode_mongo(TypeSpec.Builder builder, EntityDef def, ProcessingEnvironment processingEnv){
 		
 		addMethod(builder, PUBLIC(), void.class, "encode", method -> {		
 			method.addAnnotation(Override.class);
@@ -544,6 +561,10 @@ public class GenMeta {
 
 			method.addCode("writer.writeStartDocument();\n\n");
 			
+			if(def.jsonTypeInfo != null) {
+				method.addCode("writer.writeString($S,$S);\n","_t",def.entityName);
+			}
+			
 			int count = def.getProps().size();
 			for (int i = 0; i < count; i++) {
 				Property prop = def.getProps().get(i);
@@ -556,7 +577,7 @@ public class GenMeta {
 				if(prop.array) {
 					ArrayTypeName arrayTypeName = (ArrayTypeName)prop.type;
 					addWriteArrayMongo(method, prop, arrayTypeName, def);
-				}else if(prop.parametrized){
+				}else if(prop.parametrized && isList(prop.type)){
 					ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
 					method.addCode("// $L $T<",prop.fieldName, prop.parameterizedOuterRaw);
 					for(TypeName arg:prop.typeArguments)
@@ -587,7 +608,7 @@ public class GenMeta {
 					}else if(TypeName.CHAR.equals(unboxed)){
 						if(!primitive){
 							method.addCode("if (value.$L() == null)\n",prop.getterName);
-							method.addCode("\tjgen.writeNull();\n");
+							method.addCode("\twriter.writeNull();\n");
 							method.addCode("else\n");
 							method.addCode("\t");
 						}

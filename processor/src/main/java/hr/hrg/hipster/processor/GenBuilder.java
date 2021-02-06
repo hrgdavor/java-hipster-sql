@@ -68,7 +68,7 @@ public class GenBuilder {
 	
 	public static void genConstructors(EntityDef def, TypeSpec.Builder builder){
         // empty default constructor
-		addconstructor(builder, null);
+		//addconstructor(builder, null);
 
         GenImmutable.genConstructor(def,builder);
 	}

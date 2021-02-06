@@ -185,6 +185,8 @@ public class GenImmutable {
 
 	public static void genConstructor(EntityDef def, TypeSpec.Builder cp){
 
+		MethodSpec.Builder constr0 = constructorBuilder(PUBLIC());
+		
         MethodSpec.Builder constr = constructorBuilder(PUBLIC());
         if(def.genOptions.isGenJson()) constr.addAnnotation(CN_JsonCreator);
 		
@@ -204,6 +206,7 @@ public class GenImmutable {
         
         	constr2.addCode("this."+property.name+" = v."+property.getterName +"();\n");
         }
+        cp.addMethod(constr0.build());
         cp.addMethod(constr.build());
         cp.addMethod(constr2.build());
 	}
