@@ -7,6 +7,7 @@ import java.util.Map;
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.type.*;
+import hr.hrg.hipster.visitor.*;
 
 public interface IHipsterConnection {
 
@@ -124,5 +125,74 @@ public interface IHipsterConnection {
 	<T> List<T> column(ICustomType<T> reader, Object ...sql);
 
 	void rowsVisitResult(Query sql, IResultSetVisitor visitor);
-	
+
+	<T1> void rowsVisitResult(
+			ColumnMeta<T1> c1, 
+			Query filter, 
+			Lambda1<T1> visitor);
+
+	<T1, T2> void rowsVisitResult(
+			ColumnMeta<T1> c1, 
+			ColumnMeta<T2> c2, 
+			Query filter, 
+			Lambda2<T1, T2> visitor);
+
+	<T1, T2, T3> void rowsVisitResult(
+			ColumnMeta<T1> c1, 
+			ColumnMeta<T2> c2, 
+			ColumnMeta<T3> c3, 
+			Query filter,
+			Lambda3<T1, T2, T3> visitor);
+
+	<T1, T2, T3, T4> void rowsVisitResult(
+			ColumnMeta<T1> c1, 
+			ColumnMeta<T2> c2, 
+			ColumnMeta<T3> c3, 
+			ColumnMeta<T4> c4,
+			Query filter, 
+			Lambda4<T1, T2, T3, T4> visitor);
+
+	<T1, T2, T3, T4, T5> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			Query filter, 
+			Lambda5<T1, T2, T3, T4, T5> visitor);
+
+	<T1, T2, T3, T4, T5, T6> void rowsVisitResult(
+			ColumnMeta<T1> c1, 
+			ColumnMeta<T2> c2, 
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			ColumnMeta<T6> c6,
+			Query filter,
+			Lambda6<T1, T2, T3, T4, T5, T6> visitor);
+
+	<T1, T2, T3, T4, T5, T6, T7> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7, 
+			Query filter,
+			Lambda7<T1, T2, T3, T4, T5, T6, T7> visitor);
+
+	<T1, T2, T3, T4, T5, T6, T7, T8> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7, 
+			ColumnMeta<T8> c8,
+			Query filter,
+			Lambda8<T1, T2, T3, T4, T5, T6, T7, T8> visitor);
+
+
 }
