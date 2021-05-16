@@ -43,6 +43,14 @@ public class EntitySource implements Iterable<IEntityMeta<?,?>>{
 	public <T> T getMetaInstance(Class<T> clazz){
 		return (T) metaInstance.get(clazz);
 	}
+	
+	public <T> T getMetaInstanceRequired(Class<T> clazz){
+		T ret = (T) metaInstance.get(clazz);
+
+		if(ret == null) throw new RuntimeException("Meta not found for "+clazz.getName());
+
+		return ret;
+	}
 
 	@SuppressWarnings("unchecked")
 	public <T> IEntityMeta<T, ?> getFor( Class<T> clazz){
