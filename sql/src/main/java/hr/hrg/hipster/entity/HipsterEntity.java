@@ -28,6 +28,8 @@ public @interface HipsterEntity {
 	public BooleanEnum genMongo() default DEFAULT;
 
 	public BooleanEnum mongoSkipNull() default DEFAULT;
+
+	public BooleanEnum mongoUseFieldName() default DEFAULT;
 	
 	public BooleanEnum genSql() default DEFAULT;
 

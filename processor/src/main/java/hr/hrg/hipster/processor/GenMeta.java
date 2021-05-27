@@ -446,14 +446,15 @@ public class GenMeta {
 			returnValue.add(p.fieldName);
 			i++;
 		}
-		
+
+		String getColumn = def.genOptions.isMongoUseFieldName() ?  "getField":"getColumn";
 		method.addCode("\n");
 		method.addCode("reader.readStartDocument();\n");
 		method.addCode("while (reader.readBsonType() != $T.END_OF_DOCUMENT) {\n",BsonType.class);
 		method.addCode("\tString fieldName = reader.readName();\n");
-		method.addCode("\tColumnMeta<?> column = getColumn(fieldName);// we consider mongo database, so field name is used\n");
-		method.addCode("\tif(column == null && \"_id\".equals(fieldName)) column = getColumn(\"id\");// check _id\n");
-//		method.addCode("if(column == null && \"_id\".equals(fieldName)) column = getColumn(\"id\");\n");
+		method.addCode("\tColumnMeta<?> column = $L(fieldName);// we consider mongo database, so field name is used\n", getColumn);
+		method.addCode("\tif(column == null && \"_id\".equals(fieldName)) column = $L(\"id\");// check _id\n", getColumn);
+//		method.addCode("if(column == null && \"_id\".equals(fieldName)) column = $L(\"id\");\n", getColumn);
 		method.addCode("\n");
 		method.addCode("\tif(column != null) {\n");
 		method.addCode("\t\tswitch (column.ordinal()) {\n");
@@ -568,6 +569,7 @@ public class GenMeta {
 			int count = def.getProps().size();
 			for (int i = 0; i < count; i++) {
 				Property prop = def.getProps().get(i);
+				String fieldName = def.genOptions.isMongoUseFieldName() ? prop.fieldName : prop.columnName;
 				
 				if(prop.jsonIgnore) continue;
 				
@@ -576,14 +578,14 @@ public class GenMeta {
 				
 				if(prop.array) {
 					ArrayTypeName arrayTypeName = (ArrayTypeName)prop.type;
-					addWriteArrayMongo(method, prop, arrayTypeName, def);
+					addWriteArrayMongo(method, prop, arrayTypeName, def, fieldName);
 				}else if(prop.parametrized && isList(prop.type)){
-					ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
+//					ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
 					method.addCode("// $L $T<",prop.fieldName, prop.parameterizedOuterRaw);
 					for(TypeName arg:prop.typeArguments)
 						method.addCode("$T,",arg);
 					method.addCode(">\n");
-					addWriteListMongo(method, prop, def);
+					addWriteListMongo(method, prop, def, fieldName);
 					
 					//					typeHandlersBlock.add("$T.class",parameterizedTypeName.rawType);
 //					for(TypeName ta: parameterizedTypeName.typeArguments){
@@ -596,15 +598,15 @@ public class GenMeta {
 							|| TypeName.SHORT.equals(unboxed)
 							|| TypeName.BYTE.equals(unboxed)
 							){
-						addWriteMongo(method, "writeInt32", prop, !primitive, def);
+						addWriteMongo(method, "writeInt32", prop, !primitive, def, fieldName);
 					}else if(TypeName.LONG.equals(unboxed)){
-						addWriteMongo(method, "writeInt64", prop, !primitive, def);						
+						addWriteMongo(method, "writeInt64", prop, !primitive, def, fieldName);
 					}else if(TypeName.INT.equals(unboxed)){
-						addWriteMongo(method, "writeInt32", prop, !primitive, def);						
+						addWriteMongo(method, "writeInt32", prop, !primitive, def, fieldName);
 					}else if(TypeName.DOUBLE.equals(unboxed) || TypeName.FLOAT.equals(unboxed)){
-						addWriteMongo(method, "writeDouble", prop, !primitive, def);						
+						addWriteMongo(method, "writeDouble", prop, !primitive, def, fieldName);
 					}else if(TypeName.BOOLEAN.equals(unboxed)){
-						addWriteMongo(method, "writeBoolean", prop, !primitive, def);						
+						addWriteMongo(method, "writeBoolean", prop, !primitive, def, fieldName);
 					}else if(TypeName.CHAR.equals(unboxed)){
 						if(!primitive){
 							method.addCode("if (value.$L() == null)\n",prop.getterName);
@@ -615,9 +617,9 @@ public class GenMeta {
 						method.addCode("writer.writeString(new char[]{value.$L()},0,1);\n",prop.getterName);
 					}
 				} else if(typeStr.equals("java.lang.String")){
-					addWriteMongo(method, "writeString", prop, true, def);
+					addWriteMongo(method, "writeString", prop, true, def, fieldName);
 				} else {
-					addWriteMongo(method, null, prop, true, def);
+					addWriteMongo(method, null, prop, true, def, fieldName);
 				}
 				method.addCode("\n");
 			}
@@ -627,7 +629,7 @@ public class GenMeta {
 		});
 	}	
 	
-	public static void addWriteArrayMongo(Builder method, Property prop, ArrayTypeName arrayTypeName, EntityDef def) {
+	public static void addWriteArrayMongo(Builder method, Property prop, ArrayTypeName arrayTypeName, EntityDef def, String fieldName) {
 		TypeName type = arrayTypeName.componentType;
 		boolean primitive = type.isBoxedPrimitive();
 		TypeName unboxed = primitive ? type.unbox(): type;
@@ -637,7 +639,7 @@ public class GenMeta {
 			prefix = "\t";
 			method.addCode("if(value.$L() != null){\n", prop.getterName);			
 		}
-		method.addCode(prefix+"writer.writeName($S);\n", prop.columnName);
+		method.addCode(prefix+"writer.writeName($S);\n", fieldName);
 		if(TypeName.INT.equals(unboxed)
 				|| TypeName.SHORT.equals(unboxed)
 				|| TypeName.INT.equals(unboxed)
@@ -656,7 +658,7 @@ public class GenMeta {
 
 	}
 
-	public static void addWriteListMongo(Builder method, Property prop, EntityDef def) {
+	public static void addWriteListMongo(Builder method, Property prop, EntityDef def, String fieldName) {
 		TypeName type = prop.componentType;
 		boolean primitive = type.isBoxedPrimitive();
 		TypeName unboxed = primitive ? type.unbox(): type;
@@ -667,7 +669,7 @@ public class GenMeta {
 			prefix = "\t";
 			method.addCode("if(value.$L() != null){\n", prop.getterName);			
 		}
-		method.addCode(prefix+"writer.writeName($S);\n", prop.columnName);
+		method.addCode(prefix+"writer.writeName($S);\n", fieldName);
 		String encodeMethod = null; 
 		if(TypeName.INT.equals(unboxed)) {
 			encodeMethod = "encodeListInteger";
@@ -696,7 +698,7 @@ public class GenMeta {
 
 	}
 	
-	public static void addWriteMongo(Builder method, String jgenMethod, Property prop, boolean nullCheck, EntityDef def) {
+	public static void addWriteMongo(Builder method, String jgenMethod, Property prop, boolean nullCheck, EntityDef def, String fieldName) {
 		String prefix = "\t";
 		
 		boolean separateName = nullCheck || jgenMethod == null; 
@@ -705,10 +707,10 @@ public class GenMeta {
 		if(nullCheck) {
 			if(def.genOptions.isMongoSkipNull()) {
 				method.addCode("if (value.$L() != null){\n",prop.getterName);				
-				if(separateName) method.addCode("\twriter.writeName($S);\n", prop.columnName);
+				if(separateName) method.addCode("\twriter.writeName($S);\n", fieldName);
 			}else {				
 				// name written already
-				if(separateName) method.addCode("writer.writeName($S);\n", prop.columnName);
+				if(separateName) method.addCode("writer.writeName($S);\n", fieldName);
 				method.addCode("if (value.$L() == null)\n",prop.getterName);
 				method.addCode("\twriter.writeNull();\n");
 				method.addCode("else{\n");
@@ -723,7 +725,7 @@ public class GenMeta {
 			if(nullCheck)// name written already
 				method.addCode(prefix+"writer.$L(value.$L());\n",jgenMethod,prop.getterName);
 			else
-				method.addCode(prefix+"writer.$L($S, value.$L());\n",jgenMethod,prop.columnName,prop.getterName);
+				method.addCode(prefix+"writer.$L($S, value.$L());\n",jgenMethod,fieldName,prop.getterName);
 		}
 		
 		if(nullCheck) method.addCode("}\n");

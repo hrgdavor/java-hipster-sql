@@ -50,9 +50,10 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		boolean genUpdate  = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_update"));
 		boolean genMongo   = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_mongo"));
 		boolean mongoSkipNull     = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_mongo_skip_null"));
+		boolean mongoUseFieldName = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_mongo_use_field_name"));
 		boolean genSql     = "true".equalsIgnoreCase(processingEnv.getOptions().get("hipster_proc_sql"));
 		
-		genOptions = new GenOptions(anno, jackson,true, genVisitor, genUpdate, genBuilder, genSql, genMongo, mongoSkipNull);
+		genOptions = new GenOptions(anno, jackson,true, genVisitor, genUpdate, genBuilder, genSql, genMongo, mongoSkipNull, mongoUseFieldName);
     }
     
 	@Override

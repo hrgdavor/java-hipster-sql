@@ -15,6 +15,7 @@ public class GenOptions {
 	BooleanEnum genMongo  	= DEFAULT;
 	BooleanEnum genAnnotations	= DEFAULT;
 	BooleanEnum mongoSkipNull 	= DEFAULT;
+	BooleanEnum mongoUseFieldName 	= DEFAULT;
 	GenOptions parent;
 	
 	public GenOptions(GenOptions parent, HipsterEntity ano) {
@@ -28,10 +29,11 @@ public class GenOptions {
 			genMongo = ano.genMongo();
 			genSql = ano.genSql();
 			mongoSkipNull = ano.mongoSkipNull();
+			mongoUseFieldName = ano.mongoUseFieldName();
 		}
 	}
 	
-	public GenOptions(boolean genAnno, boolean genJson, boolean genMeta, boolean genVisitor, boolean genUpdate, boolean genBuilder, boolean genSql, boolean genMongo, boolean mongoSkipNull){
+	public GenOptions(boolean genAnno, boolean genJson, boolean genMeta, boolean genVisitor, boolean genUpdate, boolean genBuilder, boolean genSql, boolean genMongo, boolean mongoSkipNull, boolean mongoUseFieldName){
 		this(null, null);
 		this.genAnnotations = genAnno ? TRUE:FALSE;
 		
@@ -43,6 +45,7 @@ public class GenOptions {
 		this.genMongo    = genMongo    ? TRUE:FALSE;
 		this.genSql      = genSql      ? TRUE:FALSE;
 		this.mongoSkipNull      = mongoSkipNull      ? TRUE:FALSE;
+		this.mongoUseFieldName  = mongoUseFieldName  ? TRUE:FALSE;
 	}
 
 	public boolean isGenJson() {
@@ -76,4 +79,9 @@ public class GenOptions {
 	public boolean isMongoSkipNull() {
 		return mongoSkipNull == DEFAULT && parent != null  ? parent.isMongoSkipNull() : mongoSkipNull == TRUE;
 	}
+	
+	public boolean isMongoUseFieldName() {
+		return mongoUseFieldName == DEFAULT && parent != null  ? parent.isMongoUseFieldName() : mongoUseFieldName == TRUE;
+	}
+	
 }
