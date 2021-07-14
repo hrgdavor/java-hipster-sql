@@ -25,6 +25,11 @@ public @interface HipsterColumn {
 	 * @return description 
 	 */
 	String descr() default "";
+	
+	/** Description
+	 * @return description 
+	 */
+	String[] initial() default {};
 
 	/**
      * (Optional) sql expression for the column. If defined the column name 

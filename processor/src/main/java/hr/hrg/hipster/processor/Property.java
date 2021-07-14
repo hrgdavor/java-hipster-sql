@@ -29,6 +29,7 @@ class Property {
 	public boolean required;
 	public String setterName;
 	public String columnName;
+	public String initial;
 	public String tableName = "";
 	public String sql = "";
 	public TypeName type;
@@ -88,6 +89,7 @@ class Property {
 		if(hipsterColumn != null){
 			if(hipsterColumn.required() != BooleanEnum.DEFAULT) required = hipsterColumn.required() == BooleanEnum.TRUE; 
 			if(!hipsterColumn.name().isEmpty()) this.columnName = hipsterColumn.name();
+			if(hipsterColumn.initial().length >0) this.initial = hipsterColumn.initial()[0];
 			this.sql = hipsterColumn.sql();
 			if(!hipsterColumn.table().isEmpty()) this.tableName = hipsterColumn.table();
 			try {

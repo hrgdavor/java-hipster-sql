@@ -35,7 +35,16 @@ public class GenBuilder {
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
         	Property prop = def.getProps().get(i);
-			FieldSpec fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name);
+			FieldSpec fieldSpec = null;
+        	if(prop.initial != null) {
+				String typeStr = prop.type.toString();
+        		if(typeStr.equals("java.lang.String"))
+        			fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name, "$S", prop.initial);
+        		else
+        			fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name, "$L", prop.initial);
+        	}else {        		
+        		fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name);
+        	}
         	
 			MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName).addAnnotation(Override.class);
 			g.addCode("return "+prop.fieldName+";\n");

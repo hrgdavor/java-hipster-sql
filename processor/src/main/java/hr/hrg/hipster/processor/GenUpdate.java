@@ -39,7 +39,15 @@ public class GenUpdate {
         	Property prop = def.getProps().get(i);
         	
         	if(!def.genOptions.isGenBuilder()){
-        		addField(cp,PROTECTED(), prop.type, prop.name);
+            	if(prop.initial != null) {
+    				String typeStr = prop.type.toString();
+            		if(typeStr.equals("java.lang.String"))
+            			addField(cp, PROTECTED(), prop.type, prop.name, "$S", prop.initial);
+            		else
+            			addField(cp, PROTECTED(), prop.type, prop.name, "$L", prop.initial);
+            	}else {        		
+            		addField(cp, PROTECTED(), prop.type, prop.name);
+            	}
         		MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName);
 				// it would be done there
 				GenImmutable.copyAnnotations(g, prop);				

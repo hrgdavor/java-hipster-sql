@@ -35,7 +35,15 @@ public class GenImmutable {
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
         	Property prop = def.getProps().get(i);
-			addField(builder, PRIVATE(), prop.type, prop.name);
+        	if(prop.initial != null) {
+				String typeStr = prop.type.toString();
+        		if(typeStr.equals("java.lang.String"))
+        			addField(builder, PRIVATE(), prop.type, prop.name, "$S", prop.initial);
+        		else
+        			addField(builder, PRIVATE(), prop.type, prop.name, "$L", prop.initial);
+        	}else {        		
+        		addField(builder, PRIVATE(), prop.type, prop.name);
+        	}
         	
 			MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName).addAnnotation(Override.class);
 			copyAnnotations(g, prop);
