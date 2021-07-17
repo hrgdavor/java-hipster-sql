@@ -431,7 +431,14 @@ public class GenMeta {
 		int i=0;
 		for(Property p: def.getProps()) {
 			method.addCode("$T $L",p.type, p.fieldName);
-			if(p.isPrimitive()) {
+			if(p.initial != null) {				
+				String typeStr = p.type.toString();
+        		if(typeStr.equals("java.lang.String")) {
+        			method.addCode(" = $S;\n", p.initial);        			
+        		}else {
+        			method.addCode(" = $L;\n", p.initial);
+        		}
+			}else if(p.isPrimitive()) {
 				TypeName unboxed = p.type.unbox();
 				if(TypeName.BOOLEAN.equals(unboxed)) {					
 					method.addCode(" = false;\n");
