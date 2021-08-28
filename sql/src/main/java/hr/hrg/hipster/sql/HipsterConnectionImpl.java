@@ -1131,5 +1131,396 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 			}
 		}    	
 	}	
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6,
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8,
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11,
+			ColumnMeta<T12> c12,
+			Query filter,
+			Lambda12<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12> visitor) {
 		
+		boolean autoCommit = false;
+		try {
+			// postgres does not use cursor if autoCommit is on
+			autoCommit = sqlConnection.getAutoCommit();
+			sqlConnection.setAutoCommit(false);
+		} catch (SQLException e) {
+			throw new HipsterSqlException(this, "autoCommit", e);
+		}
+		
+		try(Result res = new Result(this);){
+			res.setFetchSize(512);
+			
+			ICustomType<T1> typeHandler1 = (ICustomType<T1>) c1.getTypeHandler();
+			ICustomType<T2> typeHandler2 = (ICustomType<T2>) c2.getTypeHandler();
+			ICustomType<T3> typeHandler3 = (ICustomType<T3>) c3.getTypeHandler();
+			ICustomType<T4> typeHandler4 = (ICustomType<T4>) c4.getTypeHandler();
+			ICustomType<T5> typeHandler5 = (ICustomType<T5>) c5.getTypeHandler();
+			ICustomType<T6> typeHandler6 = (ICustomType<T6>) c6.getTypeHandler();
+			ICustomType<T7> typeHandler7 = (ICustomType<T7>) c7.getTypeHandler();
+			ICustomType<T8> typeHandler8 = (ICustomType<T8>) c8.getTypeHandler();
+			ICustomType<T9> typeHandler9 = (ICustomType<T9>) c9.getTypeHandler();
+			ICustomType<T10> typeHandler10 = (ICustomType<T10>) c10.getTypeHandler();
+			ICustomType<T11> typeHandler11 = (ICustomType<T11>) c11.getTypeHandler();
+			ICustomType<T12> typeHandler12 = (ICustomType<T12>) c12.getTypeHandler();
+			
+			res.executeQuery(q("SELECT ",c1,",",c2,",",c3,",",c4,",",c5,",",c6,",",c7,",",c8,",",c9,",",c10,",",c11,",",c12," FROM ", c1.getMeta()," ", filter));
+			
+			while(res.next()){
+				ResultSet rs = res.getResultSet();
+				T1 p1 = typeHandler1.get(rs, 1);
+				T2 p2 = typeHandler2.get(rs, 2);
+				T3 p3 = typeHandler3.get(rs, 3);
+				T4 p4 = typeHandler4.get(rs, 4);
+				T5 p5 = typeHandler5.get(rs, 5);
+				T6 p6 = typeHandler6.get(rs, 6);
+				T7 p7 = typeHandler7.get(rs, 7);
+				T8 p8 = typeHandler8.get(rs, 8);
+				T9 p9 = typeHandler9.get(rs, 9);
+				T10 p10 = typeHandler10.get(rs, 10);
+				T11 p11 = typeHandler11.get(rs, 11);
+				T12 p12 = typeHandler12.get(rs, 12);
+				visitor.run(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12);
+			}
+		}catch (Exception e) {
+			throw new HipsterSqlException(this, "visit failed", e);
+		}finally {
+			try{
+				sqlConnection.setAutoCommit(autoCommit);
+			} catch (SQLException e) {
+				throw new HipsterSqlException(this, "autoCommit", e);
+			}
+		}    	
+	}	
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12, T13> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6,
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8,
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11,
+			ColumnMeta<T12> c12,
+			ColumnMeta<T13> c13,
+			Query filter,
+			Lambda13<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12,T13> visitor) {
+		
+		boolean autoCommit = false;
+		try {
+			// postgres does not use cursor if autoCommit is on
+			autoCommit = sqlConnection.getAutoCommit();
+			sqlConnection.setAutoCommit(false);
+		} catch (SQLException e) {
+			throw new HipsterSqlException(this, "autoCommit", e);
+		}
+		
+		try(Result res = new Result(this);){
+			res.setFetchSize(512);
+			
+			ICustomType<T1> typeHandler1 = (ICustomType<T1>) c1.getTypeHandler();
+			ICustomType<T2> typeHandler2 = (ICustomType<T2>) c2.getTypeHandler();
+			ICustomType<T3> typeHandler3 = (ICustomType<T3>) c3.getTypeHandler();
+			ICustomType<T4> typeHandler4 = (ICustomType<T4>) c4.getTypeHandler();
+			ICustomType<T5> typeHandler5 = (ICustomType<T5>) c5.getTypeHandler();
+			ICustomType<T6> typeHandler6 = (ICustomType<T6>) c6.getTypeHandler();
+			ICustomType<T7> typeHandler7 = (ICustomType<T7>) c7.getTypeHandler();
+			ICustomType<T8> typeHandler8 = (ICustomType<T8>) c8.getTypeHandler();
+			ICustomType<T9> typeHandler9 = (ICustomType<T9>) c9.getTypeHandler();
+			ICustomType<T10> typeHandler10 = (ICustomType<T10>) c10.getTypeHandler();
+			ICustomType<T11> typeHandler11 = (ICustomType<T11>) c11.getTypeHandler();
+			ICustomType<T12> typeHandler12 = (ICustomType<T12>) c12.getTypeHandler();
+			ICustomType<T13> typeHandler13 = (ICustomType<T13>) c13.getTypeHandler();
+			
+			res.executeQuery(q("SELECT ",c1,",",c2,",",c3,",",c4,",",c5,",",c6,",",c7,",",c8,",",c9,",",c10,",",c11,",",c12,",",c13," FROM ", c1.getMeta()," ", filter));
+			
+			while(res.next()){
+				ResultSet rs = res.getResultSet();
+				T1 p1 = typeHandler1.get(rs, 1);
+				T2 p2 = typeHandler2.get(rs, 2);
+				T3 p3 = typeHandler3.get(rs, 3);
+				T4 p4 = typeHandler4.get(rs, 4);
+				T5 p5 = typeHandler5.get(rs, 5);
+				T6 p6 = typeHandler6.get(rs, 6);
+				T7 p7 = typeHandler7.get(rs, 7);
+				T8 p8 = typeHandler8.get(rs, 8);
+				T9 p9 = typeHandler9.get(rs, 9);
+				T10 p10 = typeHandler10.get(rs, 10);
+				T11 p11 = typeHandler11.get(rs, 11);
+				T12 p12 = typeHandler12.get(rs, 12);
+				T13 p13 = typeHandler13.get(rs, 13);
+				visitor.run(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13);
+			}
+		}catch (Exception e) {
+			throw new HipsterSqlException(this, "visit failed", e);
+		}finally {
+			try{
+				sqlConnection.setAutoCommit(autoCommit);
+			} catch (SQLException e) {
+				throw new HipsterSqlException(this, "autoCommit", e);
+			}
+		}    	
+	}			
+	
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12, T13, T14> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6,
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8,
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11,
+			ColumnMeta<T12> c12,
+			ColumnMeta<T13> c13,
+			ColumnMeta<T14> c14,
+			Query filter,
+			Lambda14<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12,T13,T14> visitor) {
+		
+		boolean autoCommit = false;
+		try {
+			// postgres does not use cursor if autoCommit is on
+			autoCommit = sqlConnection.getAutoCommit();
+			sqlConnection.setAutoCommit(false);
+		} catch (SQLException e) {
+			throw new HipsterSqlException(this, "autoCommit", e);
+		}
+		
+		try(Result res = new Result(this);){
+			res.setFetchSize(512);
+			
+			ICustomType<T1> typeHandler1 = (ICustomType<T1>) c1.getTypeHandler();
+			ICustomType<T2> typeHandler2 = (ICustomType<T2>) c2.getTypeHandler();
+			ICustomType<T3> typeHandler3 = (ICustomType<T3>) c3.getTypeHandler();
+			ICustomType<T4> typeHandler4 = (ICustomType<T4>) c4.getTypeHandler();
+			ICustomType<T5> typeHandler5 = (ICustomType<T5>) c5.getTypeHandler();
+			ICustomType<T6> typeHandler6 = (ICustomType<T6>) c6.getTypeHandler();
+			ICustomType<T7> typeHandler7 = (ICustomType<T7>) c7.getTypeHandler();
+			ICustomType<T8> typeHandler8 = (ICustomType<T8>) c8.getTypeHandler();
+			ICustomType<T9> typeHandler9 = (ICustomType<T9>) c9.getTypeHandler();
+			ICustomType<T10> typeHandler10 = (ICustomType<T10>) c10.getTypeHandler();
+			ICustomType<T11> typeHandler11 = (ICustomType<T11>) c11.getTypeHandler();
+			ICustomType<T12> typeHandler12 = (ICustomType<T12>) c12.getTypeHandler();
+			ICustomType<T13> typeHandler13 = (ICustomType<T13>) c13.getTypeHandler();
+			ICustomType<T14> typeHandler14 = (ICustomType<T14>) c14.getTypeHandler();
+			
+			res.executeQuery(q("SELECT ",c1,",",c2,",",c3,",",c4,",",c5,",",c6,",",c7,",",c8,",",c9,",",c10,",",c11,",",c12,",",c13,",",c14," FROM ", c1.getMeta()," ", filter));
+			
+			while(res.next()){
+				ResultSet rs = res.getResultSet();
+				T1 p1 = typeHandler1.get(rs, 1);
+				T2 p2 = typeHandler2.get(rs, 2);
+				T3 p3 = typeHandler3.get(rs, 3);
+				T4 p4 = typeHandler4.get(rs, 4);
+				T5 p5 = typeHandler5.get(rs, 5);
+				T6 p6 = typeHandler6.get(rs, 6);
+				T7 p7 = typeHandler7.get(rs, 7);
+				T8 p8 = typeHandler8.get(rs, 8);
+				T9 p9 = typeHandler9.get(rs, 9);
+				T10 p10 = typeHandler10.get(rs, 10);
+				T11 p11 = typeHandler11.get(rs, 11);
+				T12 p12 = typeHandler12.get(rs, 12);
+				T13 p13 = typeHandler13.get(rs, 13);
+				T14 p14 = typeHandler14.get(rs, 14);
+				visitor.run(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14);
+			}
+		}catch (Exception e) {
+			throw new HipsterSqlException(this, "visit failed", e);
+		}finally {
+			try{
+				sqlConnection.setAutoCommit(autoCommit);
+			} catch (SQLException e) {
+				throw new HipsterSqlException(this, "autoCommit", e);
+			}
+		}    	
+	}			
+	
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12, T13, T14, T15> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6,
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8,
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11,
+			ColumnMeta<T12> c12,
+			ColumnMeta<T13> c13,
+			ColumnMeta<T14> c14,
+			ColumnMeta<T15> c15,
+			Query filter,
+			Lambda15<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12,T13,T14,T15> visitor) {
+		
+		boolean autoCommit = false;
+		try {
+			// postgres does not use cursor if autoCommit is on
+			autoCommit = sqlConnection.getAutoCommit();
+			sqlConnection.setAutoCommit(false);
+		} catch (SQLException e) {
+			throw new HipsterSqlException(this, "autoCommit", e);
+		}
+		
+		try(Result res = new Result(this);){
+			res.setFetchSize(512);
+			
+			ICustomType<T1> typeHandler1 = (ICustomType<T1>) c1.getTypeHandler();
+			ICustomType<T2> typeHandler2 = (ICustomType<T2>) c2.getTypeHandler();
+			ICustomType<T3> typeHandler3 = (ICustomType<T3>) c3.getTypeHandler();
+			ICustomType<T4> typeHandler4 = (ICustomType<T4>) c4.getTypeHandler();
+			ICustomType<T5> typeHandler5 = (ICustomType<T5>) c5.getTypeHandler();
+			ICustomType<T6> typeHandler6 = (ICustomType<T6>) c6.getTypeHandler();
+			ICustomType<T7> typeHandler7 = (ICustomType<T7>) c7.getTypeHandler();
+			ICustomType<T8> typeHandler8 = (ICustomType<T8>) c8.getTypeHandler();
+			ICustomType<T9> typeHandler9 = (ICustomType<T9>) c9.getTypeHandler();
+			ICustomType<T10> typeHandler10 = (ICustomType<T10>) c10.getTypeHandler();
+			ICustomType<T11> typeHandler11 = (ICustomType<T11>) c11.getTypeHandler();
+			ICustomType<T12> typeHandler12 = (ICustomType<T12>) c12.getTypeHandler();
+			ICustomType<T13> typeHandler13 = (ICustomType<T13>) c13.getTypeHandler();
+			ICustomType<T14> typeHandler14 = (ICustomType<T14>) c14.getTypeHandler();
+			ICustomType<T15> typeHandler15 = (ICustomType<T15>) c15.getTypeHandler();
+			
+			res.executeQuery(q("SELECT ",c1,",",c2,",",c3,",",c4,",",c5,",",c6,",",c7,",",c8,",",c9,",",c10,",",c11,",",c12,",",c13,",",c14,",",c15," FROM ", c1.getMeta()," ", filter));
+			
+			while(res.next()){
+				ResultSet rs = res.getResultSet();
+				T1 p1 = typeHandler1.get(rs, 1);
+				T2 p2 = typeHandler2.get(rs, 2);
+				T3 p3 = typeHandler3.get(rs, 3);
+				T4 p4 = typeHandler4.get(rs, 4);
+				T5 p5 = typeHandler5.get(rs, 5);
+				T6 p6 = typeHandler6.get(rs, 6);
+				T7 p7 = typeHandler7.get(rs, 7);
+				T8 p8 = typeHandler8.get(rs, 8);
+				T9 p9 = typeHandler9.get(rs, 9);
+				T10 p10 = typeHandler10.get(rs, 10);
+				T11 p11 = typeHandler11.get(rs, 11);
+				T12 p12 = typeHandler12.get(rs, 12);
+				T13 p13 = typeHandler13.get(rs, 13);
+				T14 p14 = typeHandler14.get(rs, 14);
+				T15 p15 = typeHandler15.get(rs, 15);
+				visitor.run(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15);
+			}
+		}catch (Exception e) {
+			throw new HipsterSqlException(this, "visit failed", e);
+		}finally {
+			try{
+				sqlConnection.setAutoCommit(autoCommit);
+			} catch (SQLException e) {
+				throw new HipsterSqlException(this, "autoCommit", e);
+			}
+		}    	
+	}			
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12, T13, T14, T15,T16> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4,
+			ColumnMeta<T5> c5,
+			ColumnMeta<T6> c6,
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8,
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11,
+			ColumnMeta<T12> c12,
+			ColumnMeta<T13> c13,
+			ColumnMeta<T14> c14,
+			ColumnMeta<T15> c15,
+			ColumnMeta<T16> c16,
+			Query filter,
+			Lambda16<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11, T12,T13,T14,T15,T16> visitor) {
+		
+		boolean autoCommit = false;
+		try {
+			// postgres does not use cursor if autoCommit is on
+			autoCommit = sqlConnection.getAutoCommit();
+			sqlConnection.setAutoCommit(false);
+		} catch (SQLException e) {
+			throw new HipsterSqlException(this, "autoCommit", e);
+		}
+		
+		try(Result res = new Result(this);){
+			res.setFetchSize(512);
+			
+			ICustomType<T1> typeHandler1 = (ICustomType<T1>) c1.getTypeHandler();
+			ICustomType<T2> typeHandler2 = (ICustomType<T2>) c2.getTypeHandler();
+			ICustomType<T3> typeHandler3 = (ICustomType<T3>) c3.getTypeHandler();
+			ICustomType<T4> typeHandler4 = (ICustomType<T4>) c4.getTypeHandler();
+			ICustomType<T5> typeHandler5 = (ICustomType<T5>) c5.getTypeHandler();
+			ICustomType<T6> typeHandler6 = (ICustomType<T6>) c6.getTypeHandler();
+			ICustomType<T7> typeHandler7 = (ICustomType<T7>) c7.getTypeHandler();
+			ICustomType<T8> typeHandler8 = (ICustomType<T8>) c8.getTypeHandler();
+			ICustomType<T9> typeHandler9 = (ICustomType<T9>) c9.getTypeHandler();
+			ICustomType<T10> typeHandler10 = (ICustomType<T10>) c10.getTypeHandler();
+			ICustomType<T11> typeHandler11 = (ICustomType<T11>) c11.getTypeHandler();
+			ICustomType<T12> typeHandler12 = (ICustomType<T12>) c12.getTypeHandler();
+			ICustomType<T13> typeHandler13 = (ICustomType<T13>) c13.getTypeHandler();
+			ICustomType<T14> typeHandler14 = (ICustomType<T14>) c14.getTypeHandler();
+			ICustomType<T15> typeHandler15 = (ICustomType<T15>) c15.getTypeHandler();
+			ICustomType<T16> typeHandler16 = (ICustomType<T16>) c16.getTypeHandler();
+			
+			res.executeQuery(q("SELECT ",c1,",",c2,",",c3,",",c4,",",c5,",",c6,",",c7,",",c8,",",c9,",",c10,",",c11,",",c12,",",c13,",",c14,",",c15,",",c16," FROM ", c1.getMeta()," ", filter));
+			
+			while(res.next()){
+				ResultSet rs = res.getResultSet();
+				T1 p1 = typeHandler1.get(rs, 1);
+				T2 p2 = typeHandler2.get(rs, 2);
+				T3 p3 = typeHandler3.get(rs, 3);
+				T4 p4 = typeHandler4.get(rs, 4);
+				T5 p5 = typeHandler5.get(rs, 5);
+				T6 p6 = typeHandler6.get(rs, 6);
+				T7 p7 = typeHandler7.get(rs, 7);
+				T8 p8 = typeHandler8.get(rs, 8);
+				T9 p9 = typeHandler9.get(rs, 9);
+				T10 p10 = typeHandler10.get(rs, 10);
+				T11 p11 = typeHandler11.get(rs, 11);
+				T12 p12 = typeHandler12.get(rs, 12);
+				T13 p13 = typeHandler13.get(rs, 13);
+				T14 p14 = typeHandler14.get(rs, 14);
+				T15 p15 = typeHandler15.get(rs, 15);
+				T16 p16 = typeHandler16.get(rs, 16);
+				visitor.run(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16);
+			}
+		}catch (Exception e) {
+			throw new HipsterSqlException(this, "visit failed", e);
+		}finally {
+			try{
+				sqlConnection.setAutoCommit(autoCommit);
+			} catch (SQLException e) {
+				throw new HipsterSqlException(this, "autoCommit", e);
+			}
+		}    	
+	}			
 }

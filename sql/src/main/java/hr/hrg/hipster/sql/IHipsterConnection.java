@@ -237,4 +237,95 @@ public interface IHipsterConnection {
 			Lambda11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> visitor);
 
 
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8, 
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11, 
+			ColumnMeta<T12> c12, 
+			Query filter,
+			Lambda12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> visitor);
+	
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8, 
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11, 
+			ColumnMeta<T12> c12, 
+			ColumnMeta<T13> c13, 
+			Query filter,
+			Lambda13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> visitor);
+	
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8, 
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11, 
+			ColumnMeta<T12> c12, 
+			ColumnMeta<T13> c13, 
+			ColumnMeta<T14> c14, 
+			Query filter,
+			Lambda14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> visitor);
+	
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8, 
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11, 
+			ColumnMeta<T12> c12, 
+			ColumnMeta<T13> c13, 
+			ColumnMeta<T14> c14, 
+			ColumnMeta<T15> c15, 
+			Query filter,
+			Lambda15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> visitor);
+	
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> void rowsVisitResult(
+			ColumnMeta<T1> c1,
+			ColumnMeta<T2> c2,
+			ColumnMeta<T3> c3,
+			ColumnMeta<T4> c4, 
+			ColumnMeta<T5> c5, 
+			ColumnMeta<T6> c6, 
+			ColumnMeta<T7> c7,
+			ColumnMeta<T8> c8, 
+			ColumnMeta<T9> c9,
+			ColumnMeta<T10> c10,
+			ColumnMeta<T11> c11, 
+			ColumnMeta<T12> c12, 
+			ColumnMeta<T13> c13, 
+			ColumnMeta<T14> c14, 
+			ColumnMeta<T15> c15, 
+			ColumnMeta<T16> c16, 
+			Query filter,
+			Lambda16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> visitor);
+	
+
 }
