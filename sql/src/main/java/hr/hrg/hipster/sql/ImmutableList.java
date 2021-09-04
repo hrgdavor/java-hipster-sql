@@ -44,6 +44,12 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess, IDi
 	public ImmutableList(List<T> in){
 		items = (T[]) in.toArray();
 	}
+	
+	@SuppressWarnings("unchecked")
+	public ImmutableList(Comparator<T> comp, List<T> in){
+		items = (T[]) in.toArray();
+		Arrays.sort(items, comp);
+	}
 
     public int size() {
         return items.length;
@@ -116,6 +122,21 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess, IDi
     @SuppressWarnings("unchecked")
     public ImmutableList<T> replaceMakeNew(T elem, T replacement){
     	int indexOf = indexOf(elem);
+    	if(indexOf == -1) return this;
+    	T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length);
+    	int i=0;
+    	for(; i<newArr.length; i++){
+    		if(i == indexOf) 
+    			newArr[i] = replacement;
+    		else
+    			newArr[i] = items[i];
+    	}
+    	return new ImmutableList<T>(true,newArr);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<T> replaceMakeNew(Comparator<T> comp,T elem, T replacement){
+    	int indexOf = indexOf(elem);
         if(indexOf == -1) return this;
         T[] newArr = (T[]) Array.newInstance(items.getClass().getComponentType(), items.length);
         int i=0;
@@ -125,6 +146,7 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess, IDi
             else
             	newArr[i] = items[i];
         }
+        Arrays.sort(newArr, comp);
         return new ImmutableList<T>(true,newArr);
     }
         
@@ -327,4 +349,15 @@ public class ImmutableList<T> implements Iterable<T>, List<T>, RandomAccess, IDi
 		
 		jgen.writeEndArray();
 	}
+	
+	public String join(String delim) {
+		if(items.length == 0) return "";
+		
+		StringBuffer b = new StringBuffer().append(items[0]);
+		for(int i=1; i<items.length; i++) {
+			b.append(delim).append(items[i]);
+		}
+		return b.toString();
+	}
+	
 }
