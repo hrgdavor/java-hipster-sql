@@ -16,6 +16,7 @@ public class GenOptions {
 	BooleanEnum genAnnotations	= DEFAULT;
 	BooleanEnum mongoSkipNull 	= DEFAULT;
 	BooleanEnum mongoUseFieldName 	= DEFAULT;
+	BooleanEnum inspectChange 	= DEFAULT;
 	GenOptions parent;
 	
 	public GenOptions(GenOptions parent, HipsterEntity ano) {
@@ -25,6 +26,7 @@ public class GenOptions {
 			genMeta = ano.genMeta();
 			genVisitor = ano.genVisitor();
 			genUpdate = ano.genUpdate();
+			inspectChange = ano.inspectChange();
 			genBuilder = ano.genBuilder();
 			genMongo = ano.genMongo();
 			genSql = ano.genSql();
@@ -62,6 +64,10 @@ public class GenOptions {
 	
 	public boolean isGenUpdate() {
 		return genUpdate == DEFAULT && parent != null  ? parent.isGenUpdate() : genUpdate == TRUE;
+	}
+	
+	public boolean isInspectChange() {
+		return inspectChange == DEFAULT && parent != null  ? parent.isInspectChange() : inspectChange == TRUE;
 	}
 	
 	public boolean isGenBuilder() {

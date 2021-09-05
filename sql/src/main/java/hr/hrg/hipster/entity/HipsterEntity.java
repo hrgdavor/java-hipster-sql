@@ -13,7 +13,9 @@ public @interface HipsterEntity {
 
     boolean defaultColumnsRequired() default false;	
     
-	public BooleanEnum genAnnotations() default DEFAULT;
+    public BooleanEnum genAnnotations() default DEFAULT;
+
+    public BooleanEnum inspectChange() default DEFAULT;
 
 	public BooleanEnum genMeta() default DEFAULT;
 

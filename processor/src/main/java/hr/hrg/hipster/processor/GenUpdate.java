@@ -57,6 +57,12 @@ public class GenUpdate {
 
 			MethodSpec.Builder bm = methodBuilder(PUBLIC(), def.typeUpdate, prop.setterName);
 			int changeSet = i/64;
+			if(def.genOptions.isInspectChange()) {
+				bm.addCode("if(this.$L == $L) return;", prop.name,prop.name);					
+				if(!prop.isPrimitive()) {
+					bm.addCode("if(this.$L !=null && !this.$L.equals($L)) return;", prop.name,prop.name);
+				}
+			}
 			bm.addCode("this._changeSet"+changeSet+" |= "+(1L<<i)+"L;\n");
 			addSetterParameter(bm, prop.type, prop.name, null);
 			bm.addCode("return this;\n");
