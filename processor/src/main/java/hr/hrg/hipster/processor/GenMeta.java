@@ -457,8 +457,10 @@ public class GenMeta {
 		String getColumn = def.genOptions.isMongoUseFieldName() ?  "getField":"getColumn";
 		method.addCode("\n");
 		method.addCode("reader.readStartDocument();\n");
+		method.addCode("String fieldName = null;\n");
+		method.addCode("try {\n");
 		method.addCode("while (reader.readBsonType() != $T.END_OF_DOCUMENT) {\n",BsonType.class);
-		method.addCode("\tString fieldName = reader.readName();\n");
+		method.addCode("fieldName = reader.readName();\n");
 		method.addCode("\tColumnMeta<?> column = $L(fieldName);// we consider mongo database, so field name is used\n", getColumn);
 		method.addCode("\tif(column == null && \"_id\".equals(fieldName)) column = $L(\"id\");// check _id\n", getColumn);
 //		method.addCode("if(column == null && \"_id\".equals(fieldName)) column = $L(\"id\");\n", getColumn);
@@ -529,6 +531,9 @@ public class GenMeta {
 		method.addCode("\n");
 		method.addCode("\t\t\tdefault: reader.skipValue();\n");
 		method.addCode("\t\t}\n");
+
+		
+		
 		method.addCode("\t}else{\n");
 		method.addCode("\t\treader.skipValue();\n");
 		method.addCode("\t}\n");
@@ -537,6 +542,12 @@ public class GenMeta {
 		method.addCode("}\n");// end while loop
 		
 		method.addCode("reader.readEndDocument();\n");
+		
+		method.addCode("}catch(Exception e){\n");
+		String debugFieldName = def.getProps().get(0).fieldName;
+		if(def.getPrimaryProp() != null) debugFieldName = def.getPrimaryProp().fieldName; 
+		method.addCode("\tthrow new RuntimeException(\"Error reading column \"+fieldName+\" #\"+$L,e);\n", debugFieldName);
+		method.addCode("}\n");
 		
 		
 		returnValue.add(");\n");

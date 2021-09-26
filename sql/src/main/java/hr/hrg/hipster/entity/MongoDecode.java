@@ -166,6 +166,8 @@ public class MongoDecode {
 			return (int) reader.readDouble();
 		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
 			return reader.readBoolean() ? 1:0;
+		else
+			reader.skipValue();
 		
 		return def;
 	}
@@ -252,6 +254,8 @@ public class MongoDecode {
 			return (long) reader.readDouble();
 		else if(reader.getCurrentBsonType() == BsonType.BOOLEAN)
 			return reader.readBoolean() ? 1L:0L;
+		else
+			reader.skipValue();
 		
 		return def;
 	}	
