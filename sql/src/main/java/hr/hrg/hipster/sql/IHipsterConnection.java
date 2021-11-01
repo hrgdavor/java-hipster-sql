@@ -124,7 +124,9 @@ public interface IHipsterConnection {
 	<T> List<T> column(Class<T> reader, Object ...sql);
 	<T> List<T> column(ICustomType<T> reader, Object ...sql);
 
+	<T,ID> void rowsVisitEntity(IEntityMeta<T, ID> reader, Query filter, Lambda1<T> callback);
 	void rowsVisitResult(Query sql, IResultSetVisitor visitor);
+
 
 	<T1> void rowsVisitResult(
 			ColumnMeta<T1> c1, 

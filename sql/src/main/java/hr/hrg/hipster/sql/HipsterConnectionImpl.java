@@ -538,6 +538,40 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     }	
 
     @Override
+    public <T,ID> void rowsVisitEntity(IEntityMeta<T, ID> reader, Query filter, Lambda1<T> visitor) {
+    	Query query = prepEntityQuery(reader.getColumns(), reader, filter);
+
+    	boolean autoCommit = false;
+    	try {
+    		// postgres does not use cursor if autoCommit is on
+    		autoCommit = sqlConnection.getAutoCommit();
+    		sqlConnection.setAutoCommit(false);
+    	} catch (SQLException e) {
+    		throw new HipsterSqlException(this, "autoCommit", e);
+    	}
+
+    	try(Result res = new Result(this);){
+    		res.setFetchSize(512);
+    		
+    		res.executeQuery(query);
+   		
+    		while(res.next()){
+    			T entity = res.fetchEntity(reader);
+    			visitor.run(entity);
+    		}
+    		
+    	}catch (Exception e) {
+    		throw new HipsterSqlException(this, "visit failed", e);
+    	}finally {
+    		try{
+    			sqlConnection.setAutoCommit(autoCommit);
+    		} catch (SQLException e) {
+    			throw new HipsterSqlException(this, "autoCommit", e);
+    		}
+    	}    	
+    }
+    
+    @Override
     @SuppressWarnings("unchecked")
     public<T1> void rowsVisitResult(
     		ColumnMeta<T1> c1,
