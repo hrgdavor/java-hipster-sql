@@ -30,7 +30,7 @@ public class GenUpdate {
 		}
 		
 		int propCount = def.props.size();
-		for(int i=0; i*64<propCount; i+=1) {
+		for(int i=0; (i*64)<=propCount; i+=1) {
 			addField(cp,PROTECTED(), long.class, "_changeSet"+i);
 		}
 

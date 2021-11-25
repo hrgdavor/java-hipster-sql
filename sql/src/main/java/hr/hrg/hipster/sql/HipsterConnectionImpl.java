@@ -555,8 +555,8 @@ public class HipsterConnectionImpl implements IHipsterConnection {
     		
     		res.executeQuery(query);
    		
-    		while(res.next()){
-    			T entity = res.fetchEntity(reader);
+    		T entity = null;
+    		while((entity = res.fetchEntity(reader)) != null){
     			visitor.run(entity);
     		}
     		
