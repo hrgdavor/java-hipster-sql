@@ -28,6 +28,7 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	protected String[] _fieldArraySortedStr;
 
 	protected Lambda1<T> transientUpdater;
+	protected Lambda1<T> initializer;
 	
 	protected HipsterSql _hip;
 
@@ -185,5 +186,17 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	
 	public void setTransientUpdater(Lambda1<T> transientUpdater) {
 		this.transientUpdater = transientUpdater;
+	}
+
+	public void init(T entity) {
+		if(transientUpdater != null) transientUpdater.run(entity);
+	}
+	
+	public void setInitializer(Lambda1<T> initializer) {
+		this.initializer = initializer;
+	}
+	
+	public Lambda1<T> getInitializer() {
+		return initializer;
 	}
 }
