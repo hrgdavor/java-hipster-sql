@@ -432,7 +432,7 @@ public class GenMeta {
 		method.addCode("if(reader.getCurrentBsonType() == BsonType.NULL){ reader.readNull(); return null;}\n");
 		method.addCode("\n");
 		
-		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(",def.typeImmutable);
+		CodeBlock.Builder returnValue = CodeBlock.builder().add("$T out = new $T(",def.typeImmutable,def.typeImmutable);
 		int i=0;
 		for(Property p: def.getProps()) {
 			if(p.isTransient()) continue;
@@ -560,6 +560,8 @@ public class GenMeta {
 		
 		
 		returnValue.add(");\n");
+		returnValue.add("if(initializer != null) initializer.run(out);\n");
+		returnValue.add("return out;\n");
 
 		method.addCode(returnValue.build());
 		
@@ -765,7 +767,7 @@ public class GenMeta {
 		method.addParameter(ResultSet.class, "rs");
 		method.addException(java.sql.SQLException.class);
 
-		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(",def.typeImmutable);
+		CodeBlock.Builder returnValue = CodeBlock.builder().add("$T out = new $T(",def.typeImmutable, def.typeImmutable);
 		genPrepValueVars(def, method, returnValue);
 				
 		cp.addMethod(method.build());
@@ -804,7 +806,9 @@ public class GenMeta {
 		}
 
 		block.add("\n");
-		returnValue.add(");");
+		returnValue.add(");\n");
+		returnValue.add("if(initializer != null) initializer.run(out);\n");
+		returnValue.add("return out;\n");
 		block.add(returnValue.build());
 		block.unindent();
 		Object fieldnameForCatch = primaryProp == null ? "null" : primaryProp.fieldName;
