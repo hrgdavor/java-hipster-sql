@@ -42,6 +42,7 @@ public class GenMeta {
 
 		int ordinal = 0;
 		for(Property prop: def.getProps()){
+			if(prop.isTransient()) continue;
 			// type or raw type
 			TypeName rawType = prop.type;
 			if(prop.type instanceof ParameterizedTypeName){				
@@ -88,6 +89,7 @@ public class GenMeta {
 			boolean hasGetters = false;
 			
 			for(Property p:def.getProps()) {
+				if(p.isTransient()) continue;
 				ParameterizedTypeName parametrizedCustomType = parametrized(ICustomType.class, p.type.box());
 				if(p.customType != null) {
 					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);\n", parametrizedCustomType, p.customType);				
@@ -274,6 +276,8 @@ public class GenMeta {
 				method.addCode("super.setCodecRegistry(registry);\n\n", def.simpleName);
 				
 				for(Property p: def.getProps()) {
+					if(p.isTransient()) continue;
+
 					TypeName type = isList(p.type) ? p.componentType : p.type;
 					if(type instanceof ParameterizedTypeName) {
 						type = ((ParameterizedTypeName)type).rawType;
@@ -352,6 +356,7 @@ public class GenMeta {
 			cp.addJavadoc("meta.visitResults(hc, query, (");
 			int i=1;
 			for(Property p:def.getProps()) {
+				if(p.isTransient()) continue;
 				if(i>1) cp.addJavadoc(", ");
 				cp.addJavadoc(p.fieldName);
 				i++;
@@ -430,6 +435,8 @@ public class GenMeta {
 		CodeBlock.Builder returnValue = CodeBlock.builder().add("return new $T(",def.typeImmutable);
 		int i=0;
 		for(Property p: def.getProps()) {
+			if(p.isTransient()) continue;
+			
 			method.addCode("$T $L",p.type, p.fieldName);
 			if(p.initial != null) {				
 				String typeStr = p.type.toString();
@@ -468,6 +475,8 @@ public class GenMeta {
 		method.addCode("\tif(column != null) {\n");
 		method.addCode("\t\tswitch (column.ordinal()) {\n");
 		for(Property p: def.getProps()) {
+			if(p.isTransient()) continue;
+			
 			String typeName = p.type.toString();
 			String getterNameMongo = getterNameMongo(typeName);
 			method.addCode("\t\t\tcase $L: ", p.ordinal);
@@ -788,7 +797,7 @@ public class GenMeta {
 		block.add("try{\n");
 		block.indent();
 		for(Property p: def.getProps()) {
-			if(primaryProp == null || !p.fieldName.equals(primaryProp.fieldName)) {
+			if((primaryProp == null || !p.fieldName.equals(primaryProp.fieldName)) && !p.isTransient()) {
 				genPrepValue(block, returnValue, p, i);
 				i++;
 			}
@@ -829,6 +838,7 @@ public class GenMeta {
 		Map<String, String> colMap = new HashMap<>();
 		for(Property p:def.props) {
 			colMap.put(p.columnName, p.fieldName);
+			if(p.isTransient()) continue;
 			colNames.add(p.columnName);
 			enumNames.add(p.fieldName);
 		}
@@ -859,6 +869,8 @@ public class GenMeta {
 		
 		int ordinal = 0;
 		for(Property prop: def.getProps()){
+			if(prop.isTransient()) continue;
+
 			// type or raw type
 			TypeName rawType = prop.type;
 			if(prop.type instanceof ParameterizedTypeName){				

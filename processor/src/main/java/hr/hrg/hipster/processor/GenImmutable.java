@@ -48,9 +48,13 @@ public class GenImmutable {
 			MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName).addAnnotation(Override.class);
 			copyAnnotations(g, prop);
 			g.addCode("return "+prop.fieldName+";\n");
-
 			builder.addMethod(g.build());
 			
+			if(prop.isTransient()) {
+				g = methodBuilder(PUBLIC(), void.class, prop.setterName);
+				addSetterParameter(g, prop.type, prop.name, null);
+				builder.addMethod(g.build());				
+			}
         }
        
         addEnumGetter(def, builder, columnMetaBase);
@@ -183,6 +187,7 @@ public class GenImmutable {
 			int count = def.getProps().size();
 			for (int i = 0; i < count; i++) {
 				Property prop = def.getProps().get(i);
+				if(prop.isTransient()) continue;
 				method.addCode("case " + i + ": return this." + prop.fieldName + ";\n");
 
 			}
@@ -207,12 +212,13 @@ public class GenImmutable {
         for(int i=0; i<count; i++) {
         	Property property = def.getProps().get(i);
 
-        	addSetterParameter(constr, property.type, property.name, param->{
-        		if(def.genOptions.isGenJson())
-        			param.addAnnotation(annotationSpec(CN_JsonProperty,"value", "$S",property.name));
-        	});
-        
-        	constr2.addCode("this."+property.name+" = v."+property.getterName +"();\n");
+        	if(!property.isTransient()) {        		
+        		addSetterParameter(constr, property.type, property.name, param->{
+        			if(def.genOptions.isGenJson())
+        				param.addAnnotation(annotationSpec(CN_JsonProperty,"value", "$S",property.name));
+        		});
+        		constr2.addCode("this."+property.name+" = v."+property.getterName +"();\n");
+        	}
         }
         cp.addMethod(constr0.build());
         cp.addMethod(constr.build());

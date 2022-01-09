@@ -5,6 +5,7 @@ import java.util.*;
 
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
+import hr.hrg.hipster.visitor.*;
 
 @SuppressWarnings("rawtypes")
 public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEntityMeta<T,ID>{
@@ -26,6 +27,8 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	protected C[] _fieldArraySorted;
 	protected String[] _fieldArraySortedStr;
 
+	protected Lambda1<T> transientUpdater;
+	
 	protected HipsterSql _hip;
 
 	public EntityMeta(int ordinal, String tableName, Class<T> entityClass, HipsterSql hipster) {
@@ -174,5 +177,13 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	@Override
 	public Class<T> getUpdateClass() {
 		throw new UnsupportedOperationException();
+	}
+	
+	public Lambda1<T> getTransientUpdater() {
+		return transientUpdater;
+	}
+	
+	public void setTransientUpdater(Lambda1<T> transientUpdater) {
+		this.transientUpdater = transientUpdater;
 	}
 }

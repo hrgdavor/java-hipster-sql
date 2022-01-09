@@ -1,12 +1,10 @@
 package hr.hrg.hipster.processor;
 
 import static com.squareup.javapoet.TypeSpec.classBuilder;
-import static hr.hrg.hipster.processor.HipsterProcessorUtil.*;
 import static hr.hrg.javapoet.PoetUtil.*;
 
 import com.squareup.javapoet.*;
 
-import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 
 public class GenUpdate {
@@ -55,7 +53,7 @@ public class GenUpdate {
 				cp.addMethod(g.build());
 			}
 
-			MethodSpec.Builder bm = methodBuilder(PUBLIC(), def.typeUpdate, prop.setterName);
+			MethodSpec.Builder bm = methodBuilder(PUBLIC(), prop.isTransient() ? void.class: def.typeUpdate, prop.setterName);
 			int changeSet = i/64;
 			if(def.genOptions.isInspectChange()) {
 				bm.addCode("if(this.$L == $L) return this;\n", prop.name,prop.name);					
@@ -63,9 +61,9 @@ public class GenUpdate {
 					bm.addCode("if(this.$L !=null && !this.$L.equals($L)) return this;\n", prop.name,prop.name, prop.name);
 				}
 			}
-			bm.addCode("this._changeSet"+changeSet+" |= "+(1L<<i)+"L;\n");
+			if(!prop.isTransient()) bm.addCode("this._changeSet"+changeSet+" |= "+(1L<<i)+"L;\n");
 			addSetterParameter(bm, prop.type, prop.name, null);
-			bm.addCode("return this;\n");
+			if(!prop.isTransient()) bm.addCode("return this;\n");
 			cp.addMethod(bm.build());
         }
         

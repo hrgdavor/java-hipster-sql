@@ -9,7 +9,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
-import javax.persistence.Column;
+import javax.persistence.*;
 import javax.tools.Diagnostic.*;
 
 import com.squareup.javapoet.*;
@@ -46,6 +46,7 @@ class Property {
 	public TypeName componentType;
 	public List<TypeName> typeArguments;
 	public boolean parametrized;
+	public boolean isTransient;
 	public ClassName parameterizedOuterRaw;
 	
 	public Property(String getter, TypeName type, TypeMirror typeMirror, ExecutableElement method, String tableName, boolean defaultColumnsRequired, ProcessingEnvironment processingEnv, int ordinal){
@@ -84,6 +85,10 @@ class Property {
 			if(!columnAnnotation.name().isEmpty()) this.columnName = columnAnnotation.name();
 			if(!columnAnnotation.table().isEmpty()) tableName = columnAnnotation.table();
 		}
+		
+		Transient transient1 = method.getAnnotation(Transient.class);
+		java.beans.Transient transient2 = method.getAnnotation(java.beans.Transient.class);
+		isTransient = transient1 != null || transient2 != null;
 		
 		HipsterColumn hipsterColumn = method.getAnnotation(HipsterColumn.class);
 		if(hipsterColumn != null){
@@ -219,6 +224,10 @@ class Property {
 			}
 			return builder;
 		}
+	}
+	
+	public boolean isTransient() {
+		return isTransient;
 	}
 	
 	static Builder addMemberForValue(Builder builder, String memberName, Object value) {
