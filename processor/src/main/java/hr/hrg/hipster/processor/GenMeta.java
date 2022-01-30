@@ -841,6 +841,7 @@ public class GenMeta {
 		List<String> enumNames = new ArrayList<>();
 		Map<String, String> colMap = new HashMap<>();
 		for(Property p:def.props) {
+			if(p.isTransient()) continue;
 			colMap.put(p.columnName, p.fieldName);
 			if(p.isTransient()) continue;
 			colNames.add(p.columnName);
