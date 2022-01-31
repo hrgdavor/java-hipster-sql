@@ -91,10 +91,11 @@ public class GenMeta {
 			for(Property p:def.getProps()) {
 				if(p.isTransient()) continue;
 				ParameterizedTypeName parametrizedCustomType = parametrized(ICustomType.class, p.type.box());
-				if(p.customType != null) {
-					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);\n", parametrizedCustomType, p.customType);				
-				}else if(!p.customTypeKey.isEmpty()){
+
+				if(!p.customTypeKey.isEmpty()){
 					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getNamedRequired($S);\n", parametrizedCustomType, p.customTypeKey);
+				}else if(p.customType != null) {
+					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);\n", parametrizedCustomType, p.customType);				
 				}else {				
 					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getForRequired(", parametrizedCustomType);
 					hasGetters = true;
