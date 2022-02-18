@@ -561,7 +561,7 @@ public class GenMeta {
 		method.addCode("}catch(Exception e){\n");
 		String debugFieldName = def.getProps().get(0).fieldName;
 		if(def.getPrimaryProp() != null) debugFieldName = def.getPrimaryProp().fieldName; 
-		method.addCode("\tthrow new RuntimeException(\"Error reading column \"+fieldName+\" #\"+$L,e);\n", debugFieldName);
+		method.addCode("\tthrow new RuntimeException(\"Error reading column \"+fieldName+\" \"+ENTITY_CLASS+\"#\"+$L,e);\n", debugFieldName);
 		method.addCode("}\n");
 	
 		cp.addMethod(method.build());
