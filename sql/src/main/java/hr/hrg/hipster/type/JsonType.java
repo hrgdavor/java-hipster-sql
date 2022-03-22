@@ -44,7 +44,7 @@ public class JsonType<T> implements ICustomType<T>{
 		}
 	}
 
-	private T forNull() {
+	protected T forNull() {
 		return null;
 	}
 
