@@ -36,12 +36,16 @@ public class JsonType<T> implements ICustomType<T>{
 	@Override
 	public T get(ResultSet rs, int index) throws SQLException {
 		InputStream src = rs.getBinaryStream(index);
-		if(src == null) return null;
+		if(src == null) return forNull();
 		try {
 			return reader.readValue(src);
 		}catch (Exception e) {
 			throw new SQLException("Problem reading result from index "+index+" to convert to "+clazz,e);
 		}
+	}
+
+	private T forNull() {
+		return null;
 	}
 
 	@Override
