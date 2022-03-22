@@ -20,6 +20,7 @@ import com.squareup.javapoet.MethodSpec.*;
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
+import hr.hrg.javapoet.*;
 
 
 public class GenMeta {
@@ -50,7 +51,7 @@ public class GenMeta {
 				rawType = parameterizedTypeName.rawType;
 			}
 
-			addField(cp, PUBLIC().FINAL(), parametrized(columnMetaBase, rawType.box()), prop.fieldName);	
+			addField(cp, PUBLIC().FINAL(), parametrized(columnMetaBase, rawType.box()), prop.fieldName, field -> field.addJavadoc("ordinal: $L", prop.ordinal));	
 			ordinal++;
 		}
 
@@ -93,9 +94,9 @@ public class GenMeta {
 				ParameterizedTypeName parametrizedCustomType = parametrized(ICustomType.class, p.type.box());
 
 				if(!p.customTypeKey.isEmpty()){
-					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getNamedRequired($S);\n", parametrizedCustomType, p.customTypeKey);
+					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getNamedRequired($S);", parametrizedCustomType, p.customTypeKey);
 				}else if(p.customType != null) {
-					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);\n", parametrizedCustomType, p.customType);				
+					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getInstanceRequired($T.class);", parametrizedCustomType, p.customType);				
 				}else {				
 					typeHandlersBlock.add("_typeHandler["+i+"] = ($T) _typeSource.getForRequired(", parametrizedCustomType);
 					hasGetters = true;
@@ -105,11 +106,12 @@ public class GenMeta {
 						for(TypeName ta: parameterizedTypeName.typeArguments){
 							typeHandlersBlock.add(",$T.class",ta);					
 						}
-						typeHandlersBlock.add(");\n");
+						typeHandlersBlock.add(");");
 					}else{
-						typeHandlersBlock.add("$T.class);\n", p.type.box());
+						typeHandlersBlock.add("$T.class);", p.type.box());
 					}
 				}
+				typeHandlersBlock.add("// $L \n", p.fieldName);
 				
 				i++;
 			}
