@@ -44,7 +44,7 @@ public class SimpleEntityCache<T, ID, M extends IEntityMeta<T, ID>>
 		switch(type) {
 			case AFTER_ADD: recordAdded(id, updated, batchId); break; 
 			case AFTER_CHANGE: recordChanged(id, old, updated, batchId); break; 
-			case AFTER_DELETE: recordDeleted(id, old, batchId); break;
+			case AFTER_DELETE: recordDeleted(id, old, updated, batchId); break;
 			default:;
 		}
 	}
@@ -57,7 +57,7 @@ public class SimpleEntityCache<T, ID, M extends IEntityMeta<T, ID>>
 		byId.replace(id, updated);
 	}
 	
-	public void recordDeleted(ID id, T old, long batchId) {
+	public void recordDeleted(ID id, T old, T updated, long batchId) {
 		byId.remove(id);
 	}
 
