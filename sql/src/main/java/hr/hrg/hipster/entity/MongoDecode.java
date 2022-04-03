@@ -29,7 +29,9 @@ public class MongoDecode {
 	}
 
 	public static final <T1> ImmutableList<T1> decodeListImmutable(Codec<T1> codec, BsonReader reader, DecoderContext decoderContext) {
-		return new ImmutableList<>(decodeListMutable(codec, reader, decoderContext));
+		List<T1> list = decodeListMutable(codec, reader, decoderContext);
+		if(list == null) return null;
+		return new ImmutableList<>(list);
 	}
 	
 	public static final <T1> T1[] decodeArray(Codec<T1> codec, BsonReader reader, DecoderContext decoderContext) {
