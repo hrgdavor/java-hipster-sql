@@ -2,6 +2,7 @@ package hr.hrg.hipster.entity;
 
 import java.lang.annotation.*;
 import java.lang.reflect.*;
+import java.util.*;
 
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.sql.*;
@@ -120,13 +121,29 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 		if(values.length == 0) return QueryColumnAndValue.EMPTY;
 		return in("", values);
 	}
-
+	
 	public QueryColumnAndValue in(CharSequence prefix, T ...values) {
 		QueryValue[] valuesForQ = new QueryValue[values.length];
 		StringBuilder b = new StringBuilder().append(" IN(");
 		for(int i=0; i<values.length; i++) {
 			if(i>0) b.append(",");
 			valuesForQ[i] = new QueryValue(values[i], (ICustomType<T>) typeHandler);
+		}
+		b.append(")");
+		
+		return new QueryColumnAndValue(prefix, this, b, valuesForQ);
+	}
+	
+	public QueryColumnAndValue inList(List<T> values) {
+		return inList("", values);
+	}
+	
+	public QueryColumnAndValue inList(CharSequence prefix, List<T> values) {
+		QueryValue[] valuesForQ = new QueryValue[values.size()];
+		StringBuilder b = new StringBuilder().append(" IN(");
+		for(int i=0; i<values.size(); i++) {
+			if(i>0) b.append(",");
+			valuesForQ[i] = new QueryValue(values.get(i), (ICustomType<T>) typeHandler);
 		}
 		b.append(")");
 		
