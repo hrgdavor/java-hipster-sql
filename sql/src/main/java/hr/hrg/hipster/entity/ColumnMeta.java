@@ -127,6 +127,7 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 		StringBuilder b = new StringBuilder().append(" IN(");
 		for(int i=0; i<values.length; i++) {
 			if(i>0) b.append(",");
+			b.append("?");
 			valuesForQ[i] = new QueryValue(values[i], (ICustomType<T>) typeHandler);
 		}
 		b.append(")");
@@ -143,6 +144,7 @@ public class ColumnMeta<T> implements IQueryLiteral, Key<T>, Comparable<ColumnMe
 		StringBuilder b = new StringBuilder().append(" IN(");
 		for(int i=0; i<values.size(); i++) {
 			if(i>0) b.append(",");
+			b.append("?");
 			valuesForQ[i] = new QueryValue(values.get(i), (ICustomType<T>) typeHandler);
 		}
 		b.append(")");
