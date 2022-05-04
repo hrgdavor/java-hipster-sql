@@ -98,7 +98,7 @@ class Property {
 			this.sql = hipsterColumn.sql();
 			if(!hipsterColumn.table().isEmpty()) this.tableName = hipsterColumn.table();
 			try {
-				if(hipsterColumn.customType() != ICustomType.class) {
+				if(hipsterColumn.customType().getTypeName().equals(ICustomType.class.getTypeName())) {
 					this.customType = ClassName.get(hipsterColumn.customType());// will likely always throw error					
 				}
 			}catch (MirroredTypeException e) {
@@ -106,7 +106,7 @@ class Property {
 					this.customType = ClassName.get(e.getTypeMirror());
 				}
 			}
-			this.customTypeKey = hipsterColumn.customTypeKey();
+			if(!hipsterColumn.customTypeKey().isEmpty()) this.customTypeKey = hipsterColumn.customTypeKey();
 		}
 
 		List<? extends AnnotationMirror> annotationMirrors = method.getAnnotationMirrors();
