@@ -142,7 +142,7 @@ public class GenUpdate {
     		for(int i=0; i*64<propCount; i+=1) {
     			method.addCode("\t_changeSet"+i+" = ");
     			if(((i+1)*64)>=propCount) {    				
-    				method.addCode(""+((1<<propCount)-1)+";\n");
+    				method.addCode(""+((1L<<propCount)-1)+"L;\n");
     			}else {
     				method.addCode("-1;\n");    				
     			}
