@@ -5,6 +5,7 @@ import java.util.*;
 
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.type.*;
+import hr.hrg.hipster.visitor.*;
 
 
 @SuppressWarnings("rawtypes")
@@ -47,4 +48,8 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 	
 	Class<T> getImmutableClass();
 	Class<T> getUpdateClass();
+
+	Lambda1<T> getInitializer();
+	void setInitializer(Lambda1<T> initializer);
+	T init(T entity);
 }
