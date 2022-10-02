@@ -181,7 +181,13 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	
 	@Override
 	public T init(T entity) {
-		if(initializer != null && entity != null) initializer.run(entity);
+		if(initializer != null && entity != null) {
+			try {
+				initializer.run(entity);				
+			} catch (Exception e) {
+				throw new RuntimeException("Failed to initialize entity "+getEntityName()+"#"+entityGetPrimary(entity),e);
+			}
+		}
 		return entity;
 	}
 	

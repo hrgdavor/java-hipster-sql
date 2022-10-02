@@ -28,6 +28,7 @@ public class SimpleEntityCache<T, ID, M extends IEntityMeta<T, ID>>
 
 	public void init(List<T> initial) {
 		for (T t : initial) {
+			meta.init(t);
 			recordAdded(meta.entityGetPrimary(t), t, -1);
 		}
 	}
@@ -40,7 +41,7 @@ public class SimpleEntityCache<T, ID, M extends IEntityMeta<T, ID>>
 			T updated, IUpdatable delta,
 			M meta, 
 			long batchId) {
-
+		
 		switch(type) {
 			case AFTER_ADD: recordAdded(id, updated, batchId); break; 
 			case AFTER_CHANGE: recordChanged(id, old, updated, batchId); break; 

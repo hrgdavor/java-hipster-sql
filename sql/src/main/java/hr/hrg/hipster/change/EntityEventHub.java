@@ -107,7 +107,8 @@ public class EntityEventHub {
 			M meta, 
 			long batchId, 
 			List<IEntityEventListener> list) {
-		
+
+		meta.init(updated);
 		for(IEntityEventListener<T,ID,M> listener: list) {
 			try {
 				listener.entityEvent(type, id, old, updated, delta, meta, batchId);
