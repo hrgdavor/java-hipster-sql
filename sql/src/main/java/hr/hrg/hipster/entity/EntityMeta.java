@@ -27,7 +27,7 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	protected C[] _fieldArraySorted;
 	protected String[] _fieldArraySortedStr;
 
-	protected Lambda1<T> initializer;
+	protected EntityInitializer<T> initializer;
 	
 	protected HipsterSql _hip;
 
@@ -183,7 +183,7 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	public T init(T entity) {
 		if(initializer != null && entity != null) {
 			try {
-				initializer.run(entity);				
+				if(!initializer.isEntityInitialized(entity)) initializer.initEntity(entity);
 			} catch (Exception e) {
 				throw new RuntimeException("Failed to initialize entity "+getEntityName()+"#"+entityGetPrimary(entity),e);
 			}
@@ -192,12 +192,12 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	}
 	
 	@Override
-	public void setInitializer(Lambda1<T> initializer) {
+	public void setInitializer(EntityInitializer<T> initializer) {
 		this.initializer = initializer;
 	}
 	
 	@Override
-	public Lambda1<T> getInitializer() {
+	public EntityInitializer<T> getInitializer() {
 		return initializer;
 	}
 }

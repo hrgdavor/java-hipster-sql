@@ -49,7 +49,7 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 	Class<T> getImmutableClass();
 	Class<T> getUpdateClass();
 
-	Lambda1<T> getInitializer();
-	void setInitializer(Lambda1<T> initializer);
+	EntityInitializer<T> getInitializer();
+	void setInitializer(EntityInitializer<T> initializer);
 	T init(T entity);
 }
