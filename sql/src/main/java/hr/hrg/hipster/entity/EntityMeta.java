@@ -180,15 +180,18 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	}
 	
 	@Override
-	public T init(T entity) {
+	public boolean init(T entity) {
 		if(initializer != null && entity != null) {
 			try {
-				if(!initializer.isEntityInitialized(entity)) initializer.initEntity(entity);
+				if(!initializer.isEntityInitialized(entity)) {
+					initializer.initEntity(entity);
+					return true;
+				}
 			} catch (Exception e) {
 				throw new RuntimeException("Failed to initialize entity "+getEntityName()+"#"+entityGetPrimary(entity),e);
 			}
 		}
-		return entity;
+		return false;
 	}
 	
 	@Override
@@ -200,4 +203,5 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	public EntityInitializer<T> getInitializer() {
 		return initializer;
 	}
+	
 }

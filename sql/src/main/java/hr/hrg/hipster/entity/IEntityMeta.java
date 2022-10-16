@@ -40,6 +40,8 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 	ID entityGetPrimary(T instance);
 
 	IUpdatable mutableCopy(Object v);
+	T immutableCopy(Object v);
+	boolean isImmutableVariant(Object v);
 	T fromResultSet(ResultSet rs) throws SQLException;
 
 	ColumnMeta getField(String columnName);
@@ -51,5 +53,5 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 
 	EntityInitializer<T> getInitializer();
 	void setInitializer(EntityInitializer<T> initializer);
-	T init(T entity);
+	boolean init(T entity);
 }

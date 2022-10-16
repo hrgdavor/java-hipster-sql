@@ -142,6 +142,30 @@ public class GenMeta {
 //		});
 		
 		
+		//@Override
+		//public final SampleImmutable immutableCopy(Object v){ 
+		//  if(v instanceof SampleImmutable) return (Sample)v;
+		//  SapmleImmutable out = new SapmleImmutable((Sample)v); 
+		//  this.init(out)
+		//  return out;
+		//}
+		addMethod(cp,PUBLIC().FINAL(), def.typeImmutable, "immutableCopy", method->{
+			method.addAnnotation(Override.class);
+			addParameter(method, Object.class, "v");
+			method.addCode("if(v instanceof $T) return ($T)v;\n", def.typeImmutable, def.typeImmutable);
+			method.addCode("$T out = new $T(($T)v);\n", def.typeImmutable, def.typeImmutable, def.type);
+			method.addCode("this.init(out);\n");
+			method.addCode("return out;\n");
+		});
+
+		//@Override
+		//public final boolean isImmutableVariant(Object v){ return v instanceof SampleImmutable; }
+		addMethod(cp,PUBLIC().FINAL(), boolean.class, "isImmutableVariant", method->{
+			method.addAnnotation(Override.class);
+			addParameter(method, Object.class, "v");
+			method.addCode("return v instanceof $T;\n", def.typeImmutable);
+		});
+		
 		if(def.genOptions.isGenUpdate()){			
 			//@Override
 			//public final SampleUpdate mutableCopy(Object v){ return new SmapleUpdate((Sample)v); }
@@ -563,7 +587,7 @@ public class GenMeta {
 	
 		method.addCode("try{\n");
 		returnValue.add(");\n");
-		returnValue.add("if(initializer != null) initializer.run(out);\n");
+		returnValue.add("this.init(out);\n");
 		returnValue.add("return out;\n");
 		method.addCode(returnValue.build());
 		method.addCode("}catch(Exception e){\n");
@@ -812,7 +836,7 @@ public class GenMeta {
 
 		block.add("\n");
 		returnValue.add(");\n");
-		returnValue.add("if(initializer != null) initializer.run(out);\n");
+		returnValue.add("this.init(out);\n");
 		returnValue.add("return out;\n");
 		block.add(returnValue.build());
 		block.unindent();

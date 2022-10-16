@@ -117,6 +117,17 @@ public class TestQueryRepeat {
 			return new Class[] {};
 		}
 
+		@Override
+		public T immutableCopy(Object v) {
+			return null;
+		}
+
+		@Override
+		public boolean isImmutableVariant(Object v) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
 	}
 	
 }
