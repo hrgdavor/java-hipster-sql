@@ -1,6 +1,6 @@
 # Java Hipster SQL 
 
-Utility for working with JDBC. When ORM feels too heavy, and pure JDBC is annoying you.
+Utility for working with JDBC. When ORM feels too heavy, and pure JDBC is annoying you
 
 
  # Usage
