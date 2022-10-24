@@ -11,7 +11,7 @@ import hr.hrg.hipster.sql.*;
 public interface User1{
 
 	@Id
-	@Column(name="user_id")
+	@Column(name="user_id") 
 	public Long getId();
 	public List<String> getName();
 	public int getAge();

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.*;
 import hr.hrg.hipster.dao.test.*;
 import hr.hrg.hipster.entity.*;
 
-@HipsterEntity(table="user_table", genVisitor = TRUE)
+@HipsterEntity(table="user_table", genVisitor = TRUE, genBuilder = TRUE)
 public interface User{
 	
 	@Id

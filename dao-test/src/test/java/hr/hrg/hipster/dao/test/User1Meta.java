@@ -3,7 +3,6 @@ package hr.hrg.hipster.dao.test;
 import java.sql.*;
 import java.util.*;
 
-import hr.hrg.hipster.dao.test.entity.*;
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
@@ -35,9 +34,9 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
 		_typeHandler[2] = (ICustomType<Integer>) _typeSource.getForRequired(Integer.class);
 	}
 	
-	id = new LocalColumnMeta<Long>(0, "id","user_id","getId",this,Long.class,null,"", _typeHandler[0]);
-    name = new LocalColumnMeta<List>(1, "name","name","getName",this,List.class,null,"", _typeHandler[1],String.class);
-    age = new LocalColumnMeta<Integer>(2, "age","age","getAge",this,Integer.class,int.class,"", _typeHandler[2]).withAnnotations();
+	id = new LocalColumnMeta<Long>(0, "id","user_id","getId",false, this,Long.class,null,"", _typeHandler[0], null);
+    name = new LocalColumnMeta<List>(1, "name","name","getName",false, this,List.class,null,"", _typeHandler[1],String.class);
+    age = new LocalColumnMeta<Integer>(2, "age","age","getAge",false, this,Integer.class,int.class,"", _typeHandler[2]).withAnnotations();
     
 	this._columnArray = new LocalColumnMeta[]{id,name,age};
 	this._columns =  ImmutableList.safe((LocalColumnMeta[])_columnArray);
@@ -64,8 +63,8 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
   }
 
   @Override
-  public final User1Update mutableCopy(Object v) {
-    return new User1Update((User1)v);
+  public final User1Update mutableCopy(User1 v) {
+    return new User1Update(v);
   }
 
   @Override
@@ -101,6 +100,16 @@ public class User1Meta extends EntityMeta<User1, Long, LocalColumnMeta, User1Vis
 	@Override
 	public boolean containsField(String columnName) {
 		return false;
+	}
+
+	@Override
+	public User1 immutableCopy(User1 v) {
+		return v instanceof User1Immutable ? v : new User1Immutable(v);
+	}
+
+	@Override
+	public boolean isImmutableVariant(User1 v) {
+		return v instanceof User1Immutable;
 	}
 
 }

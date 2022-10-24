@@ -39,9 +39,9 @@ public interface IEntityMeta<T,ID> extends IQueryLiteral{
 	
 	ID entityGetPrimary(T instance);
 
-	IUpdatable mutableCopy(Object v);
-	T immutableCopy(Object v);
-	boolean isImmutableVariant(Object v);
+	IUpdatable mutableCopy(T v);
+	T immutableCopy(T v);
+	boolean isImmutableVariant(T v);
 	T fromResultSet(ResultSet rs) throws SQLException;
 
 	ColumnMeta getField(String columnName);

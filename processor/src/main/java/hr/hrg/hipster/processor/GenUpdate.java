@@ -5,6 +5,7 @@ import static hr.hrg.javapoet.PoetUtil.*;
 
 import com.squareup.javapoet.*;
 
+import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
 
 public class GenUpdate {
@@ -20,12 +21,8 @@ public class GenUpdate {
 		TypeSpec.Builder cp = classBuilder(def.typeUpdate);
 		PUBLIC().to(cp);
         
-		if(def.genOptions.isGenBuilder()){
-			cp.superclass(def.typeBuilder);			
-		}else{
-			cp.addSuperinterface(def.type);
-			GenBuilder.addInterfaces(def, cp, columnMetaBase);
-		}
+		cp.addSuperinterface(def.type);
+		addInterfaces(def, cp, columnMetaBase);
 		
 		int propCount = def.props.size();
 		for(int i=0; (i*64)<=propCount; i+=1) {
@@ -36,22 +33,20 @@ public class GenUpdate {
         for(int i=0; i<count; i++) {
         	Property prop = def.getProps().get(i);
         	
-        	if(!def.genOptions.isGenBuilder()){
-            	if(prop.initial != null) {
-    				String typeStr = prop.type.toString();
-            		if(typeStr.equals("java.lang.String"))
-            			addField(cp, PROTECTED(), prop.type, prop.name, "$S", prop.initial);
-            		else
-            			addField(cp, PROTECTED(), prop.type, prop.name, "$L", prop.initial);
-            	}else {        		
-            		addField(cp, PROTECTED(), prop.type, prop.name);
-            	}
-        		MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName);
-				// it would be done there
-				GenImmutable.copyAnnotations(g, prop);				
-				g.addCode("return "+prop.fieldName+";\n");
-				cp.addMethod(g.build());
-			}
+        	if(prop.initial != null) {
+				String typeStr = prop.type.toString();
+        		if(typeStr.equals("java.lang.String"))
+        			addField(cp, PROTECTED(), prop.type, prop.name, "$S", prop.initial);
+        		else
+        			addField(cp, PROTECTED(), prop.type, prop.name, "$L", prop.initial);
+        	}else {        		
+        		addField(cp, PROTECTED(), prop.type, prop.name);
+        	}
+    		MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName);
+			// it would be done there
+			GenImmutable.copyAnnotations(g, prop);				
+			g.addCode("return "+prop.fieldName+";\n");
+			cp.addMethod(g.build());
 
 			MethodSpec.Builder bm = methodBuilder(PUBLIC(), prop.isTransient() ? void.class: def.typeUpdate, prop.setterName);
 			int changeSet = i/64;
@@ -68,28 +63,28 @@ public class GenUpdate {
         }
         
         MethodSpec.Builder setValue = null;
-        if(def.genOptions.isGenBuilder()){
-			setValue = methodBuilder(PUBLIC(), void.class, "setValue" );
-	        setValue.addAnnotation(Override.class);
-	        addParameter(setValue,int.class, "_ordinal");
-	        addParameter(setValue,Object.class, "value");
-	        setValue.addCode("super.setValue(_ordinal, value);\n");
-	        genConstrucotrsExt(def, cp);
-        }else{
-        	setValue = GenBuilder.genEnumSetter(def, cp,columnMetaBase);
-        	GenBuilder.genConstructors(def, cp);
-            GenImmutable.addEnumGetter(def, cp,columnMetaBase);
-            GenImmutable.addEquals(def, cp);
-            if(def.genOptions.isGenJson()) GenImmutable.addDirectSerializer(def,cp);
-            
-        }
+    	setValue = genEnumSetter(def, cp,columnMetaBase);
+    	GenImmutable.genConstructor(def, cp);
+        GenImmutable.addEnumGetter(def, cp,columnMetaBase);
+        GenImmutable.addEquals(def, cp);
+        if(def.genOptions.isGenJson()) GenImmutable.addDirectSerializer(def,cp);
         makeOrdinalExpr(propCount, setValue, "this._changeSet$L |= (1L<<_ordinal);\n");
         cp.addMethod(setValue.build());
 
 
         // *********************  IUpdatatable
         
-        TypeVariableName typeT = TypeVariableName.get("T");
+        addIUpdatable(cp, propCount);
+        
+        return cp;
+	}
+
+	public static void addInterfaces(EntityDef def, TypeSpec.Builder builder, ClassName columnMetaBase) {
+		builder.addSuperinterface(IUpdatable.class); // includes IEnumGetter (IUpdatable extends it)  
+	}	
+	
+	public static void addIUpdatable(TypeSpec.Builder cp, int propCount) {
+		TypeVariableName typeT = TypeVariableName.get("T");
 		ParameterizedTypeName typeKey = parametrized(Key.class, typeT);
 		
         addMethod(cp, PUBLIC(), boolean.class, "isEmpty", method -> {
@@ -154,11 +149,9 @@ public class GenUpdate {
     		method.addCode("}\n");
 			
 		});
-        
-        return cp;
 	}
 
-	public void makeOrdinalExpr(int propCount, MethodSpec.Builder setValue, String expr) {
+	public static void makeOrdinalExpr(int propCount, MethodSpec.Builder setValue, String expr) {
 		if(propCount <64) {
         	setValue.addCode(expr,0);        	
         }else {
@@ -180,33 +173,33 @@ public class GenUpdate {
         	setValue.addCode("}\n");
         }
 	}
-	
-	
-	
-	public static void genConstrucotrsExt(EntityDef def, TypeSpec.Builder cp){
-        MethodSpec.Builder constr = constructorBuilder(PUBLIC());
-        constr.addCode("super();\n");
-        cp.addMethod(constr.build());
+		
+	public static MethodSpec.Builder genEnumSetter(EntityDef def, TypeSpec.Builder cp, ClassName columnMetaBase){
+		TypeVariableName typeT = TypeVariableName.get("T");
+		ParameterizedTypeName typeKEy = parametrized(Key.class, typeT);
 
-        constr = constructorBuilder(PUBLIC());
-        addParameter(constr, def.type, "v");
-        constr.addCode("super(v);");
-        cp.addMethod(constr.build());
+        MethodSpec.Builder setValue = methodBuilder(PUBLIC(), void.class, "setValue");
+        setValue.addAnnotation(Override.class);
+        setValue.addTypeVariable(typeT);
+        setValue.addParameter(typeKEy, "column");
+        setValue.addParameter(typeT, "value");
+        setValue.addCode("this.setValue(column.ordinal(), value);\n");
+		cp.addMethod(setValue.build());
+		
+        setValue = methodBuilder(PUBLIC(), void.class, "setValue");
+        setValue.addAnnotation(Override.class);
+        setValue.addParameter(int.class, "_ordinal");
+        setValue.addParameter(Object.class, "value");
+        setValue.addCode("switch (_ordinal) {\n");
 
-        constr = constructorBuilder(PUBLIC());
-
-        constr.addCode("super(");
-        
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
-        	Property property = def.getProps().get(i);
-        	addParameter(constr, property.type, property.name);        	
-
-            constr.addCode(""+property.name+(i == count-1 ? "":","));
+        	Property prop = def.getProps().get(i);
+        	setValue.addCode("case "+i+": this."+prop.fieldName+" = ($T) value;break;\n",prop.type.box());
         }
-        
-        constr.addCode(");\n");
-        cp.addMethod(constr.build());
-	}
-	
+        setValue.addCode("default: throw new ArrayIndexOutOfBoundsException(_ordinal);\n");
+        setValue.addCode("}\n");
+		
+        return setValue;
+	}		
 }

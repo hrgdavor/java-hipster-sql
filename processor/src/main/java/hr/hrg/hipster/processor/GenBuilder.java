@@ -5,111 +5,69 @@ import static hr.hrg.javapoet.PoetUtil.*;
 
 import com.squareup.javapoet.*;
 
-import hr.hrg.hipster.change.*;
-import hr.hrg.hipster.entity.*;
-import hr.hrg.hipster.sql.*;
-
 public class GenBuilder {
 
-	private ClassName columnMetaBase;
-
 	public GenBuilder(ClassName columnMetaBase) {
-		this.columnMetaBase = columnMetaBase;
 	}
 
 
 	public TypeSpec.Builder gen2(EntityDef def) {
-		TypeSpec.Builder builder = classBuilder(def.typeBuilder);
-		PUBLIC().to(builder);
+		TypeSpec.Builder cp = classBuilder(def.typeBuilder);
+		cp.superclass(def.typeUpdate);
+		PUBLIC().to(cp);
         
 		if(def.isInterface){			
-			builder.addSuperinterface(def.type);
+			cp.addSuperinterface(def.type);
 		}else{
-			builder.superclass(def.type);
+			cp.superclass(def.type);
 		}
-
-		addInterfaces(def, builder, columnMetaBase);
         
-        CodeBlock.Builder code = CodeBlock.builder().add("return new $T(", def.typeImmutable);
+		MethodSpec.Builder b = methodBuilder(PUBLIC(), def.typeImmutable, "build");
+		b.addCode("return new $T(this);\n", def.typeImmutable);
+		cp.addMethod(b.build());
 
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
-        	Property prop = def.getProps().get(i);
-			FieldSpec fieldSpec = null;
-        	if(prop.initial != null) {
-				String typeStr = prop.type.toString();
-        		if(typeStr.equals("java.lang.String"))
-        			fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name, "$S", prop.initial);
-        		else
-        			fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name, "$L", prop.initial);
-        	}else {        		
-        		fieldSpec = addField(builder, PROTECTED(), prop.type, prop.name);
-        	}
-        	
-			MethodSpec.Builder g = methodBuilder(PUBLIC(), prop.type, prop.getterName).addAnnotation(Override.class);
-			g.addCode("return "+prop.fieldName+";\n");
-			GenImmutable.copyAnnotations(g, prop);
-			builder.addMethod(g.build());
-
-			MethodSpec.Builder bm = methodBuilder(PUBLIC(), prop.type, prop.name).addAnnotation(Override.class);
-			addSetterParameter(bm, fieldSpec,null);
-			bm.addCode("return this;");
-			
-			code.add("\t\t"+prop.fieldName+(i == count-1 ? "":","));
+        	Property prop = def.getProps().get(i);			
+			b = methodBuilder(PUBLIC(), def.typeBuilder, prop.fieldName);
+			addParameter(b, prop.type, "v");
+			b.addCode(prop.setterName+"(v); return this;\n");
+			cp.addMethod(b.build());
         }
         
-        genConstructors(def, builder);
+        genConstructors(def, cp);
         
-        code.add("\t);");
 		
-        GenImmutable.addEnumGetter(def, builder,columnMetaBase);
-        GenImmutable.addEquals(def, builder);
-        builder.addMethod(genEnumSetter(def, builder, columnMetaBase).build());
-        if(def.genOptions.isGenJson()) GenImmutable.addDirectSerializer(def,builder);
+        if(def.genOptions.isGenJson()) GenImmutable.addDirectSerializer(def,cp);
         
-        return builder;
+        return cp;
 	}
 
-	public static void addInterfaces(EntityDef def, TypeSpec.Builder builder, ClassName columnMetaBase) {
-		// builder.addSuperinterface(parametrized(IEnumGetter.class, columnMetaBase));
-		builder.addSuperinterface(IUpdatable.class); // includes IEnumGetter (IUpdatable extends it)  
-	}	
-	
-	public static void genConstructors(EntityDef def, TypeSpec.Builder builder){
-        // empty default constructor
-		//addconstructor(builder, null);
-
-        GenImmutable.genConstructor(def,builder);
-	}
-
-	
-	public static MethodSpec.Builder genEnumSetter(EntityDef def, TypeSpec.Builder cp, ClassName columnMetaBase){
-		TypeVariableName typeT = TypeVariableName.get("T");
-		ParameterizedTypeName typeKEy = parametrized(Key.class, typeT);
-
-        MethodSpec.Builder setValue = methodBuilder(PUBLIC(), void.class, "setValue");
-        setValue.addAnnotation(Override.class);
-        setValue.addTypeVariable(typeT);
-        setValue.addParameter(typeKEy, "column");
-        setValue.addParameter(typeT, "value");
-        setValue.addCode("this.setValue(column.ordinal(), value);\n");
-		cp.addMethod(setValue.build());
 		
-        setValue = methodBuilder(PUBLIC(), void.class, "setValue");
-        setValue.addAnnotation(Override.class);
-        setValue.addParameter(int.class, "_ordinal");
-        setValue.addParameter(Object.class, "value");
-        setValue.addCode("switch (_ordinal) {\n");
+	public static void genConstructors(EntityDef def, TypeSpec.Builder cp){
+        MethodSpec.Builder constr = constructorBuilder(PUBLIC());
+        constr.addCode("super();\n");
+        cp.addMethod(constr.build());
 
+        constr = constructorBuilder(PUBLIC());
+        addParameter(constr, def.type, "v");
+        constr.addCode("super(v);");
+        cp.addMethod(constr.build());
+
+        constr = constructorBuilder(PUBLIC());
+
+        constr.addCode("super(");
+        
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
-        	Property prop = def.getProps().get(i);
-        	setValue.addCode("case "+i+": this."+prop.fieldName+" = ($T) value;break;\n",prop.type.box());
+        	Property property = def.getProps().get(i);
+        	addParameter(constr, property.type, property.name);        	
+
+            constr.addCode(""+property.name+(i == count-1 ? "":","));
         }
-        setValue.addCode("default: throw new ArrayIndexOutOfBoundsException(_ordinal);\n");
-        setValue.addCode("}\n");
-		
-        return setValue;
-	}	
+        
+        constr.addCode(");\n");
+        cp.addMethod(constr.build());
+	}
 	
 }

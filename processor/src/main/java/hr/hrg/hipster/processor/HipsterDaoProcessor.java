@@ -282,7 +282,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         		write(def.typeBuilder, builder.build(), processingEnv);
         	}
 
-        	if(def.genOptions.isGenUpdate()){
+        	if(def.genOptions.isGenUpdate() || def.genOptions.isGenBuilder()){
 				builder = new GenUpdate(columnMetaBase).gen2(def);
 				write(def.typeUpdate, builder.build(), processingEnv);
         	}
@@ -290,19 +290,19 @@ public class HipsterDaoProcessor extends AbstractProcessor{
     		if(def.genOptions.isGenMeta()){
     			
     			builder = new GenMeta().gen(def,columnMetaBase, processingEnv);
-    			JavaFile javaFile = JavaFile.builder(def.typeDelta.packageName(), builder.build())
+    			JavaFile javaFile = JavaFile.builder(def.typeMeta.packageName(), builder.build())
     					.addStaticImport(HipsterSqlUtil.class,"annotation")
     					.build();
-    			write(def.typeDelta.packageName(), javaFile, processingEnv);
+    			write(def.typeMeta.packageName(), javaFile, processingEnv);
     			
 //    			builder = new GenDelta().gen2(def);
-//    			write(def.typeDelta, builder.build(), processingEnv);
-
-    			if(genOptions.isGenVisitor()) {    				
-    				builder = new GenVisitor().gen2(def);
-    				write(def.typeDelta, builder.build(), processingEnv);
-    			}
-    			
+//    			write(def.typeDelta, builder.build(), processingEnv);    			
+    		}
+    		
+    		System.err.println(def.entityName+" genVisitor "+genOptions.isGenVisitor());
+    		if(def.genOptions.isGenVisitor()) {
+    			builder = new GenVisitor().gen2(def);
+    			write(def.typeVisitor, builder.build(), processingEnv);
     		}
         	
 

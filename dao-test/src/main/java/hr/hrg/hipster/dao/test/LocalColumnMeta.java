@@ -13,12 +13,13 @@ public class LocalColumnMeta<T> extends ColumnMeta<T>{
 			String _name, 
 			String _columnName, 
 			String _getterName, 
+			boolean required,
 			IEntityMeta meta,
 			Class<T> _type, 
 			Class<?> _primitiveType, 
 			String _columnSql, ICustomType<?> typeHandler,
 			Class<?> ...typeParams) {
-		super(ordinal, _name, _columnName, _getterName, meta, _type, _primitiveType, _columnSql, typeHandler, typeParams);
+		super(ordinal, _name, _columnName, _getterName, required, meta, _type, _primitiveType, _columnSql, typeHandler, typeParams);
 	}
 
 	@Override
