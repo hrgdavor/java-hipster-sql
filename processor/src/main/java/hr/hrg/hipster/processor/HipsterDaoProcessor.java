@@ -299,7 +299,6 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 //    			write(def.typeDelta, builder.build(), processingEnv);    			
     		}
     		
-    		System.err.println(def.entityName+" genVisitor "+genOptions.isGenVisitor());
     		if(def.genOptions.isGenVisitor()) {
     			builder = new GenVisitor().gen2(def);
     			write(def.typeVisitor, builder.build(), processingEnv);
