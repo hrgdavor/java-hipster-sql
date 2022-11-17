@@ -1,20 +1,26 @@
 package hr.hrg.hipster.type;
 
 import java.sql.*;
+import java.util.*;
 
 public class EnumType<T extends Enum<T>> implements ICustomType<T>{
 
 	private Class<T> enumClass;
-
+	private Map<String, T> map;
 	public EnumType(Class<T> enumClass) {
 		this.enumClass = enumClass;
+		T[] enumConstants = enumClass.getEnumConstants();
+		map = new HashMap<>(enumConstants.length*3);
+		for (T t : enumConstants) {
+			map.put(t.name(), t);
+		}
 	}
 
 	@Override
 	public T get(ResultSet rs, int index) throws SQLException {
 		String ret = rs.getString(index);
 		if(rs.wasNull()) return null;
-		return Enum.valueOf(enumClass, ret);
+		return map.get(ret);
 	}
 
 	@Override
