@@ -495,7 +495,7 @@ public class GenMeta {
 		method.addCode("try {\n");
 		method.addCode("while (reader.readBsonType() != $T.END_OF_DOCUMENT) {\n",BsonType.class);
 		method.addCode("fieldName = reader.readName();\n");
-		method.addCode("\tColumnMeta<?> column = $L(fieldName);// we consider mongo database, so field name is used\n", getColumn);
+		method.addCode("\t$T<?> column = $L(fieldName);// we consider mongo database, so field name is used\n", ColumnMeta.class, getColumn);
 		method.addCode("\tif(column == null && \"_id\".equals(fieldName)) column = $L(\"id\");// check _id\n", getColumn);
 //		method.addCode("if(column == null && \"_id\".equals(fieldName)) column = $L(\"id\");\n", getColumn);
 		method.addCode("\n");
@@ -797,7 +797,7 @@ public class GenMeta {
 		method.addException(java.sql.SQLException.class);
 
 		CodeBlock.Builder returnValue = CodeBlock.builder().add("$T out = new $T(",def.typeImmutable, def.typeImmutable);
-		genPrepValueVars(def, method, returnValue);
+		genPrepValueVars(def, method, returnValue, true);
 				
 		cp.addMethod(method.build());
 
@@ -810,21 +810,23 @@ public class GenMeta {
 			method.addException(java.sql.SQLException.class);
 			
 			returnValue = CodeBlock.builder().add("visitor.visit(",def.typeImmutable);
-			genPrepValueVars(def, method, returnValue);
+			genPrepValueVars(def, method, returnValue, false);
 			
 			cp.addMethod(method.build());
 		}
 
 	}
 	
-	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue) {
+	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue, boolean withReturn) {
 		CodeBlock.Builder block = CodeBlock.builder();
 		Property primaryProp = def.getPrimaryProp();
+		block.add("String __col=\"\";\n");
 		int i=0;
 		if(primaryProp != null) {
 			genPrepValue(block, returnValue, primaryProp,i);
 			i++;
 		}
+		
 		block.add("try{\n");
 		block.indent();
 		for(Property p: def.getProps()) {
@@ -836,13 +838,15 @@ public class GenMeta {
 
 		block.add("\n");
 		returnValue.add(");\n");
-		returnValue.add("this.init(out);\n");
-		returnValue.add("return out;\n");
+		if(withReturn) {			
+			returnValue.add("this.init(out);\n");
+			returnValue.add("return out;\n");
+		}
 		block.add(returnValue.build());
 		block.unindent();
 		Object fieldnameForCatch = primaryProp == null ? "null" : primaryProp.fieldName;
 		Class<?> entityMetaClass = def.genOptions.isGenMongo() ? MongoEntityMeta.class : EntityMeta.class;
-		block.add("\n} catch(Throwable e){ throw $T.errEntity($L,ENTITY_CLASS,e); }\n", 
+		block.add("\n} catch(Throwable e){ throw $T.errEntity($L,ENTITY_CLASS,__col,e); }\n", 
 				entityMetaClass,
 				fieldnameForCatch
 				);
@@ -851,7 +855,7 @@ public class GenMeta {
 	}
 
 	public void genPrepValue(com.squareup.javapoet.CodeBlock.Builder block, CodeBlock.Builder returnValue, Property p, int i) {
-		block.add("$T $L",p.type, p.fieldName);
+		block.add("__col=$S;$T $L",p.fieldName, p.type, p.fieldName);
 		
 		String getter = getterName(p);
 		

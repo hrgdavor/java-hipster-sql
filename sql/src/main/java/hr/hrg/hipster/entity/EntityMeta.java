@@ -49,8 +49,8 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 		_typeHandler = new ICustomType<?>[_columnCount];
 	}
 	
-	public static RuntimeException errEntity(Object id, Class<?> entity, Throwable cause){
-		return new RuntimeException(ERR_ENTITY+entity.getName()+"#"+id,cause);
+	public static RuntimeException errEntity(Object id, Class<?> entity, String col, Throwable cause){
+		return new RuntimeException(ERR_ENTITY+entity.getName()+"#"+id+":"+col,cause);
 	}
 	
 	@Override
