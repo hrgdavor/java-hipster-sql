@@ -1,9 +1,0 @@
-.settings/
-target/
-bin/
-test-output/
-.classpath
-.readme.md.html
-
-/.apt_generated/
-/.factorypath
