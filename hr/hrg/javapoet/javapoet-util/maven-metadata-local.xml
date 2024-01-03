@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>hr.hrg.javapoet</groupId>
+  <artifactId>javapoet-util</artifactId>
+  <versioning>
+    <versions>
+      <version>1.0.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20240103000238</lastUpdated>
+  </versioning>
+</metadata>

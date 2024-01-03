@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata modelVersion="1.1.0">
   <groupId>hr.hrg</groupId>
-  <artifactId>hipster-sql</artifactId>
+  <artifactId>hipster-processor</artifactId>
   <versioning>
-    <lastUpdated>20240102235851</lastUpdated>
+    <lastUpdated>20240103000503</lastUpdated>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
@@ -12,23 +12,23 @@
         <classifier>javadoc</classifier>
         <extension>jar</extension>
         <value>1.2.1-SNAPSHOT</value>
-        <updated>20240102235851</updated>
+        <updated>20240103000503</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>sources</classifier>
         <extension>jar</extension>
         <value>1.2.1-SNAPSHOT</value>
-        <updated>20240102235851</updated>
+        <updated>20240103000503</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>jar</extension>
         <value>1.2.1-SNAPSHOT</value>
-        <updated>20240102235851</updated>
+        <updated>20240103000503</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
         <value>1.2.1-SNAPSHOT</value>
-        <updated>20240102235851</updated>
+        <updated>20240103000503</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
