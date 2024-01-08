@@ -73,5 +73,10 @@ public @interface HipsterColumn {
      * @return if method should be skipped 
      */
     boolean skip() default false;
-
+    
+    /**
+     * Should this method be skipped
+     * @return if method should be skipped 
+     */
+    boolean keepRest() default false;
 }

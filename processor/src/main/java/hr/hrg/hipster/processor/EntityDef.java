@@ -42,6 +42,8 @@ public class EntityDef {
 	public TypeElement clazz;
 	public Element packageElement;
 	public JsonTypeInfo jsonTypeInfo;
+	public int coulmnCount = 0;
+	public Property keepRestPop;
 	
 	public EntityDef(TypeElement clazz, Elements elements, GenOptions genOptions){
 		this.clazz = clazz;
@@ -84,6 +86,10 @@ public class EntityDef {
 	public Property addProp(String name, TypeName typeName, TypeMirror typeMirror, ExecutableElement method, ProcessingEnvironment processingEnv){
 		Property property = new Property(name, typeName, typeMirror, method, this.tableName, defaultColumnsRequired, processingEnv, props.size());
 		props.add(property);
+		if(!property.isTransient) coulmnCount++;
+		if(property.keepRest) {
+			this.keepRestPop = property;
+		}
 		return property;
 	}
 	

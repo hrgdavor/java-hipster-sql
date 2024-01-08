@@ -20,6 +20,8 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 	protected ICustomType<?>[] _typeHandler;
 	protected int _columnCount;
 	protected C[] _columnArray;
+
+	protected C _keepRestColumn;
 	
 	protected C[] _columnArraySorted;
 	protected String[] _columnArraySortedStr;
@@ -204,4 +206,7 @@ public abstract class EntityMeta<T,ID, C extends ColumnMeta, V> implements IEnti
 		return initializer;
 	}
 	
+	public C getKeepRestColumn() {
+		return _keepRestColumn;
+	}
 }

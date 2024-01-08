@@ -136,7 +136,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
         		if(method.getParameters().size()> 0) continue;
         		if(method.isDefault()) continue;
 
-        		boolean getter = name.startsWith("get") || (name.startsWith("is") && ("boolean".equals(typeNameStr)  || "java.lang.Boolean".equals(typeNameStr) )) ;
+        		boolean getter = name.startsWith("get") || ((name.startsWith("is") || name.startsWith("has")) && ("boolean".equals(typeNameStr)  || "java.lang.Boolean".equals(typeNameStr) )) ;
         		if(!getter) {
     				processingEnv.getMessager().printMessage(
     						Diagnostic.Kind.NOTE,

@@ -18,6 +18,7 @@ import com.squareup.javapoet.*;
 import com.squareup.javapoet.MethodSpec.*;
 
 import hr.hrg.hipster.entity.*;
+import hr.hrg.hipster.jackson.*;
 import hr.hrg.hipster.sql.*;
 import hr.hrg.hipster.type.*;
 import hr.hrg.javapoet.*;
@@ -36,7 +37,21 @@ public class GenMeta {
 	
 		Class<?> entityMetaClass = def.genOptions.isGenMongo() ? MongoEntityMeta.class : EntityMeta.class;
 		cp.superclass(parametrized(entityMetaClass,def.type, primaryType, columnMetaBase, def.genOptions.isGenVisitor() ? def.typeVisitor : TypeName.OBJECT));
-		
+		if(def.genOptions.isGenJson()) {
+			addField(cp, PRIVATE(), CN_ObjectMapper,"mapper");	
+			cp.addSuperinterface(WithMapper.class);
+			
+			addMethod(cp,PUBLIC().FINAL(), CN_ObjectMapper, "getMapper", method->{
+				method.addAnnotation(Override.class);
+				method.addCode("return mapper;\n");
+			});			
+
+			addMethod(cp,PUBLIC().FINAL(), void.class, "setMapper", method->{
+				method.addAnnotation(Override.class);
+				addParameter(method, CN_ObjectMapper, "v");
+				method.addCode("this.mapper = v;\n");
+			});			
+		}
 		// public static final Class<SampleEntity> ENTITY_CLASS = SampleEntity.class;
 		addField(cp, PUBLIC().STATIC().FINAL(), parametrized(Class.class, def.type), "ENTITY_CLASS", "$T.class",def.type);	
 		addField(cp, PUBLIC().STATIC().FINAL(), String.class, "ENTITY_NAME", "$S",def.entityName);	
@@ -123,6 +138,8 @@ public class GenMeta {
 		}
 
 		addColumnsDef(cp, constr, def, columnMetaBase);
+
+		if(def.keepRestPop != null) constr.addCode("_keepRestColumn = $L;\n", def.keepRestPop.fieldName);
 		
 //		addconstructor(cp, PUBLIC(), method-> {
 //			method.addParameter(HipsterSql.class, "hipster");
@@ -383,7 +400,7 @@ public class GenMeta {
 			cp.addJavadoc("meta.visitResults(hc, query, (");
 			int i=1;
 			for(Property p:def.getProps()) {
-				if(p.isTransient()) continue;
+				if(p.isTransient() || p.isKeepRest()) continue;
 				if(i>1) cp.addJavadoc(", ");
 				cp.addJavadoc(p.fieldName);
 				i++;
@@ -797,7 +814,7 @@ public class GenMeta {
 		method.addException(java.sql.SQLException.class);
 
 		CodeBlock.Builder returnValue = CodeBlock.builder().add("$T out = new $T(",def.typeImmutable, def.typeImmutable);
-		genPrepValueVars(def, method, returnValue, true);
+		genPrepValueVars(def, method, returnValue, true, false);
 				
 		cp.addMethod(method.build());
 
@@ -810,14 +827,14 @@ public class GenMeta {
 			method.addException(java.sql.SQLException.class);
 			
 			returnValue = CodeBlock.builder().add("visitor.visit(",def.typeImmutable);
-			genPrepValueVars(def, method, returnValue, false);
+			genPrepValueVars(def, method, returnValue, false, true);
 			
 			cp.addMethod(method.build());
 		}
 
 	}
 	
-	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue, boolean withReturn) {
+	public void genPrepValueVars(EntityDef def, MethodSpec.Builder method, CodeBlock.Builder returnValue, boolean withReturn, boolean skipRestColumn) {
 		CodeBlock.Builder block = CodeBlock.builder();
 		Property primaryProp = def.getPrimaryProp();
 		block.add("String __col=\"\";\n");
@@ -830,6 +847,7 @@ public class GenMeta {
 		block.add("try{\n");
 		block.indent();
 		for(Property p: def.getProps()) {
+			if(skipRestColumn && p.isKeepRest()) continue;
 			if((primaryProp == null || !p.fieldName.equals(primaryProp.fieldName)) && !p.isTransient()) {
 				genPrepValue(block, returnValue, p, i);
 				i++;
@@ -847,7 +865,7 @@ public class GenMeta {
 		Object fieldnameForCatch = primaryProp == null ? "null" : primaryProp.fieldName;
 		Class<?> entityMetaClass = def.genOptions.isGenMongo() ? MongoEntityMeta.class : EntityMeta.class;
 		block.add("\n} catch(Throwable e){ throw $T.errEntity($L,ENTITY_CLASS,__col,e); }\n", 
-				entityMetaClass,
+				EntityMeta.class,
 				fieldnameForCatch
 				);
 		
@@ -1005,7 +1023,7 @@ public class GenMeta {
 //				field->field.initializer("$S",str.toString()));
 //		
 		addField(cp,PUBLIC().STATIC().FINAL(), int.class, "COLUMN_COUNT", 
-				field->field.initializer(""+def.props.size()));
+				field->field.initializer(""+def.coulmnCount));
 //		
 //		addField(constr,PRIVATE().STATIC().FINAL(), parametrized(ImmutableList.class, String.class), "COLUMN_NAMES", 
 //				field->field.initializer("ImmutableList.safe"+arrStr.toString()));

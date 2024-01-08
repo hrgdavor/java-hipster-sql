@@ -11,6 +11,7 @@ public class HipsterProcessorUtil {
 	public static final ClassName CN_JsonGenerationException = ClassName.get("com.fasterxml.jackson.core","JsonGenerationException");
 	public static final ClassName CN_SerializerProvider = ClassName.get("com.fasterxml.jackson.databind","SerializerProvider");	
 	public static final ClassName CN_JsonSerialize = ClassName.get("com.fasterxml.jackson.databind.annotation","JsonSerialize");
+	public static final ClassName CN_ObjectMapper = ClassName.get("com.fasterxml.jackson.databind","ObjectMapper");
 
 	public static boolean isType(Property p, String string, String string2) {
 		String string3 = p.type.toString();

@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <name>Java hipster SQL library</name>
 
@@ -7,7 +9,7 @@
 
     <groupId>hr.hrg</groupId>
     <artifactId>hipster-sql</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.2.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -90,7 +92,8 @@
 
     <scm>
         <connection>scm:git:git://github.com/hrgdavor/java-hipster-sql.git</connection>
-        <developerConnection>scm:git:ssh://github.com:hrgdavor/java-hipster-sql.git</developerConnection>
+        <developerConnection>
+            scm:git:ssh://github.com:hrgdavor/java-hipster-sql.git</developerConnection>
         <url>http://github.com/hrgdavor/java-hipster-sql/tree/master</url>
     </scm>
     <distributionManagement>
@@ -105,6 +108,31 @@
     </distributionManagement>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <id>m2</id>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <packaging>${project.packaging}</packaging>
+                            <file>
+                                ${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
+                            <localRepositoryPath>C:/wrk/java-hipster-sql-maven2</localRepositoryPath>
+                            <sources>${project.build.directory}/${project.build.finalName}-sources.${project.packaging}</sources>
+                            <javadoc>${project.build.directory}/${project.build.finalName}-javadoc.${project.packaging}</javadoc>
+                            <pomFile>pom.xml</pomFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
@@ -141,10 +169,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                  <source>8</source>
+                    <source>8</source>
                 </configuration>
             </plugin>
-            <plugin>
+            <!-- plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.5</version>
@@ -157,8 +185,8 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
+            </plugin -->
+            <!-- plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <version>1.6.7</version>
@@ -168,7 +196,7 @@
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
-            </plugin>
+            </plugin -->
         </plugins>
     </build>
 

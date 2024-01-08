@@ -188,12 +188,6 @@ public class Query{
 		return withValue(value);
 	}
 	
-	/**
-	 * 
-	 * @param delim delimiter
-	 * @param values values
-	 * @return query
-	 */
 	@SafeVarargs
 	public final <T> Query addValues(CharSequence delim, T ...values) {
 		for(int i=0; i<values.length; i++) {

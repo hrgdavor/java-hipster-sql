@@ -30,7 +30,7 @@ public class Testh2dbVisitor {
 		meta.visitResults(hc, query, new UserVisitor() {
 			
 			@Override
-			public void visit(Long id, List<String> name, int age) {
+			public void visit(Long id, List<String> name, int age, boolean hasSomething) {
 				
 				System.out.println("User Visitor #"+id+" "+name+" "+age);
 		

@@ -105,7 +105,9 @@ public class GenImmutable {
 				String typeStr = prop.type.toString();
 				boolean primitive = prop.type.isPrimitive();
 				
-				method.addCode("jgen.writeFieldName($S);\n",prop.name);
+				if(!prop.isKeepRest()) {
+					method.addCode("jgen.writeFieldName($S);\n",prop.name);
+				}
 
 				if(primitive || prop.type.isBoxedPrimitive()){
 					TypeName unboxed = prop.type.unbox();
@@ -130,6 +132,12 @@ public class GenImmutable {
 					}
 				} else if(typeStr.equals("java.lang.String")){
 					addWrite(method, "writeString", prop.name, true);
+				} else if(prop.isKeepRest()){
+					if(prop.type.toString().equals("java.util.Map")) {
+						method.addCode("$T.writeKeepMap($L,jgen,provider);\n",JacksonUtil.class,prop.name);
+					}else {
+						method.addCode("$T.writeKeepObjectNode($L, jgen, provider);\n",JacksonUtil.class,prop.name);						
+					}
 				} else {
 					addWrite(method, "writeObject", prop.name, true);
 				}
@@ -212,7 +220,7 @@ public class GenImmutable {
         for(int i=0; i<count; i++) {
         	Property property = def.getProps().get(i);
 
-        	if(!property.isTransient()) {        		
+        	if(!property.isTransient()) {
         		addSetterParameter(constr, property.type, property.name, param->{
         			if(def.genOptions.isGenJson())
         				param.addAnnotation(annotationSpec(CN_JsonProperty,"value", "$S",property.name));

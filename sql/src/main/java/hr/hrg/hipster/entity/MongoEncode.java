@@ -1,10 +1,15 @@
 package hr.hrg.hipster.entity;
 
-import java.lang.reflect.*;
+import java.io.*;
 import java.util.*;
+import java.util.Map.*;
 
 import org.bson.*;
 import org.bson.codecs.*;
+import org.bson.codecs.configuration.*;
+
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
 
 public class MongoEncode {
 
@@ -243,5 +248,58 @@ public class MongoEncode {
 			writer.writeEndArray();
 		}
 	}
-		
+	
+	public static void encodeKeepObjectNode(ObjectMapper mapper, ObjectNode node, BsonWriter writer, EncoderContext context, CodecRegistry registry) {
+		if(node == null) return;
+		Iterator<Entry<String, JsonNode>> fields = node.fields();
+		while (fields.hasNext()) {
+			Map.Entry<java.lang.String, com.fasterxml.jackson.databind.JsonNode> entry = (Map.Entry<java.lang.String, com.fasterxml.jackson.databind.JsonNode>) fields
+					.next();
+
+		    writer.writeName(entry.getKey());
+		    JsonNode value = entry.getValue();
+		    
+		    if(value == null || value.isNull()) {
+		    	writer.writeNull();
+		    }else if(value.isTextual()){
+		    	writer.writeString(value.asText());
+		    }else if(value.isFloatingPointNumber()){
+		    	writer.writeDouble(value.asDouble());
+		    }else if(value.isBoolean()){
+		    	writer.writeBoolean(value.asBoolean());
+		    }else if(value.isIntegralNumber()){
+		    	long asLong = value.asLong();
+		    	if(value.canConvertToInt()) {
+		    		writer.writeInt32(value.asInt());		    		
+		    	}else {		    		
+		    		writer.writeInt64(asLong);
+		    	}
+		    }else if(value.isPojo()){
+		    	Object _val = ((POJONode)value).getPojo();
+		    	Codec codec = registry.get(_val.getClass());
+		    	if(codec == null) throw new RuntimeException("kept field "+entry.getKey()+" is type "+_val.getClass()+" and has no codec ");
+		    	codec.encode(writer, value, context);
+		    }else {
+		    	Codec codec = registry.get(value.getClass());
+		    	if(codec == null) throw new RuntimeException("kept field "+entry.getKey()+" is type "+value.getClass()+" and has no codec ");
+		    	codec.encode(writer, value, context);
+		    }
+		}
+	}
+
+	public static void encodeKeepMap(Map<?,?> map, BsonWriter writer, EncoderContext context, CodecRegistry registry) throws IOException {
+		if(map == null) return;
+		for(Entry<?, ?> entry : map.entrySet()) {
+		    writer.writeName(entry.getKey().toString());
+			Object value = entry.getValue();
+		    if(value == null) {
+		    	writer.writeNull();
+		    }else{
+		    	Object _val = ((POJONode)value).getPojo();
+		    	Codec codec = registry.get(_val.getClass());
+		    	if(codec == null) throw new RuntimeException("kept field "+entry.getKey()+" is type "+_val.getClass()+" and has no codec ");
+		    	codec.encode(writer, value, context);
+		    }
+		}
+	}
 }

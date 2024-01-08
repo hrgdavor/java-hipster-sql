@@ -16,7 +16,7 @@ public class GenVisitor {
         int count = def.getProps().size();
         for(int i=0; i<count; i++) {
         	Property prop = def.getProps().get(i);
-        	addParameter(method, prop.type, prop.fieldName);
+        	if(!prop.isTransient() && !prop.isKeepRest()) addParameter(method, prop.type, prop.fieldName);
         }        
         builder.addMethod(method.build());
         return builder;

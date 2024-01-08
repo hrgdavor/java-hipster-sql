@@ -27,6 +27,7 @@ class Property {
 	public String fieldName;
 	public String getterName;
 	public boolean required;
+	public boolean keepRest;
 	public String setterName;
 	public String columnName;
 	public String initial;
@@ -69,7 +70,7 @@ class Property {
 		
 		this.method = method;
 		
-		if(getter.startsWith("get")) {
+		if(getter.startsWith("get") || getter.startsWith("has")) {
 			name = getter.substring(3);
 		}else
 			name = getter.substring(2);
@@ -93,6 +94,9 @@ class Property {
 		HipsterColumn hipsterColumn = method.getAnnotation(HipsterColumn.class);
 		if(hipsterColumn != null){
 			if(hipsterColumn.required() != BooleanEnum.DEFAULT) required = hipsterColumn.required() == BooleanEnum.TRUE; 
+			if(hipsterColumn.keepRest()) { 
+				keepRest = true;
+			}
 			if(!hipsterColumn.name().isEmpty()) this.columnName = hipsterColumn.name();
 			if(hipsterColumn.initial().length >0) this.initial = hipsterColumn.initial()[0];
 			this.sql = hipsterColumn.sql();
@@ -131,7 +135,9 @@ class Property {
 			this.array = true;
 			componentType = arrayTypeName.componentType;
 		}
-		
+		if(keepRest && isTransient) {
+			throw new RuntimeException("Field "+fieldName+" can not be both transient and marked for keepRest");
+		}
 	}
 
 	public boolean isPrimitive(){
@@ -228,6 +234,10 @@ class Property {
 	
 	public boolean isTransient() {
 		return isTransient;
+	}
+	
+	public boolean isKeepRest() {
+		return keepRest;
 	}
 	
 	static Builder addMemberForValue(Builder builder, String memberName, Object value) {
