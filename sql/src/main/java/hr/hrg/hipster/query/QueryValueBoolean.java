@@ -18,4 +18,9 @@ public final class QueryValueBoolean implements IQueryValue{
 	public String toString() {
 		return Boolean.toString(value);
 	}
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
 }

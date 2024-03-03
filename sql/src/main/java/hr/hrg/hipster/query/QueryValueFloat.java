@@ -18,4 +18,10 @@ public final class QueryValueFloat implements IQueryValue{
 	public String toString() {
 		return Float.toString(value);
 	}
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
+	
 }

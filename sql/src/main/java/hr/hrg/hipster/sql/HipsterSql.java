@@ -32,6 +32,7 @@ public class HipsterSql {
 	private EntitySource entitySource;
 	
 	private EntityEventHub eventHub;
+	private IQueryLogger queryLogger;
 
 	public HipsterSql() {
 		this.typeSource = new TypeSource();
@@ -599,6 +600,13 @@ public class HipsterSql {
 			quote(b,escape(val.toString()));
 		}
 		return b;
-	}	
+	}
+
+	public IQueryLogger getQueryLogger() {
+		return queryLogger;
+	}
 	
+	public void setQueryLogger(IQueryLogger queryLogger) {
+		this.queryLogger = queryLogger;
+	}
 }

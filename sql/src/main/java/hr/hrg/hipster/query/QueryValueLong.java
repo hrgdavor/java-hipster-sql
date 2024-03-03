@@ -18,4 +18,10 @@ public final class QueryValueLong implements IQueryValue{
 	public String toString() {
 		return Long.toString(value);
 	}
+	
+	@Override
+	public Object getValue() {
+		return value;
+	}
+	
 }

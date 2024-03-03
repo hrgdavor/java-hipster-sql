@@ -4,10 +4,9 @@ import java.sql.*;
 
 public interface IQueryValue {
 
+	public Object getValue();
 
 	public void set(PreparedStatement ps, int index) throws SQLException;
-	
-
 	
 	public static final IQueryValue NULL = new IQueryValue() {
 		@Override
@@ -18,6 +17,11 @@ public interface IQueryValue {
 		@Override
 		public String toString() {
 			return "NULL";
+		}
+
+		@Override
+		public Object getValue() {
+			return null;
 		}
 	};
 }

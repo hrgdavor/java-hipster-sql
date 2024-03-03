@@ -13,17 +13,33 @@ public class Result implements AutoCloseable{
 	
 	private final HipsterConnectionImpl hipConnection;
 	private final HipsterSql hipster;
-	protected String query;
     protected ResultSet rs;
     protected PreparedStatement ps;
     private ResultSetMetaData metaData;
 	private int fetchSize;
+	private IQueryValue[] values;
+	protected String query;
+    protected Throwable trace;
+    protected long startTime;
 
     public Result(IHipsterConnection conn){
     	this.hipConnection = (HipsterConnectionImpl) conn;
     	this.hipster = conn.getHipster();
     }
 
+    void logQuery() {
+    	if(trace == null) return;
+    	
+    	IQueryLogger queryLogger = hipster.getQueryLogger();
+		if(queryLogger == null || !queryLogger.isLogging()) return;
+		
+		List params = new ArrayList<>();
+		if(values != null) for(IQueryValue value:values) {
+			params.add(value == null ? null : value.getValue());
+		}
+		queryLogger.logQuery(query, trace, startTime, System.currentTimeMillis() - startTime, params);
+    }
+    
     /** Execute the provided query
      * @param queryParts query parts 
      * @return self (builder pattern)
@@ -53,16 +69,22 @@ public class Result implements AutoCloseable{
 	private void prepareForExecution(Query p, boolean returnGeneratedKeys){
 
     	try {
+        	IQueryLogger queryLogger = hipster.getQueryLogger();
+    		if(queryLogger != null && queryLogger.isLogging()) {
+    			startTime = System.currentTimeMillis();
+    			trace = new Throwable("query dump");
+    		}
+			query = p.getQueryExpression().toString();
 			if(returnGeneratedKeys)
-				ps = hipConnection.getConnection().prepareStatement(p.getQueryExpression().toString(), Statement.RETURN_GENERATED_KEYS);
+				ps = hipConnection.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 			else
-				ps = hipConnection.getConnection().prepareStatement(p.getQueryExpression().toString());
+				ps = hipConnection.getConnection().prepareStatement(query);
 			ps.setFetchSize(this.fetchSize);
 		} catch (SQLException e) {
 			throw new RuntimeException("Error preparing statement: "+hipConnection.lastQuery+" ERR: "+e.getMessage(), e);
 		}
 		
-		IQueryValue[] values = p.getValues();
+		this.values = p.getValues();
 		int size = p.getSize();
 		for(int i=0; i<size; i++){
 			try {
@@ -202,6 +224,12 @@ public class Result implements AutoCloseable{
 
 
     public void close() {
+		try {
+			logQuery();
+		} catch (Exception e) {
+			HipsterSql.log.error("Error logging query " + this.hipConnection.lastQuery + " ERR:"+ e.getMessage(), e);
+		}
+    		
 		if (ps != null) {
 			try {
 				ps.close();

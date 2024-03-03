@@ -25,6 +25,11 @@ public class HipsterConnectionImpl implements IHipsterConnection {
 		this.sqlConnection = sqlConnection;
 	}
 	
+	@Override
+	public IQueryLogger getQueryLogger() {
+		return hipster.getQueryLogger();
+	}
+	
 	/* (non-Javadoc)
 	 * @see hr.hrg.hipster.sql.HipsterConnection#getConnection()
 	 */

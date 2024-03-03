@@ -11,6 +11,8 @@ import hr.hrg.hipster.visitor.*;
 
 public interface IHipsterConnection {
 
+	IQueryLogger getQueryLogger();
+	
 	Connection getConnection();
 
 	Query getLastQuery();

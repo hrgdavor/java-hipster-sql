@@ -18,4 +18,10 @@ public final class QueryValueInt implements IQueryValue{
 	public String toString() {
 		return Integer.toString(value);
 	}
+	
+	@Override
+	public Object getValue() {
+		return value;
+	}
+	
 }

@@ -29,4 +29,9 @@ public final class QueryValue<T> implements IQueryValue{
 	public static QueryValueFloat   v(float   value){ return new QueryValueFloat(value); }
 	public static QueryValueDouble  v(double  value){ return new QueryValueDouble(value); }
 	public static QueryValueBoolean v(boolean value){ return new QueryValueBoolean(value); }
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
 }

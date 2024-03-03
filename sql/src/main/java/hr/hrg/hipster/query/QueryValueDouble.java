@@ -18,4 +18,10 @@ public final class QueryValueDouble implements IQueryValue{
 	public String toString() {
 		return Double.toString(value);
 	}
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
+
 }
