@@ -2,10 +2,34 @@
 
 Utility for working with JDBC. When ORM feels too heavy, and pure JDBC is annoying you
 
+## MAVEN
+since maven publishing on central failed and I could no get it running it. So for now moved to custom repo on git.
 
- # Usage
 
-Add maven dependency or download from [maven central](http://repo1.maven.org/maven2/hr/hrg/java-hipster-sql/)
+
+ - maven publish checksums issue for now workaround `<checksumPolicy>warn</checksumPolicy>`
+ 
+ ```xml
+    <repositories>
+        <repository>
+            <id>hipster-git</id>
+            <url>https://raw.githubusercontent.com/hrgdavor/java-hipster-sql/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+```
+
+# Usage
+
+Add maven dependency 
+
 
 ```xml
 <dependency>
@@ -14,6 +38,9 @@ Add maven dependency or download from [maven central](http://repo1.maven.org/mav
 	<version>0.2.0</version>
 </dependency>
 ```
+
+ - older versions on [maven central](http://repo1.maven.org/maven2/hr/hrg/java-hipster-sql/)
+
 
 # Simple usage
 
