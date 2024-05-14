@@ -3,12 +3,14 @@
   <groupId>hr.hrg</groupId>
   <artifactId>hipster-sql</artifactId>
   <versioning>
-    <release>1.2.3</release>
+    <release>1.2.5</release>
     <versions>
       <version>1.2.1-SNAPSHOT</version>
       <version>1.2.2</version>
       <version>1.2.3</version>
+      <version>1.2.4</version>
+      <version>1.2.5</version>
     </versions>
-    <lastUpdated>20240302235110</lastUpdated>
+    <lastUpdated>20240514093355</lastUpdated>
   </versioning>
 </metadata>
