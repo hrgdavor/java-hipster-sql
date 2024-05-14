@@ -106,6 +106,10 @@ public class GenMeta {
 			
 			for(Property p:def.getProps()) {
 				if(p.isTransient()) continue;
+				if(p.isKeepRest()) {
+					i++;
+					continue; // we will not likely need id, TODO restore maybe, revisit, this is blind bugfix
+				}
 				ParameterizedTypeName parametrizedCustomType = parametrized(ICustomType.class, p.type.box());
 
 				if(!p.customTypeKey.isEmpty()){

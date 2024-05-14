@@ -75,8 +75,10 @@ public @interface HipsterColumn {
     boolean skip() default false;
     
     /**
-     * Should this method be skipped
-     * @return if method should be skipped 
+     * This property will hold the rest of the properties in case of there are more props
+     * to de-serialise than fields available. Also props from this will be expanded into the top
+     * level when serialising
+     * @return used for rest of props 
      */
     boolean keepRest() default false;
 }
