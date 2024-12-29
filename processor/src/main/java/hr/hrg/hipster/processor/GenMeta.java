@@ -658,6 +658,9 @@ public class GenMeta {
 				if(prop.array) {
 					ArrayTypeName arrayTypeName = (ArrayTypeName)prop.type;
 					addWriteArrayMongo(method, prop, arrayTypeName, def, fieldName);
+				}else if(fieldName.equals("id") && typeStr.equals("org.bson.types.ObjectId")){
+//					method.addCode("writer.writeObjectId(\"_id\",value.$L());\n",prop.getterName);
+					addWriteMongo(method, "writeObjectId", prop, !primitive, def, "_id");
 				}else if(prop.parametrized && isList(prop.type)){
 //					ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
 					method.addCode("// $L $T<",prop.fieldName, prop.parameterizedOuterRaw);
