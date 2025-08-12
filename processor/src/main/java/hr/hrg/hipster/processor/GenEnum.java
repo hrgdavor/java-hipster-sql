@@ -1,14 +1,14 @@
 package hr.hrg.hipster.processor;
 
-import static com.squareup.javapoet.TypeSpec.anonymousClassBuilder;
-import static com.squareup.javapoet.TypeSpec.enumBuilder;
+import static com.palantir.javapoet.TypeSpec.anonymousClassBuilder;
+import static com.palantir.javapoet.TypeSpec.enumBuilder;
 import static hr.hrg.javapoet.PoetUtil.*;
 
 import java.io.*;
 import java.util.*;
 
-import com.squareup.javapoet.*;
-import com.squareup.javapoet.TypeSpec.*;
+import com.palantir.javapoet.*;
+import com.palantir.javapoet.TypeSpec.*;
 
 import hr.hrg.hipster.query.*;
 import hr.hrg.hipster.sql.*;
@@ -43,13 +43,13 @@ public class GenEnum {
 		addBeanfieldReadonly(enumbuilder, parametrized(ImmutableList.class, TN_CLASS_Q), "typeParams", addOverride);
 		
 		for(Property prop: def.getProps()){
-			com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder().add("$S",prop.columnName);
+			com.palantir.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder().add("$S",prop.columnName);
 			codeBlock.add(",$S",prop.getterName);
 			
 			// type or raw type
 			if(prop.type instanceof ParameterizedTypeName){				
 				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
-				codeBlock.add(",$T.class",parameterizedTypeName.rawType);
+				codeBlock.add(",$T.class",parameterizedTypeName.rawType());
 			}else{
 				codeBlock.add(",$T.class",prop.type);
 			}
@@ -66,7 +66,7 @@ public class GenEnum {
 			// type parameters if any
 			if(prop.type instanceof ParameterizedTypeName){				
 				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
-				for(TypeName ta: parameterizedTypeName.typeArguments){
+				for(TypeName ta: parameterizedTypeName.typeArguments()){
 					codeBlock.add(",$T.class",ta);					
 				}
 			}

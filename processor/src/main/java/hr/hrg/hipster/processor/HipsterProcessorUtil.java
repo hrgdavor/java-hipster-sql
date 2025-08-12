@@ -1,6 +1,6 @@
 package hr.hrg.hipster.processor;
 
-import com.squareup.javapoet.*;
+import com.palantir.javapoet.*;
 
 public class HipsterProcessorUtil {
 

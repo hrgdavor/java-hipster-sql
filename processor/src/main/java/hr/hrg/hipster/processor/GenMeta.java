@@ -14,8 +14,8 @@ import org.bson.*;
 import org.bson.codecs.*;
 import org.bson.codecs.configuration.*;
 
-import com.squareup.javapoet.*;
-import com.squareup.javapoet.MethodSpec.*;
+import com.palantir.javapoet.*;
+import com.palantir.javapoet.MethodSpec.*;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.jackson.*;
@@ -36,7 +36,7 @@ public class GenMeta {
 		TypeName primaryType = primaryProp == null ? TypeName.get(Object.class) : primaryProp.type;
 	
 		Class<?> entityMetaClass = def.genOptions.isGenMongo() ? MongoEntityMeta.class : EntityMeta.class;
-		cp.superclass(parametrized(entityMetaClass,def.type, primaryType, columnMetaBase, def.genOptions.isGenVisitor() ? def.typeVisitor : TypeName.OBJECT));
+		cp.superclass(parametrized(entityMetaClass,def.type, primaryType, columnMetaBase, def.genOptions.isGenVisitor() ? def.typeVisitor : TypeName.get(Object.class)));
 		if(def.genOptions.isGenJson()) {
 			addField(cp, PRIVATE(), CN_ObjectMapper,"mapper");	
 			cp.addSuperinterface(WithMapper.class);
@@ -63,7 +63,7 @@ public class GenMeta {
 			TypeName rawType = prop.type;
 			if(prop.type instanceof ParameterizedTypeName){				
 				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
-				rawType = parameterizedTypeName.rawType;
+				rawType = parameterizedTypeName.rawType();
 			}
 
 			addField(cp, PUBLIC().FINAL(), parametrized(columnMetaBase, rawType.box()), prop.fieldName, field -> field.addJavadoc("ordinal: $L", prop.ordinal));	
@@ -121,8 +121,8 @@ public class GenMeta {
 					hasGetters = true;
 					if(p.type instanceof ParameterizedTypeName){
 						ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)p.type;
-						typeHandlersBlock.add("$T.class",parameterizedTypeName.rawType);
-						for(TypeName ta: parameterizedTypeName.typeArguments){
+						typeHandlersBlock.add("$T.class",parameterizedTypeName.rawType());
+						for(TypeName ta: parameterizedTypeName.typeArguments()){
 							typeHandlersBlock.add(",$T.class",ta);					
 						}
 						typeHandlersBlock.add(");");
@@ -328,7 +328,7 @@ public class GenMeta {
 
 					TypeName type = isList(p.type) ? p.componentType : p.type;
 					if(type instanceof ParameterizedTypeName) {
-						type = ((ParameterizedTypeName)type).rawType;
+						type = ((ParameterizedTypeName)type).rawType();
 					}
 					String getterNameMongo = getterNameMongo(type.toString());
 //					if(getterNameMongo == null) {
@@ -347,7 +347,7 @@ public class GenMeta {
 		return cp;
 	}
 	
-	private void addComments(com.squareup.javapoet.TypeSpec.Builder cp, EntityDef def, ClassName columnMetaBase) {
+	private void addComments(com.palantir.javapoet.TypeSpec.Builder cp, EntityDef def, ClassName columnMetaBase) {
 		String typeDao = def.type.simpleName()+"Dao";
 		cp.addJavadoc("Example meta from EntitySource:\n");
 		cp.addJavadoc("<pre>\n");
@@ -654,7 +654,7 @@ public class GenMeta {
 				
 				String typeStr = prop.type.toString();
 				boolean primitive = prop.type.isPrimitive();
-				
+				method.addComment("type: $L", typeStr);
 				if(prop.array) {
 					ArrayTypeName arrayTypeName = (ArrayTypeName)prop.type;
 					addWriteArrayMongo(method, prop, arrayTypeName, def, fieldName);
@@ -712,7 +712,7 @@ public class GenMeta {
 	}	
 	
 	public static void addWriteArrayMongo(Builder method, Property prop, ArrayTypeName arrayTypeName, EntityDef def, String fieldName) {
-		TypeName type = arrayTypeName.componentType;
+		TypeName type = arrayTypeName.componentType();
 		boolean primitive = type.isBoxedPrimitive();
 		TypeName unboxed = primitive ? type.unbox(): type;
 		String typeStr = prop.type.toString();
@@ -879,7 +879,7 @@ public class GenMeta {
 		method.addCode(block.build());
 	}
 
-	public void genPrepValue(com.squareup.javapoet.CodeBlock.Builder block, CodeBlock.Builder returnValue, Property p, int i) {
+	public void genPrepValue(com.palantir.javapoet.CodeBlock.Builder block, CodeBlock.Builder returnValue, Property p, int i) {
 		block.add("__col=$S;$T $L",p.fieldName, p.type, p.fieldName);
 		
 		String getter = getterName(p);
@@ -894,7 +894,7 @@ public class GenMeta {
 		returnValue.add(p.fieldName);
 	}
 	
-	private void addColumnsDef(com.squareup.javapoet.TypeSpec.Builder cp, Builder constr, EntityDef def, ClassName columnMetaBase) {
+	private void addColumnsDef(com.palantir.javapoet.TypeSpec.Builder cp, Builder constr, EntityDef def, ClassName columnMetaBase) {
 		List<String> colNames = new ArrayList<>();
 		List<String> enumNames = new ArrayList<>();
 		Map<String, String> colMap = new HashMap<>();
@@ -938,10 +938,10 @@ public class GenMeta {
 			TypeName rawType = prop.type;
 			if(prop.type instanceof ParameterizedTypeName){				
 				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
-				rawType = parameterizedTypeName.rawType;
+				rawType = parameterizedTypeName.rawType();
 			}
 //			constr.addCode(codeBlock)
-			com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
+			com.palantir.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
 			codeBlock.add("$L = new $T<$T>($L, $S", prop.fieldName, columnMetaBase, rawType.box(), ordinal, prop.name);
 			codeBlock.add(",$S",prop.columnName);
 			codeBlock.add(",$S",prop.getterName);
@@ -965,7 +965,7 @@ public class GenMeta {
 			// type parameters if any
 			if(prop.type instanceof ParameterizedTypeName){				
 				ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName)prop.type;
-				for(TypeName ta: parameterizedTypeName.typeArguments){
+				for(TypeName ta: parameterizedTypeName.typeArguments()){
 					codeBlock.add(",$T.class",ta);					
 				}
 			}
@@ -993,9 +993,9 @@ public class GenMeta {
 					for(AnnotationSpec spec: prop.annotationsWithDefaults) {
 						if(i>0) codeBlock.add(", ");
 						
-						codeBlock.add("\nannotation($T.class", spec.type);
+						codeBlock.add("\nannotation($T.class", spec.type());
 						int j=0;
-						for(Entry<String, List<CodeBlock>> elem:spec.members.entrySet()) {
+						for(Entry<String, List<CodeBlock>> elem:spec.members().entrySet()) {
 							codeBlock.add(", ");
 							
 							codeBlock.add("$S,",elem.getKey());

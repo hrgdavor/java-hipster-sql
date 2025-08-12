@@ -10,8 +10,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.*;
 
 import com.fasterxml.jackson.annotation.*;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.TypeName;
+import com.palantir.javapoet.ClassName;
+import com.palantir.javapoet.TypeName;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;

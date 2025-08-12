@@ -12,8 +12,8 @@ import javax.lang.model.util.*;
 import javax.persistence.*;
 import javax.tools.Diagnostic.*;
 
-import com.squareup.javapoet.*;
-import com.squareup.javapoet.AnnotationSpec.*;
+import com.palantir.javapoet.*;
+import com.palantir.javapoet.AnnotationSpec.*;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
@@ -116,7 +116,7 @@ class Property {
 		List<? extends AnnotationMirror> annotationMirrors = method.getAnnotationMirrors();
 		for (AnnotationMirror mirror : annotationMirrors) {
 			AnnotationSpec annotationSpec = getAnnotation(mirror, processingEnv);
-			if(!annotationSpec.type.toString().startsWith("hr.hrg.hipster.sql")) {
+			if(!annotationSpec.type().toString().startsWith("hr.hrg.hipster.sql")) {
 				annotationsWithDefaults.add(annotationSpec);
 				annotations.add(AnnotationSpec.get(mirror));
 			}
@@ -125,15 +125,15 @@ class Property {
 		if(type instanceof ParameterizedTypeName) {
 			ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) type;
 			this.parametrized = true;
-			parameterizedOuterRaw = parameterizedTypeName.rawType;
-			typeArguments = parameterizedTypeName.typeArguments;
+			parameterizedOuterRaw = parameterizedTypeName.rawType();
+			typeArguments = parameterizedTypeName.typeArguments();
 			componentType = typeArguments.get(0);
 		}
 		
 		if(type instanceof ArrayTypeName) {
 			ArrayTypeName arrayTypeName = (ArrayTypeName) type;
 			this.array = true;
-			componentType = arrayTypeName.componentType;
+			componentType = arrayTypeName.componentType();
 		}
 		if(keepRest && isTransient) {
 			throw new RuntimeException("Field "+fieldName+" can not be both transient and marked for keepRest");

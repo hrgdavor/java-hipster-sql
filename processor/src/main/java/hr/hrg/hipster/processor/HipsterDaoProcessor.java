@@ -16,8 +16,8 @@ import javax.tools.*;
 import javax.tools.Diagnostic.Kind;
 
 import com.fasterxml.jackson.annotation.*;
-import com.squareup.javapoet.*;
-import com.squareup.javapoet.TypeSpec.*;
+import com.palantir.javapoet.*;
+import com.palantir.javapoet.TypeSpec.*;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
@@ -214,7 +214,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 		
 		TypeSpec.Builder cp = classBuilder(PUBLIC(),className);
 
-		com.squareup.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
+		com.palantir.javapoet.CodeBlock.Builder codeBlock = CodeBlock.builder();
 		codeBlock.add("$T.toArray(\n", HipsterSqlUtil.class);
 		codeBlock.indent();
 		boolean first = true;
@@ -323,7 +323,7 @@ public class HipsterDaoProcessor extends AbstractProcessor{
 	
 	public void write(String packageName, JavaFile javaFile, ProcessingEnvironment processingEnv) {
 		try {
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(packageName+"."+javaFile.typeSpec.name);
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(packageName+"."+javaFile.typeSpec().name());
 			
 			try (	OutputStream out = jfo.openOutputStream();
 					PrintWriter pw = new PrintWriter(out);

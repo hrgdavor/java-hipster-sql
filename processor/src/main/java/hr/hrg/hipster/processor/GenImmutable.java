@@ -1,13 +1,13 @@
 package hr.hrg.hipster.processor;
 
-import static com.squareup.javapoet.TypeSpec.classBuilder;
+import static com.palantir.javapoet.TypeSpec.classBuilder;
 import static hr.hrg.hipster.processor.HipsterProcessorUtil.*;
 import static hr.hrg.javapoet.PoetUtil.*;
 
 import java.io.*;
 
-import com.squareup.javapoet.*;
-import com.squareup.javapoet.MethodSpec.Builder;
+import com.palantir.javapoet.*;
+import com.palantir.javapoet.MethodSpec.Builder;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.jackson.*;

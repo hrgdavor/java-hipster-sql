@@ -3,7 +3,7 @@ package hr.hrg.hipster.processor;
 
 import static hr.hrg.javapoet.PoetUtil.*;
 
-import com.squareup.javapoet.*;
+import com.palantir.javapoet.*;
 
 public class GenDelta {
 

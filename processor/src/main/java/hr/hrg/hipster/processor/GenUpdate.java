@@ -1,9 +1,9 @@
 package hr.hrg.hipster.processor;
 
-import static com.squareup.javapoet.TypeSpec.classBuilder;
+import static com.palantir.javapoet.TypeSpec.classBuilder;
 import static hr.hrg.javapoet.PoetUtil.*;
 
-import com.squareup.javapoet.*;
+import com.palantir.javapoet.*;
 
 import hr.hrg.hipster.entity.*;
 import hr.hrg.hipster.sql.*;
