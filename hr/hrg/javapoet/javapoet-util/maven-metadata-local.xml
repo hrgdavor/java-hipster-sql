@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<metadata>
+<metadata xmlns="http://maven.apache.org/METADATA/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/METADATA/1.1.0 https://maven.apache.org/xsd/repository-metadata-1.1.0.xsd">
   <groupId>hr.hrg.javapoet</groupId>
   <artifactId>javapoet-util</artifactId>
   <versioning>
     <versions>
       <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.1-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20240103000238</lastUpdated>
+    <lastUpdated>20250812203019</lastUpdated>
   </versioning>
 </metadata>
