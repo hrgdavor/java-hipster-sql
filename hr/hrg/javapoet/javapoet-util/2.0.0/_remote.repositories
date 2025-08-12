@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Aug 12 23:11:44 CEST 2025
+javapoet-util-2.0.0-sources.jar>=
+javapoet-util-2.0.0.jar>=
+javapoet-util-2.0.0.pom>=
